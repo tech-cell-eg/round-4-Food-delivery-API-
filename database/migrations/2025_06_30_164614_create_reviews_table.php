@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('chef_id')->constrained('chefs')->onDelete('cascade');
+            $table->foreignId('dish_id')->constrained('dishes')->onDelete('cascade');
             $table->integer('rating');
             $table->text('comment')->nullable();
             $table->timestamp('created_at')->useCurrent();
