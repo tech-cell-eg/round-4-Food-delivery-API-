@@ -9,6 +9,9 @@ class Chef extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
         'national_id',
