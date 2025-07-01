@@ -1,5 +1,9 @@
 <?php
 
+
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
@@ -14,13 +18,17 @@ use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
 
 
+Route::get('categories', [CategoryController::class, "index"]);
+Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
+Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
+
 Route::controller(ChefController::class)->group(function () {
     Route::get('/open-resturants', 'getOpenChefs')->name("getOpenChefs");
     Route::get('/resturants/{id}', 'showChefWithCategoriesAndMeals')->name("showChefWithCategoriesAndMeals");
     
 });
 
-Route::get("categories/", [CategoryController::class, "index"])->name("categories.index");
 
 Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->middleware("auth:sanctum")*/->group(function () {
     Route::get('/', 'index')->name("index");
@@ -77,3 +85,4 @@ Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+

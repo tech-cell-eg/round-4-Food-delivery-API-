@@ -47,7 +47,6 @@ class DishResource extends JsonResource
             }),
             'created_at' => $this->created_at?->format('F j, Y, g:i A'),
             'created_at' => $this->created_at?->format('F j, Y, g:i A'),
-
         ];
     }
 }
