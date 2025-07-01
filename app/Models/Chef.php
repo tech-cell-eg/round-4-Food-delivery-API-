@@ -58,4 +58,10 @@ class Chef extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function isVerified()
+    {
+        return (bool) $this->is_verified;
+    }
+
 }
