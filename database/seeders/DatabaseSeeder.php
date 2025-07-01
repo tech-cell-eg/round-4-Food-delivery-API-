@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,      // Create categories
             IngredientSeeder::class,    // Create ingredients
             ChefSeeder::class,          // Create chef profiles (depends on users)
+            CustomerSeeder::class,      // Create customers (depends on users)
             DishSeeder::class,          // Create dishes (depends on chefs and categories)
             DishSizeSeeder::class,      // Create dish sizes (depends on dishes)
             DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
             CouponSeeder::class,        // Create coupons (depends on chefs)
+            ReviewsTableSeeder::class,  // Create reviews (depends on users and dishes)
         ]);
     }
 }

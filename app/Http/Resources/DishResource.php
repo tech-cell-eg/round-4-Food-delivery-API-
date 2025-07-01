@@ -18,19 +18,35 @@ class DishResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'image' => $this->image,
-            'is_available' => $this->is_available,
-            'rating' => $this->avg_rate,
-            'category' => $this->category->name,
-            'meal_type' => $this->category->meal_type,
-            'sizes' => $this->sizes->map(function ($size) {
+            'image_url' => "storage/" . $this->image,
+            'is_available' => (bool) $this->is_available,
+            'rating' => [
+                'average' => round((float) $this->avg_rate, 1),
+                'total_reviews' => (int) $this->total_rate
+            ],
+            'sizes' => DishSizeResource::collection($this->whenLoaded('sizes')),
+            'ingredients' => $this->whenLoaded('ingredients', function () {
+                return $this->ingredients->map(function ($ingredient) {
+                    return [
+                        'id' => $ingredient->id,
+                        'name' => $ingredient->name,
+                    ];
+                });
+            }),
+            'chef' => $this->whenLoaded('chef', function () {
+                return new ChefResource($this->chef);
+            }),
+            'category' => $this->whenLoaded('category', function () {
                 return [
-                    'size' => $size->size,
-                    'price' => $size->price
+                    'id' => $this->category->id ?? null,
+                    'name' => $this->category->name ?? null,
+                    'image' => $this->category->image ?? null,
+                    'meal_type' => $this->category->meal_type ?? null,
+                    'description' => $this->category->description ?? null,
                 ];
             }),
-
-
+            'created_at' => $this->created_at?->format('F j, Y, g:i A'),
+            'created_at' => $this->created_at?->format('F j, Y, g:i A'),
         ];
     }
 }
