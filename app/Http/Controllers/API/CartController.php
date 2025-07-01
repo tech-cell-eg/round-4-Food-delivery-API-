@@ -95,13 +95,13 @@ class CartController extends Controller
             $size = DishSize::where('dish_id', $dish->id)
                 ->where('name', $request->size)
                 ->first();
-            
+
             if (!$size) {
                 return response()->json([
                     'message' => 'حجم الطبق غير متاح'
                 ], 422);
             }
-            
+
             $sizeId = $size->id;
         }
 
