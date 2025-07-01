@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Cart extends Model
+class Order extends Model
 {
     use HasFactory;
 
@@ -16,12 +16,17 @@ class Cart extends Model
      */
     protected $fillable = [
         'user_id',
+        'address_id',
+        'subtotal',
+        'discount',
+        'total',
         'status',
+        'notes',
         'coupon_id',
     ];
 
     /**
-     * العلاقة مع المستخدم الذي يملك السلة
+     * العلاقة مع المستخدم
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -31,17 +36,27 @@ class Cart extends Model
     }
 
     /**
-     * العلاقة مع عناصر السلة
+     * العلاقة مع العنوان
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
+    }
+
+    /**
+     * العلاقة مع عناصر الطلب
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function items()
     {
-        return $this->hasMany(CartItem::class);
+        return $this->hasMany(OrderItem::class);
     }
 
     /**
-     * العلاقة مع كوبون الخصم
+     * العلاقة مع الكوبون
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -51,18 +66,12 @@ class Cart extends Model
     }
 
     /**
-     * حساب المجموع الكلي للسلة
+     * العلاقة مع الدفع
      *
-     * @return float
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function getTotalPrice()
+    public function payment()
     {
-        return $this->items->sum(function ($item) {
-            $price = $item->dish->base_price;
-            if ($item->size) {
-                $price *= $item->size->price_multiplier;
-            }
-            return $price * $item->quantity;
-        });
+        return $this->hasOne(Payment::class);
     }
 }
