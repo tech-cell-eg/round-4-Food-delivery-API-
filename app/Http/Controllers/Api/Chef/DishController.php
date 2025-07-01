@@ -20,8 +20,8 @@ class DishController extends Controller
     public function store(StoreNewDish $request)
     {
         try {
-            // $chef = $this->findChef(Auth::id());
-            $chef = Chef::first();
+            $chef = $this->findChef(Auth::id());
+
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found. Please create your chef profile first.");
             }
@@ -79,8 +79,7 @@ class DishController extends Controller
     public function index()
     {
         try {
-            // $chef = $this->findChef(Auth::id());
-            $chef = Chef::first();
+            $chef = $this->findChef(Auth::id());
 
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found.");
@@ -109,8 +108,7 @@ class DishController extends Controller
     public function show($id)
     {
         try {
-            // $chef = $this->findChef(Auth::id());
-            $chef = Chef::first();
+            $chef = $this->findChef(Auth::id());
 
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found.");
