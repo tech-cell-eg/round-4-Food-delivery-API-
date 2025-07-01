@@ -70,7 +70,7 @@ class DishController extends Controller
      */
     public function show($id)
     {
-        $dish = Dish::with(['chef', 'category', 'sizes', 'ingredients', 'reviews.customer'])
+        $dish = Dish::with(['chef', 'category', 'sizes', 'ingredients'])
             ->findOrFail($id);
 
         return response()->json([

@@ -17,9 +17,12 @@ class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'dish_id',
-        'size_id',
+        'size',
+        'price',
         'quantity',
+        'notes',
     ];
+
 
     /**
      * العلاقة مع سلة التسوق

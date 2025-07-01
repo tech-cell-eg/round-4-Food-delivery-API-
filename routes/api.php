@@ -37,7 +37,7 @@ Route::delete('/dishes/{id}', [DishController::class, 'destroy']); // حذف ط�
 Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);
 Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
-Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+Route::delete('/cart/items', [CartController::class, 'removeItem']);
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 

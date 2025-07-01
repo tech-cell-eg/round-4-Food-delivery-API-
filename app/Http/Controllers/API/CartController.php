@@ -72,9 +72,12 @@ class CartController extends Controller
     public function addItem(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'customer_id' => 'required|exists:users,id',
             'dish_id' => 'required|exists:dishes,id',
             'size' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string',
+            'price' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -90,10 +93,10 @@ class CartController extends Controller
         }
 
         // التحقق من حجم الطبق إذا تم تحديده
-        $sizeId = null;
+        $size = null;
         if ($request->has('size') && $request->size) {
             $size = DishSize::where('dish_id', $dish->id)
-                ->where('name', $request->size)
+                ->where('size', $request->size)
                 ->first();
 
             if (!$size) {
@@ -102,30 +105,34 @@ class CartController extends Controller
                 ], 422);
             }
 
-            $sizeId = $size->id;
+            $size = $size->size;
         }
 
         // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
-        $cart = $this->getOrCreateCart($request->user()->id);
+        $cart = $this->getOrCreateCart($request->customer_id);
 
         // التحقق مما إذا كان العنصر موجوداً بالفعل في السلة
         $existingItem = CartItem::where('cart_id', $cart->id)
             ->where('dish_id', $dish->id)
-            ->where('size_id', $sizeId)
+            ->where('size', $size)
             ->first();
 
         if ($existingItem) {
             // تحديث الكمية إذا كان العنصر موجوداً بالفعل
             $existingItem->quantity += $request->quantity;
-            $existingItem->save();
+            $existingItem->price = $request->price;
+            $existingItem->notes = $request->notes;
+            $existingItem->update();
             $cartItem = $existingItem;
         } else {
             // إنشاء عنصر جديد إذا لم يكن موجوداً
             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
                 'dish_id' => $dish->id,
-                'size_id' => $sizeId,
+                'size' => $size,
+                'price' => $dish->base_price ?? $request->price,
                 'quantity' => $request->quantity,
+                'notes' => $request->notes,
             ]);
         }
 
@@ -144,29 +151,21 @@ class CartController extends Controller
      */
     public function updateItem(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'quantity' => 'required|integer|min:1',
+            'price' => 'required|decimal:2',
+            'notes' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        // التحقق من وجود العنصر فى قاعدة البيانات
+        $cartItem = CartItem::findOrFail($id);
 
-        // التحقق من وجود العنصر في سلة التسوق
-        $cartItem = CartItem::where('id', $id)
-            ->where('cart_id', $cart->id)
-            ->firstOrFail();
-
-        // تحديث الكمية
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
+        $cartItem->update($validated);
 
         return response()->json([
             'data' => $cartItem->load(['dish', 'size']),
-            'message' => 'تم تحديث الكمية بنجاح',
+            'message' => 'تم تحديث الطلب بنجاح',
         ]);
     }
 
@@ -177,15 +176,16 @@ class CartController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function removeItem(Request $request, $id)
+    public function removeItem(Request $request)
     {
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
 
-        // التحقق من وجود العنصر في سلة التسوق
-        $cartItem = CartItem::where('id', $id)
-            ->where('cart_id', $cart->id)
-            ->firstOrFail();
+        // التحقق من وجود العنصر في قاعدة البيانات
+        $cartItem = CartItem::find($request->id);
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'العنصر غير موجود'
+            ], 422);
+        }
 
         // حذف العنصر
         $cartItem->delete();
@@ -204,8 +204,11 @@ class CartController extends Controller
     public function applyCoupon(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
             'code' => 'required|string',
         ]);
+
+
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
@@ -223,7 +226,7 @@ class CartController extends Controller
         }
 
         // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        $cart = $this->getOrCreateCart($request->user_id);
 
         // تطبيق الكوبون على السلة
         $cart->coupon_id = $coupon->id;
@@ -266,14 +269,14 @@ class CartController extends Controller
      */
     private function getOrCreateCart($userId)
     {
-        $cart = Cart::where('user_id', $userId)
-            ->where('status', 'active')
+        $cart = Cart::where('customer_id', $userId)
+            ->where('status', true)
             ->first();
 
         if (!$cart) {
             $cart = Cart::create([
-                'user_id' => $userId,
-                'status' => 'active',
+                'customer_id' => $userId,
+                'status' => true,
             ]);
         }
 

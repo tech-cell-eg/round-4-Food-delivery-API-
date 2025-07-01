@@ -87,8 +87,11 @@ Authorization: Bearer {token}
 
 {
 "dish_id": 1,
+
+"customer_id": 1,
 "quantity": 2,
-"size_id": 3,
+"size": "small",
+"price": 45.00,
 "notes": "بدون بصل، إضافة جبنة إضافية"
 }
 
@@ -114,19 +117,21 @@ Authorization: Bearer {token}
 },
 "size": {
 "id": 3,
-"name": "كبيرة",
+"size": "small",
 "price_multiplier": 1.3
 }
 }
 }
 
-### 2.2 تحديث كمية صنف في السلة
+### 2.2 تحديث كمية أو سعر أو ملاحظات صنف في السلة
 
 PUT /api/cart/items/15
 Content-Type: application/json
 Authorization: Bearer {token}
 {
-"quantity": 3
+"quantity": 3,
+"price": 50.00,
+"notes": "بدون بصل، إضافة جبنة إضافية"
 }
 
 ### 2.3 حذف صنف من السلة

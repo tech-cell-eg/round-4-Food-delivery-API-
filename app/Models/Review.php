@@ -24,7 +24,6 @@ class Review extends Model
     protected $fillable = [
         'customer_id',
         'chef_id',
-        'dish_id',
         'rating',
         'comment',
     ];
