@@ -24,7 +24,6 @@ class DishSize extends Model
     protected $fillable = [
         'dish_id',
         'name',
-        'price_multiplier',
     ];
 
     /**
