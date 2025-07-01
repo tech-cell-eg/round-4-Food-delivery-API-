@@ -27,17 +27,46 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'phone' => '+2010' . fake()->numerify('#######'),
+            'profile_image' => fake()->imageUrl(300, 300, 'people'),
+            'bio' => fake()->paragraph(),
+            'password' => Hash::make('password'),
+
         ];
     }
+    public function chef()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => 'chef',
+                'bio' => $this->faker->paragraph() . ' Professional chef specializing in ' .
+                    $this->faker->randomElement(['Italian', 'Mediterranean', 'Middle Eastern', 'Asian', 'French']) . ' cuisine.',
+            ];
+        });
+    }
 
+    public function customer()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => 'customer',
+                'bio' => $this->faker->randomElement([
+                    'Food enthusiast exploring new cuisines',
+                    'Home cook looking to improve skills',
+                    'Busy professional who appreciates quality meals',
+                    'Health-conscious eater',
+                    'Parent cooking for family',
+                    'Student learning to cook',
+                ]),
+            ];
+        });
+    }
     /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

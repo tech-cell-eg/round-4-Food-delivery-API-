@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Review;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +22,8 @@ class DatabaseSeeder extends Seeder
             DishSizeSeeder::class,      // Create dish sizes (depends on dishes)
             DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
             CouponSeeder::class,        // Create coupons (depends on chefs)
+            ReviewSeeder::class,
+            CustomerSeeder::class
         ]);
     }
 }

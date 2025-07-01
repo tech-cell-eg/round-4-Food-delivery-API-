@@ -2,26 +2,33 @@
 
 namespace Database\Seeders;
 
+use App\Models\Review;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+class ReviewSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        User::factory()
+
+        Review::factory()
             ->count(10)
-            ->chef()
+            ->positive()
             ->create();
 
-        User::factory()
-            ->count(10)
-            ->customer()
+
+        Review::factory()
+            ->count(5)
+            ->negative()
+            ->create();
+
+
+        Review::factory()
+            ->count(3)
+            ->rating(1)
             ->create();
     }
 }
