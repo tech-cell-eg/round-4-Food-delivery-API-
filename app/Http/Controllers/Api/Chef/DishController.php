@@ -21,7 +21,7 @@ class DishController extends Controller
     {
         try {
             // $chef = $this->findChef(Auth::id());
-            $chef = chef::first();
+            $chef = Chef::first();
 
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found. Please create your chef profile first.");
@@ -81,7 +81,7 @@ class DishController extends Controller
     {
         try {
             // $chef = $this->findChef(Auth::id());
-            $chef = chef::first();
+            $chef = Chef::first();
             
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found.");
@@ -111,7 +111,7 @@ class DishController extends Controller
     {
         try {
             // $chef = $this->findChef(Auth::id());
-            $chef = chef::first();
+            $chef = Chef::first();
             
             if (!$chef) {
                 return ApiResponse::notFound("Chef profile not found.");
