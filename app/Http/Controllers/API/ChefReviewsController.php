@@ -1,12 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use App\Helpers\ApiResponse;
 
 use App\Http\Resources\ReviewResource;
 use App\Models\Chef;
 
 
-class ReviewController extends Controller
+class ChefReviewsController extends Controller
 {
 
     public function  index($chefId)
@@ -17,8 +20,7 @@ class ReviewController extends Controller
             ->with(['customerWithUser'])
             ->orderBy('created_at', 'desc')
             ->get();
-
-        return response()->json([
+        return ApiResponse::success([
             'chef_id' => $chef->id,
             'total_reviews' => $chef->reviews()->count(),
             'reviews' => ReviewResource::collection($reviews),
