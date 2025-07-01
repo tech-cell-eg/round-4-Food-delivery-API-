@@ -4,14 +4,11 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
-use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\API\DishController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
@@ -53,10 +50,6 @@ Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('/user', [AuthController::class, 'user']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
-// إدارة الأطباق (للطهاة)
-Route::post('/dishes', [DishController::class, 'store']); // إضافة طبق جديد
-Route::put('/dishes/{id}', [DishController::class, 'update']); // تحديث طبق موجود
-Route::delete('/dishes/{id}', [DishController::class, 'destroy']); // حذف طبق
 
 // سلة التسوق
 Route::get('/cart', [CartController::class, 'index']);
@@ -85,4 +78,3 @@ Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
-
