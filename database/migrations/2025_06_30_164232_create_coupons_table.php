@@ -18,8 +18,7 @@ return new class extends Migration
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 10, 2);
             $table->text('description')->nullable();
-            $table->timestamp('expiry_date');
-            $table->boolean('is_active')->default(true);
+            $table->timestamp('expires_at');
             $table->timestamps();
         });
     }

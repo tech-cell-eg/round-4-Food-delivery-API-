@@ -11,6 +11,16 @@ use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
+use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
+
+
+
+
+Route::controller(ChefOrderController::class)->/*middleware('auth:sanctum')->*/prefix('chef/orders')->group(function () {
+    Route::get('/running', 'runningOrders');
+    Route::patch('/{orderId}/done', 'markAsDone');
+    Route::patch('/{orderId}/cancel', 'cancelOrder');
+});
 
 
 Route::get('categories', [CategoryController::class, "index"]);
@@ -77,4 +87,3 @@ Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
-
