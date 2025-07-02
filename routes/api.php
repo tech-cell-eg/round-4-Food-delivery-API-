@@ -54,6 +54,7 @@ Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);
 Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
 Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+Route::post('/cart/clear', [CartController::class, 'clearCart']);
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 

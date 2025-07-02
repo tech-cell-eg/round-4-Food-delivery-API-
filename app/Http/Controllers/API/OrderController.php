@@ -19,7 +19,8 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $customerId = Auth::user()->customer->id;
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
         $orders = Order::with(['orderItems', 'payments'])
             ->where('customer_id', $customerId)
             ->orderBy('created_at', 'desc')
@@ -36,7 +37,8 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $customerId = Auth::user()->customer->id;
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
         $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
             ->where('customer_id', $customerId)
             ->where('id', $id)
@@ -60,12 +62,13 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $customerId = Auth::user()->customer->id;
-        $cart = Cart::with(['cartItems.dish'])
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
             ->first();
 
-        if (!$cart || $cart->cartItems->isEmpty()) {
+        if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'سلة التسوق فارغة'
@@ -75,9 +78,7 @@ class OrderController extends Controller
         DB::beginTransaction();
         try {
             // حساب المجموع الفرعي
-            $subtotal = $cart->cartItems->sum(function ($item) {
-                return $item->price * $item->quantity;
-            });
+            $subtotal = $cart->items->sum('price');
 
             // تطبيق الكوبون إذا كان موجودًا
             $discount = 0;
@@ -118,20 +119,20 @@ class OrderController extends Controller
             ]);
 
             // إنشاء عناصر الطلب
-            foreach ($cart->cartItems as $cartItem) {
-                $dish = $cartItem->dish;
-                $dishSize = \App\Models\DishSize::where('dish_id', $cartItem->product_id)
-                    ->where('price', $cartItem->price)
+            foreach ($cart->items as $item) {
+                $dish = $item->dish;
+                $dishSize = \App\Models\DishSize::where('dish_id', $item->product_id)
+                    ->where('price', $item->price)
                     ->first();
 
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'dish_id' => $cartItem->product_id,
+                    'dish_id' => $item->dish_id,
                     'dish_name' => $dish->name,
-                    'size' => $dishSize ? $dishSize->size : null,
-                    'quantity' => $cartItem->quantity,
-                    'unit_price' => $cartItem->price,
-                    'total_price' => $cartItem->price * $cartItem->quantity,
+                    'size_name' => $item->size_name,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->price,
+                    'total_price' => $item->price * $item->quantity,
                 ]);
             }
 
