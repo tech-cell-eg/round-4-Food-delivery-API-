@@ -10,6 +10,7 @@ use App\Models\Dish;
 use App\Models\DishSize;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
@@ -86,7 +87,7 @@ class CartController extends Controller
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|exists:users,id',
             'dish_id' => 'required|exists:dishes,id',
-            'size' => 'nullable|string',
+            'size' => 'required|string',
             'quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string',
             'price' => 'required|numeric',
@@ -97,15 +98,15 @@ class CartController extends Controller
         }
 
         // التحقق من وجود الطبق وأنه متاح
-        $dish = Dish::findOrFail($request->dish_id);
-        if (!$dish->is_available) {
+        $dish = Dish::find($request->dish_id);
+        if (!$dish) {
             return response()->json([
                 'message' => 'هذا الطبق غير متاح حالياً'
             ], 422);
         }
 
         // التحقق من حجم الطبق إذا تم تحديده
-        $size = $request->size ?? 'small';
+        $dishSize = DishSize::where(['dish_id' => $dish->id, 'name' => $request->size])->first();
 
 
         // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
@@ -114,26 +115,26 @@ class CartController extends Controller
         // التحقق مما إذا كان العنصر موجوداً بالفعل في السلة
         $existingItem = CartItem::where('cart_id', $cart->id)
             ->where('dish_id', $dish->id)
-            ->where('size', $size)
+            ->where('size', $dishSize->name)
             ->first();
 
         if ($existingItem) {
             // تحديث الكمية إذا كان العنصر موجوداً بالفعل
-            $existingItem->quantity += $request->quantity;
-            $existingItem->price = $request->price;
-            $existingItem->notes = $request->notes;
-            $existingItem->size = $size;
+            $existingItem->quantity     += $request->quantity;
+            $existingItem->price        = $request->price;
+            $existingItem->notes        = $request->notes;
+            $existingItem->size         = $dishSize->name;
             $existingItem->update();
-            $cartItem = $existingItem;
+            $cartItem                   = $existingItem;
         } else {
             // إنشاء عنصر جديد إذا لم يكن موجوداً
             $cartItem = CartItem::create([
-                'cart_id' => $cart->id,
-                'dish_id' => $dish->id,
-                'size' => $request->size ?? 'medium',
-                'price' => $request->price ?? $dish->base_price,
-                'quantity' => $request->quantity ?? 1,
-                'notes' => $request->notes ?? 'لا يوجد ملاحظات',
+                'cart_id'   => $cart->id,
+                'dish_id'   => $dish->id,
+                'size'      => $dishSize->name,
+                'price'     => $request->price ?? $dish->base_price,
+                'quantity'  => $request->quantity ?? 1,
+                'notes'     => $request->notes ?? 'لا يوجد ملاحظات',
             ]);
         }
 
