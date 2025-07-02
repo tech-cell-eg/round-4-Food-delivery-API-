@@ -76,4 +76,10 @@ class Review extends Model
     {
         return $this->belongsTo(Order::class);
     }
+    public function customerWithUser()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id')
+            ->select('id')
+            ->with('user:id,name,profile_image');
+    }
 }
