@@ -50,7 +50,7 @@ class OtpLoginController extends Controller
             ->where('otp', $request->otp)
             ->first();
 
-        if (!$record || $record->expires_at->isPast()) {
+        if (!$record ||  Carbon::parse($record->expires_at)->isPast()) {
             return ApiResponse::error('Invalid or expired OTP');
         }
 
