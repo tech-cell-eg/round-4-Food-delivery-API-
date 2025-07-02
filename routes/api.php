@@ -1,14 +1,38 @@
 <?php
 
+
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+
+use App\Http\Controllers\Api\Chef\ChefController;
+use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\API\DishController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
+
+
+Route::get('categories', [CategoryController::class, "index"]);
+Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
+Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
+
+Route::controller(ChefController::class)->group(function () {
+    Route::get('/open-resturants', 'getOpenChefs')->name("getOpenChefs");
+    Route::get('/resturants/{id}', 'showChefWithCategoriesAndMeals')->name("showChefWithCategoriesAndMeals");
+    
+});
+
+
+Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->middleware("auth:sanctum")*/->group(function () {
+    Route::get('/', 'index')->name("index");
+    Route::get('/{id}', 'show')->name("show");
+    Route::post('/', 'store')->name("store");
+
+});
 
 // مسارات المصادقة
 Route::post('/register', [AuthController::class, 'register']);
@@ -17,8 +41,6 @@ Route::post('/login', [AuthController::class, 'login']);
 // مسارات عامة لا تتطلب مصادقة
 Route::get('/categories', [CategoryController::class, 'index']); // عرض جميع الأقسام
 Route::get('/categories/{id}', [CategoryController::class, 'show']); // عرض قسم معين
-Route::get('/dishes', [DishController::class, 'index']); // عرض جميع الأطباق
-Route::get('/dishes/{id}', [DishController::class, 'show']); // عرض طبق معين
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']); // عرض مراجعات طبق معين
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']); // عرض مراجعات طاهي معين
 
@@ -28,10 +50,6 @@ Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('/user', [AuthController::class, 'user']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
-// إدارة الأطباق (للطهاة)
-Route::post('/dishes', [DishController::class, 'store']); // إضافة طبق جديد
-Route::put('/dishes/{id}', [DishController::class, 'update']); // تحديث طبق موجود
-Route::delete('/dishes/{id}', [DishController::class, 'destroy']); // حذف طبق
 
 // سلة التسوق
 Route::get('/cart', [CartController::class, 'index']);
