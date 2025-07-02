@@ -1,9 +1,7 @@
 <?php
 
-
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\API\ChefReviewsController;
+use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
@@ -77,3 +75,6 @@ Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+
+Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
+

@@ -1,25 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
-use App\ApiResponses;
+use App\Http\Controllers\Controller;
+use App\Helpers\ApiResponse;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\DishResource;
 use App\Models\Category;
 use App\Models\Dish;
 
-use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    use ApiResponses;
+
     public function index()
     {
         $categories =  Category::all();
-        return $this->successResponse(
-            CategoryResource::collection($categories),
-            'Categories retrieved successfully'
-        );
+        return
+            ApiResponse::success(
+                CategoryResource::collection($categories)
+            );
     }
     public function mealTypes()
     {
@@ -28,7 +28,7 @@ class CategoryController extends Controller
             ->orderBy('meal_type')
             ->pluck('meal_type');
 
-        return $this->successResponse($mealTypes);
+        return ApiResponse::success($mealTypes);
     }
     public function getDishesByCategory($categoryId)
     {
@@ -36,10 +36,9 @@ class CategoryController extends Controller
         $category = Category::with('dishes.sizes')->find($categoryId);
 
         if (!$category) {
-            return $this->errorResponse('category not found');
+            return ApiResponse::error("'category not found'");
         }
-
-        return $this->successResponse([
+        return ApiResponse::success([
             'category' => new CategoryResource($category),
             'dishes' => DishResource::collection($category->dishes)
         ]);
@@ -51,7 +50,6 @@ class CategoryController extends Controller
                 $query->where('meal_type', $mealType);
             })
             ->get();
-
-        return $this->successResponse(DishResource::collection($dishes), "dishes retrived successfully");
+        return ApiResponse::success(DishResource::collection($dishes));
     }
 }
