@@ -14,6 +14,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        User::factory()
+            ->count(10)
+            ->chef()
+            ->create();
+        User::factory()
+            ->count(10)
+            ->customer()
+            ->create();
         $chefUsers = [
             [
                 'name' => 'Tiba Grill',
@@ -150,7 +158,6 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         ];
-
         foreach ($chefUsers as $userData) {
             User::create($userData);
         }
