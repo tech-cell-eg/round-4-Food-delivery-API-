@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,14 +11,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // تشغيل البذور بالترتيب الصحيح
+        // Run seeders in the correct order to maintain foreign key relationships
         $this->call([
-            UsersTableSeeder::class,
-            ChefsTableSeeder::class,
-            CategoriesTableSeeder::class,
-            AddressesTableSeeder::class,
-            DishesTableSeeder::class,
-            CouponsTableSeeder::class,
+            UserSeeder::class,          // Create users first (for chefs)
+            CategorySeeder::class,      // Create categories
+            IngredientSeeder::class,    // Create ingredients
+            ChefSeeder::class,          // Create chef profiles (depends on users)
+            CustomerSeeder::class,      // Create customers (depends on users)
+            DishSeeder::class,          // Create dishes (depends on chefs and categories)
+            DishSizeSeeder::class,      // Create dish sizes (depends on dishes)
+            DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
+            CouponSeeder::class,        // Create coupons (depends on chefs)
+            ReviewsTableSeeder::class,  // Create reviews (depends on users and dishes)
         ]);
     }
 }

@@ -9,20 +9,31 @@ class Cart extends Model
 {
     use HasFactory;
 
+    /**
+     * الحقول القابلة للتعبئة الجماعية
+     *
+     * @var array
+     */
     protected $fillable = [
-        'customer_id',
+        'user_id',
+        'status',
+        'coupon_id',
     ];
 
     /**
-     * Get the customer that owns the cart.
+     * العلاقة مع المستخدم الذي يملك السلة
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function customer()
+    public function user()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * Get the cart items for the cart.
+     * العلاقة مع عناصر السلة
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function items()
     {
@@ -30,12 +41,28 @@ class Cart extends Model
     }
 
     /**
-     * Get the total price of the cart.
+     * العلاقة مع كوبون الخصم
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    /**
+     * حساب المجموع الكلي للسلة
+     *
+     * @return float
      */
     public function getTotalPrice()
     {
         return $this->items->sum(function ($item) {
-            return $item->price * $item->quantity;
+            $price = $item->dish->base_price;
+            if ($item->size) {
+                $price *= $item->size->price_multiplier;
+            }
+            return $price * $item->quantity;
         });
     }
 }

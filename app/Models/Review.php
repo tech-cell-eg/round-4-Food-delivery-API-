@@ -9,8 +9,18 @@ class Review extends Model
 {
     use HasFactory;
 
+    /**
+     * إيقاف الطوابع الزمنية الافتراضية
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * الحقول القابلة للتعبئة الجماعية
+     *
+     * @var array
+     */
     protected $fillable = [
         'customer_id',
         'chef_id',
@@ -19,23 +29,52 @@ class Review extends Model
         'comment',
     ];
 
+    /**
+     * الحقول التي يجب معاملتها كتواريخ
+     *
+     * @var array
+     */
     protected $casts = [
         'created_at' => 'datetime',
     ];
 
     /**
-     * Get the customer that owns the review.
+     * العلاقة مع المستخدم (العميل) الذي كتب المراجعة
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class, 'customer_id');
     }
 
     /**
-     * Get the chef that is being reviewed.
+     * العلاقة مع الطاهي الذي تمت مراجعته
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function chef()
     {
-        return $this->belongsTo(Chef::class);
+        return $this->belongsTo(User::class, 'chef_id');
+    }
+
+    /**
+     * العلاقة مع الطبق الذي تمت مراجعته
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function dish()
+    {
+        return $this->belongsTo(Dish::class);
+    }
+
+    /**
+     * العلاقة مع الطلب الذي تمت مراجعته
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }

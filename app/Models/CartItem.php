@@ -9,19 +9,22 @@ class CartItem extends Model
 {
     use HasFactory;
 
+    /**
+     * الحقول القابلة للتعبئة الجماعية
+     *
+     * @var array
+     */
     protected $fillable = [
         'cart_id',
-        'product_id',
+        'dish_id',
+        'size_id',
         'quantity',
-        'price',
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
     ];
 
     /**
-     * Get the cart that owns the item.
+     * العلاقة مع سلة التسوق
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function cart()
     {
@@ -29,18 +32,36 @@ class CartItem extends Model
     }
 
     /**
-     * Get the dish (product) for the cart item.
+     * العلاقة مع الطبق
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function dish()
     {
-        return $this->belongsTo(Dish::class, 'product_id');
+        return $this->belongsTo(Dish::class);
     }
 
     /**
-     * Get the total price for this cart item.
+     * العلاقة مع حجم الطبق
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function size()
+    {
+        return $this->belongsTo(DishSize::class, 'size_id');
+    }
+
+    /**
+     * حساب السعر الإجمالي لعنصر السلة
+     *
+     * @return float
      */
     public function getTotalPrice()
     {
-        return $this->price * $this->quantity;
+        $price = $this->dish->base_price;
+        if ($this->size) {
+            $price *= $this->size->price_multiplier;
+        }
+        return $price * $this->quantity;
     }
 }

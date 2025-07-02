@@ -19,8 +19,8 @@ class CartController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $cart = Cart::with(['cartItems.dish.dishSizes'])
-                    ->where('customer_id', $customerId)
-                    ->first();
+            ->where('customer_id', $customerId)
+            ->first();
 
         if (!$cart) {
             return response()->json([
@@ -57,37 +57,37 @@ class CartController extends Controller
         ]);
 
         $customerId = Auth::user()->customer->id;
-        
+
         // التحقق من وجود سلة تسوق للعميل
         $cart = Cart::firstOrCreate(['customer_id' => $customerId]);
-        
+
         // التحقق من وجود الطبق والحجم المطلوب
         $dish = Dish::findOrFail($request->dish_id);
-        
+
         if (!$dish->is_available) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'هذا الطبق غير متوفر حالياً'
             ], 400);
         }
-        
+
         // الحصول على سعر الطبق حسب الحجم
         $dishSize = DishSize::where('dish_id', $request->dish_id)
-                            ->where('size', $request->size)
-                            ->first();
-        
+            ->where('size', $request->size)
+            ->first();
+
         if (!$dishSize) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'حجم الطبق غير متوفر'
             ], 400);
         }
-        
+
         // التحقق مما إذا كان العنصر موجودًا بالفعل في السلة
         $cartItem = CartItem::where('cart_id', $cart->id)
-                            ->where('product_id', $request->dish_id)
-                            ->first();
-        
+            ->where('product_id', $request->dish_id)
+            ->first();
+
         if ($cartItem) {
             // تحديث الكمية إذا كان العنصر موجودًا بالفعل
             $cartItem->quantity += $request->quantity;
@@ -102,7 +102,7 @@ class CartController extends Controller
             ]);
             $cartItem->save();
         }
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'تمت إضافة العنصر إلى سلة التسوق',
@@ -121,28 +121,28 @@ class CartController extends Controller
 
         $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
-        
+
         if (!$cart) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'سلة التسوق غير موجودة'
             ], 404);
         }
-        
+
         $cartItem = CartItem::where('cart_id', $cart->id)
-                            ->where('id', $id)
-                            ->first();
-        
+            ->where('id', $id)
+            ->first();
+
         if (!$cartItem) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'العنصر غير موجود في سلة التسوق'
             ], 404);
         }
-        
+
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'تم تحديث كمية العنصر',
@@ -157,27 +157,27 @@ class CartController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
-        
+
         if (!$cart) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'سلة التسوق غير موجودة'
             ], 404);
         }
-        
+
         $cartItem = CartItem::where('cart_id', $cart->id)
-                            ->where('id', $id)
-                            ->first();
-        
+            ->where('id', $id)
+            ->first();
+
         if (!$cartItem) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'العنصر غير موجود في سلة التسوق'
             ], 404);
         }
-        
+
         $cartItem->delete();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'تم حذف العنصر من سلة التسوق'
@@ -191,11 +191,11 @@ class CartController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
-        
+
         if ($cart) {
             CartItem::where('cart_id', $cart->id)->delete();
         }
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'تم تفريغ سلة التسوق'

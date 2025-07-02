@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('coupons', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->foreignId('chef_id')->constrained('chefs')->onDelete('cascade');
+            $table->unsignedBigInteger('chef_id');
             $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 10, 2);
             $table->text('description')->nullable();

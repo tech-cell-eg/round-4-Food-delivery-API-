@@ -9,6 +9,9 @@ class Chef extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
         'national_id',
@@ -55,4 +58,10 @@ class Chef extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function isVerified()
+    {
+        return (bool) $this->is_verified;
+    }
+
 }

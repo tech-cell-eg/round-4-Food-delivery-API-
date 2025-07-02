@@ -21,9 +21,9 @@ class OrderController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $orders = Order::with(['orderItems', 'payments'])
-                      ->where('customer_id', $customerId)
-                      ->orderBy('created_at', 'desc')
-                      ->paginate(10);
+            ->where('customer_id', $customerId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return response()->json([
             'status' => 'success',
@@ -38,9 +38,9 @@ class OrderController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
-                     ->where('customer_id', $customerId)
-                     ->where('id', $id)
-                     ->firstOrFail();
+            ->where('customer_id', $customerId)
+            ->where('id', $id)
+            ->firstOrFail();
 
         return response()->json([
             'status' => 'success',
@@ -62,8 +62,8 @@ class OrderController extends Controller
 
         $customerId = Auth::user()->customer->id;
         $cart = Cart::with(['cartItems.dish'])
-                    ->where('customer_id', $customerId)
-                    ->first();
+            ->where('customer_id', $customerId)
+            ->first();
 
         if (!$cart || $cart->cartItems->isEmpty()) {
             return response()->json([
@@ -84,14 +84,14 @@ class OrderController extends Controller
             $couponId = null;
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
                 $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
-                                           ->where('is_active', true)
-                                           ->where('expiry_date', '>=', now())
-                                           ->first();
-                
+                    ->where('is_active', true)
+                    ->where('expiry_date', '>=', now())
+                    ->first();
+
                 if ($coupon) {
-                    $discount = $coupon->discount_type === 'percentage' 
-                                ? ($subtotal * $coupon->discount_value / 100) 
-                                : $coupon->discount_value;
+                    $discount = $coupon->discount_type === 'percentage'
+                        ? ($subtotal * $coupon->discount_value / 100)
+                        : $coupon->discount_value;
                     $couponId = $coupon->id;
                 }
             }
@@ -121,9 +121,9 @@ class OrderController extends Controller
             foreach ($cart->cartItems as $cartItem) {
                 $dish = $cartItem->dish;
                 $dishSize = \App\Models\DishSize::where('dish_id', $cartItem->product_id)
-                                              ->where('price', $cartItem->price)
-                                              ->first();
-                
+                    ->where('price', $cartItem->price)
+                    ->first();
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'dish_id' => $cartItem->product_id,
@@ -173,9 +173,9 @@ class OrderController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $order = Order::where('customer_id', $customerId)
-                     ->where('id', $id)
-                     ->where('status', 'pending')
-                     ->first();
+            ->where('id', $id)
+            ->where('status', 'pending')
+            ->first();
 
         if (!$order) {
             return response()->json([

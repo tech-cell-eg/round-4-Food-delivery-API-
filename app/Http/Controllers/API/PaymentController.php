@@ -25,13 +25,13 @@ class PaymentController extends Controller
 
         $customerId = Auth::user()->customer->id;
         $order = Order::where('customer_id', $customerId)
-                     ->where('id', $request->order_id)
-                     ->firstOrFail();
+            ->where('id', $request->order_id)
+            ->firstOrFail();
 
         // التحقق من أن الطلب لم يتم دفعه بالفعل
         $existingPayment = Payment::where('order_id', $order->id)
-                                ->where('status', 'completed')
-                                ->first();
+            ->where('status', 'completed')
+            ->first();
 
         if ($existingPayment) {
             return response()->json([
@@ -42,7 +42,7 @@ class PaymentController extends Controller
 
         // في حالة وجود دفع معلق، نقوم بتحديثه
         $payment = Payment::where('order_id', $order->id)->first();
-        
+
         if (!$payment) {
             $payment = new Payment([
                 'order_id' => $order->id,
@@ -62,10 +62,10 @@ class PaymentController extends Controller
                     'card_number' => substr($request->card_number, -4), // نخزن فقط آخر 4 أرقام للأمان
                     'card_expiry' => $request->card_expiry,
                 ];
-                
+
                 // محاكاة عملية الدفع
                 $success = true; // يمكن تغييرها لمحاكاة نجاح أو فشل الدفع
-                
+
                 if ($success) {
                     $payment->status = 'completed';
                     $payment->transaction_id = 'TXN_' . uniqid();
@@ -78,16 +78,16 @@ class PaymentController extends Controller
                     ]);
                 }
                 break;
-                
+
             case 'cash_on_delivery':
                 $payment->status = 'pending';
                 $order->status = 'processing';
                 break;
-                
+
             case 'wallet':
                 // هنا يمكن إضافة التحقق من رصيد المحفظة
                 $walletBalance = 1000; // يجب استبدالها بالرصيد الفعلي
-                
+
                 if ($walletBalance >= $order->total) {
                     $payment->status = 'completed';
                     $payment->transaction_id = 'WALLET_' . uniqid();
@@ -132,8 +132,8 @@ class PaymentController extends Controller
     {
         $customerId = Auth::user()->customer->id;
         $order = Order::where('customer_id', $customerId)
-                     ->where('id', $orderId)
-                     ->firstOrFail();
+            ->where('id', $orderId)
+            ->firstOrFail();
 
         $payment = Payment::where('order_id', $order->id)->first();
 

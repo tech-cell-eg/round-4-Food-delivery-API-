@@ -73,6 +73,9 @@ class Dish extends Model
         return $this->hasMany(Favorite::class);
     }
 
+    /**
+     * Get the reviews for the dish.
+     */
     public function reviews()
     {
         return $this->hasMany(Review::class);
