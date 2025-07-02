@@ -1,13 +1,14 @@
 <?php
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\PasswordOtp;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Carbon;
 use App\Helpers\ApiResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class OtpLoginController extends Controller
 {
@@ -69,6 +70,28 @@ class OtpLoginController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
+    }
+     public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $record = PasswordOtp::where('email', $request->email)->where('otp', $request->otp)->first();
+
+        if (!$record || Carbon::parse($record->expires_at)->isPast()) {
+            return ApiResponse::error('Invalid or expired OTP');
+        }
+
+        $user = User::where('email', $request->email)->firstOrFail();
+        $user->update(['password' => Hash::make($request->password)]);
+
+        // Delete OTP after use
+        $record->delete();
+
+        return ApiResponse::success(null, 'Password reset successfully');
     }
 }
 

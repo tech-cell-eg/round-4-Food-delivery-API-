@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\OtpLoginController;
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
@@ -34,7 +35,6 @@ Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->mid
 
 });
 
-// مسارات المصادقة
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -45,10 +45,18 @@ Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews'])
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']); // عرض مراجعات طاهي معين
 
 // مسارات تتطلب مصادقة
+Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/user', [AuthController::class, 'user']);
+    });
+    
 
-// معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']);
-Route::post('/logout', [AuthController::class, 'logout']);
+Route::prefix('password')->group(function () {
+    Route::post('/send_otp', [OtpLoginController::class, 'sendOtp']);
+    Route::post('/login_otp', [OtpLoginController::class, 'loginWithOtp']);
+    Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
+});
+
 
 
 // سلة التسوق

@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\UserRequest;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Helpers\ApiResponse;
+
 
 class AuthController extends Controller
 {
+    use ApiResponse;
     public function register(UserRequest $request)
     {
         $user = User::create([
