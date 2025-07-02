@@ -22,14 +22,17 @@ class CartController extends Controller
     public function index(Request $request)
     {
         // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
-        $cart = $this->getOrCreateCart($request->user()->id);
+        $cart = $this->getOrCreateCart($request->customer_id);
 
         // تحميل العناصر والأطباق والأحجام
         $cart->load(['items.dish.chef', 'items.size']);
 
+        if (!$cart->items->isEmpty()) {
+            
         // حساب المجموع الكلي
         $subtotal = $cart->items->sum(function ($item) {
             $price = $item->dish->base_price;
+            
             if ($item->size) {
                 $price *= $item->size->price_multiplier;
             }
@@ -203,19 +206,13 @@ class CartController extends Controller
      */
     public function applyCoupon(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'code' => 'required|string',
         ]);
 
-
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
         // البحث عن الكوبون
-        $coupon = Coupon::where('code', $request->code)
+        $coupon = Coupon::where('code', $validated['code'])
             ->where('expires_at', '>', now())
             ->first();
 
@@ -229,8 +226,8 @@ class CartController extends Controller
         $cart = $this->getOrCreateCart($request->user_id);
 
         // تطبيق الكوبون على السلة
-        $cart->coupon_id = $coupon->id;
-        $cart->save();
+
+        $cart->update(['coupon_id' => $coupon->id]);
 
         // إعادة تحميل السلة مع العناصر والكوبون
         $cart->load(['items.dish.chef', 'items.size', 'coupon']);
@@ -250,11 +247,10 @@ class CartController extends Controller
     public function removeCoupon(Request $request)
     {
         // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        $cart = $this->getOrCreateCart($request->user_id);
 
         // إزالة الكوبون
-        $cart->coupon_id = null;
-        $cart->save();
+        $cart->update(['coupon_id' => null]);
 
         return response()->json([
             'message' => 'تم إزالة كوبون الخصم بنجاح',

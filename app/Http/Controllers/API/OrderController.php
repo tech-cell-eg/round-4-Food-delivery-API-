@@ -22,7 +22,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $orders = Order::where('user_id', $request->user()->id)
+        $orders = Order::where('customer_id', $request->user_id)
             ->with(['items.dish', 'address'])
             ->latest()
             ->paginate(10);
@@ -61,22 +61,25 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:users,id',
             'address_id' => 'required|exists:addresses,id',
             'notes' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // التحقق من أن العنوان ينتمي للمستخدم الحالي
+        $address = Address::where(['customer_id' => $validated['customer_id'], 'is_default' => true])
+            ->first();
+
+        if (!$address) {
+            return response()->json([
+                'message' => 'الرجاء اختيار عنوان صالح'
+            ], 422);
         }
 
-        // التحقق من أن العنوان ينتمي للمستخدم الحالي
-        $address = Address::where('id', $request->address_id)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
-
         // الحصول على سلة التسوق النشطة للمستخدم
-        $cart = Cart::where('user_id', $request->user()->id)
+        $cart = Cart::where('customer_id', $validated['customer_id'])
             ->where('status', 'active')
             ->with(['items.dish', 'items.size', 'coupon'])
             ->first();
@@ -117,7 +120,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'user_id' => $request->user()->id,
+                'customer_id' => $validated['customer_id'],
                 'address_id' => $address->id,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
@@ -145,8 +148,7 @@ class OrderController extends Controller
             }
 
             // تحديث حالة سلة التسوق
-            $cart->status = 'completed';
-            $cart->save();
+            $cart->update(['status' => 'completed']);
 
             DB::commit();
 
