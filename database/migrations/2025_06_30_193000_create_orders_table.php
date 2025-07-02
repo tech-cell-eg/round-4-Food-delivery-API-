@@ -11,20 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('address_id')->constrained('addresses')->onDelete('cascade');
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('delivery_fee', 10, 2)->default(0);
-            $table->decimal('tax', 10, 2)->default(0);
-            $table->decimal('discount', 10, 2)->default(0);
-            $table->decimal('total', 10, 2);
-            $table->foreignId('coupon_id')->nullable()->constrained('coupons')->onDelete('set null');
-            $table->enum('status', ['pending', 'processing', 'on_the_way', 'delivered', 'cancelled'])->default('pending');
-            $table->text('notes')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        Schema::table('orders', function (Blueprint $table) {
+            // إضافة أعمدة الدفع
+            $table->string('payment_status')
+                ->default('pending')
+                ->comment('pending, paid, failed, refunded');
+
+            $table->string('payment_method')
+                ->nullable()
+                ->comment('stripe, cash, etc.');
+
+            $table->string('transaction_id')
+                ->nullable()
+                ->comment('معرف المعاملة من بوابة الدفع');
+
+            $table->decimal('amount_paid', 10, 2)
+                ->default(0)
+                ->comment('المبلغ المدفوع');
+
+            $table->timestamp('paid_at')
+                ->nullable()
+                ->comment('تاريخ ووقت الدفع');
+
+            $table->text('payment_details')
+                ->nullable()
+                ->comment('تفاصيل الدفع (JSON)');
         });
     }
 
@@ -33,6 +44,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->dropColumn([
+                'payment_status',
+                'payment_method',
+                'transaction_id',
+                'amount_paid',
+                'paid_at',
+                'payment_details'
+            ]);
+        });
     }
 };
