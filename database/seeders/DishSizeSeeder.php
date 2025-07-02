@@ -25,17 +25,17 @@ class DishSizeSeeder extends Seeder
                 [
                     'dish_id' => $dish->id,
                     'size' => 'small',
-                    'price' => round($basePrice * 0.75, 2), // 75% of base price
+                    'price_multiplier' => rand(50, 99) / 100, // below 100% of base price
                 ],
                 [
                     'dish_id' => $dish->id,
                     'size' => 'medium',
-                    'price' => $basePrice, // Base price
+                    'price_multiplier' => 1, // Base price
                 ],
                 [
                     'dish_id' => $dish->id,
                     'size' => 'large',
-                    'price' => round($basePrice * 1.4, 2), // 140% of base price
+                    'price_multiplier' => rand(110, 199) / 100, // Up to 190% of base price
                 ]
             ];
 
@@ -51,84 +51,104 @@ class DishSizeSeeder extends Seeder
     private function getBasePriceForDish($dish)
     {
         $dishName = strtolower($dish->name);
-        
+
         // Fine dining dishes - higher prices
-        if (stripos($dishName, 'truffle') !== false || 
-            stripos($dishName, 'duck confit') !== false || 
-            stripos($dishName, 'beef tenderloin') !== false) {
+        if (
+            stripos($dishName, 'truffle') !== false ||
+            stripos($dishName, 'duck confit') !== false ||
+            stripos($dishName, 'beef tenderloin') !== false
+        ) {
             return rand(450, 650); // 450-650 EGP
         }
-        
+
         // Seafood dishes - premium pricing
-        if (stripos($dishName, 'seafood') !== false || 
-            stripos($dishName, 'salmon') !== false || 
+        if (
+            stripos($dishName, 'seafood') !== false ||
+            stripos($dishName, 'salmon') !== false ||
             stripos($dishName, 'fish') !== false ||
-            stripos($dishName, 'paella') !== false) {
+            stripos($dishName, 'paella') !== false
+        ) {
             return rand(250, 400); // 250-400 EGP
         }
-        
+
         // Italian pasta and pizza - moderate pricing
-        if (stripos($dishName, 'pasta') !== false || 
-            stripos($dishName, 'pizza') !== false || 
+        if (
+            stripos($dishName, 'pasta') !== false ||
+            stripos($dishName, 'pizza') !== false ||
             stripos($dishName, 'risotto') !== false ||
             stripos($dishName, 'carbonara') !== false ||
-            stripos($dishName, 'lasagna') !== false) {
+            stripos($dishName, 'lasagna') !== false
+        ) {
             return rand(150, 280); // 150-280 EGP
         }
-        
+
         // Grilled meat dishes - moderate to high pricing
-        if (stripos($dishName, 'grill') !== false || 
-            stripos($dishName, 'beef') !== false || 
+        if (
+            stripos($dishName, 'grill') !== false ||
+            stripos($dishName, 'beef') !== false ||
             stripos($dishName, 'lamb') !== false ||
-            stripos($dishName, 'burger') !== false) {
+            stripos($dishName, 'burger') !== false
+        ) {
             return rand(180, 320); // 180-320 EGP
         }
-        
+
         // Breakfast items - lower pricing
-        if (stripos($dishName, 'eggs') !== false || 
-            stripos($dishName, 'croissant') !== false || 
+        if (
+            stripos($dishName, 'eggs') !== false ||
+            stripos($dishName, 'croissant') !== false ||
             stripos($dishName, 'ful') !== false ||
-            stripos($dishName, 'acai') !== false) {
+            stripos($dishName, 'acai') !== false
+        ) {
             return rand(45, 120); // 45-120 EGP
         }
-        
+
         // Sandwiches and wraps - moderate pricing
-        if (stripos($dishName, 'sandwich') !== false || 
-            stripos($dishName, 'wrap') !== false || 
+        if (
+            stripos($dishName, 'sandwich') !== false ||
+            stripos($dishName, 'wrap') !== false ||
             stripos($dishName, 'shawarma') !== false ||
-            stripos($dishName, 'falafel') !== false) {
+            stripos($dishName, 'falafel') !== false
+        ) {
             return rand(80, 150); // 80-150 EGP
         }
-        
+
         // Salads and healthy options - moderate pricing
-        if (stripos($dishName, 'salad') !== false || 
-            stripos($dishName, 'quinoa') !== false || 
+        if (
+            stripos($dishName, 'salad') !== false ||
+            stripos($dishName, 'quinoa') !== false ||
             stripos($dishName, 'tabbouleh') !== false ||
-            stripos($dishName, 'healthy') !== false) {
+            stripos($dishName, 'healthy') !== false
+        ) {
             return rand(90, 180); // 90-180 EGP
         }
-        
+
         // Desserts - moderate pricing
-        if (stripos($dishName, 'cheesecake') !== false || 
-            stripos($dishName, 'fondant') !== false || 
-            stripos($dishName, 'baklava') !== false) {
+        if (
+            stripos($dishName, 'cheesecake') !== false ||
+            stripos($dishName, 'fondant') !== false ||
+            stripos($dishName, 'baklava') !== false
+        ) {
             return rand(70, 140); // 70-140 EGP
         }
-        
+
         // Asian cuisine - moderate pricing
-        if (stripos($dishName, 'teriyaki') !== false || 
-            stripos($dishName, 'curry') !== false || 
-            stripos($dishName, 'thai') !== false) {
+        if (
+            stripos($dishName, 'teriyaki') !== false ||
+            stripos($dishName, 'curry') !== false ||
+            stripos($dishName, 'thai') !== false
+        ) {
             return rand(120, 220); // 120-220 EGP
         }
-        
+
         // Traditional Egyptian dishes - affordable pricing
-        if (stripos($dishName, 'koshari') !== false || 
-            stripos($dishName, 'molokhia') !== false || 
-            stripos($dishName, 'mahshi') !== false) {
+        if (
+            stripos($dishName, 'koshari') !== false ||
+            stripos($dishName, 'molokhia') !== false ||
+            stripos($dishName, 'mahshi') !== false
+        ) {
             return rand(60, 140); // 60-140 EGP
         }
-        
+
         // Default pricing for other dishes
         return rand(100, 200); // 100-200 EGP
     }

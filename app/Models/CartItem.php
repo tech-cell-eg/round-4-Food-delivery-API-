@@ -51,7 +51,7 @@ class CartItem extends Model
      */
     public function size()
     {
-        return $this->belongsTo(DishSize::class, 'size_id');
+        return $this->belongsTo(DishSize::class, 'size');
     }
 
     /**

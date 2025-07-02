@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('dish_id')->constrained('dishes')->onDelete('cascade');
             $table->enum('size', ['small', 'medium', 'large']);
-            $table->decimal('price', 10, 2);
+            $table->decimal('price_multiplier', 5, 2);
         });
     }
 

@@ -128,7 +128,7 @@ class DishController extends Controller
         if ($request->has('sizes') && is_array($request->sizes)) {
             foreach ($request->sizes as $size) {
                 $dish->sizes()->create([
-                    'name' => $size['name'],
+                    'size' => $size['size'],
                     'price_multiplier' => $size['price_multiplier'],
                 ]);
             }

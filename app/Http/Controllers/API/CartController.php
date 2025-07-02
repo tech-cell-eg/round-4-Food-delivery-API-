@@ -27,12 +27,22 @@ class CartController extends Controller
         // تحميل العناصر والأطباق والأحجام
         $cart->load(['items.dish.chef', 'items.size']);
 
-        if (!$cart->items->isEmpty()) {
-            
+        if ($cart->items->isEmpty()) {
+            return response()->json([
+                'data' => [
+                    'cart' => $cart,
+                    'subtotal' => 0,
+                    'discount' => 0,
+                    'total' => 0,
+                ],
+                'message' => 'سلة التسوق فارغة',
+            ]);
+        }
+
         // حساب المجموع الكلي
         $subtotal = $cart->items->sum(function ($item) {
             $price = $item->dish->base_price;
-            
+
             if ($item->size) {
                 $price *= $item->size->price_multiplier;
             }
@@ -65,7 +75,6 @@ class CartController extends Controller
             'message' => 'تم جلب سلة التسوق بنجاح',
         ]);
     }
-
     /**
      * إضافة عنصر إلى سلة التسوق
      *
@@ -96,20 +105,8 @@ class CartController extends Controller
         }
 
         // التحقق من حجم الطبق إذا تم تحديده
-        $size = null;
-        if ($request->has('size') && $request->size) {
-            $size = DishSize::where('dish_id', $dish->id)
-                ->where('size', $request->size)
-                ->first();
+        $size = $request->size ?? 'small';
 
-            if (!$size) {
-                return response()->json([
-                    'message' => 'حجم الطبق غير متاح'
-                ], 422);
-            }
-
-            $size = $size->size;
-        }
 
         // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
         $cart = $this->getOrCreateCart($request->customer_id);
@@ -125,6 +122,7 @@ class CartController extends Controller
             $existingItem->quantity += $request->quantity;
             $existingItem->price = $request->price;
             $existingItem->notes = $request->notes;
+            $existingItem->size = $size;
             $existingItem->update();
             $cartItem = $existingItem;
         } else {
@@ -132,10 +130,10 @@ class CartController extends Controller
             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
                 'dish_id' => $dish->id,
-                'size' => $size,
-                'price' => $dish->base_price ?? $request->price,
-                'quantity' => $request->quantity,
-                'notes' => $request->notes,
+                'size' => $request->size ?? 'medium',
+                'price' => $request->price ?? $dish->base_price,
+                'quantity' => $request->quantity ?? 1,
+                'notes' => $request->notes ?? 'لا يوجد ملاحظات',
             ]);
         }
 
@@ -158,6 +156,7 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
             'price' => 'required|decimal:2',
             'notes' => 'nullable|string',
+            'size' => 'required|string',
         ]);
 
 
