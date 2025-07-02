@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('dish_id')->constrained('dishes')->onDelete('cascade');
             $table->string('size')->nullable();
             $table->integer('quantity');
-            $table->string('notes')->default('no notes');
+            $table->string('notes')->nullable()->default('no notes');
             $table->decimal('price', 10, 2);
             $table->timestamps();
         });
