@@ -248,8 +248,8 @@ class CartController extends Controller
         }
 
         // Find the coupon
-        $coupon = Coupon::where('code', $request->code)
-            ->where('expires_at', '>', Carbon::now())
+        $coupon = Coupon::where(['code' => $request->code, 'is_active' => true])
+            ->where('expires_at', '>=', Carbon::now())
             ->first();
 
         if (!$coupon) {
