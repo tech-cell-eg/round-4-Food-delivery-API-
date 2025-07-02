@@ -55,6 +55,14 @@ class Order extends Model
     }
 
     /**
+     * العلاقة مع الأطباق عبر عناصر الطلب
+     */
+    public function dishes()
+    {
+        return $this->belongsToMany(Dish::class, 'order_items');
+    }
+
+    /**
      * العلاقة مع المدفوعات
      */
     public function payments()
