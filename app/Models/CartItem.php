@@ -17,7 +17,7 @@ class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'dish_id',
-        'size_id',
+        'size_name',
         'quantity',
     ];
 
@@ -44,11 +44,11 @@ class CartItem extends Model
     /**
      * العلاقة مع حجم الطبق
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return App\Models\DishSize
      */
     public function size()
     {
-        return $this->belongsTo(DishSize::class, 'size_id');
+        return self::where(['dish_id' => $this->dish_id, 'size_name' => $this->size_name])->first();
     }
 
     /**

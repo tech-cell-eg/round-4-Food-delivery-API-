@@ -5,278 +5,342 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Coupon;
 use App\Models\Dish;
 use App\Models\DishSize;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class CartController extends Controller
 {
     /**
-     * عرض سلة التسوق الحالية للمستخدم
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * عرض محتويات سلة التسوق للمستخدم الحالي
      */
-    public function index(Request $request)
+    public function index()
     {
-        // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
-        $cart = $this->getOrCreateCart($request->user()->id);
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
 
-        // تحميل العناصر والأطباق والأحجام
-        $cart->load(['items.dish.chef', 'items.size']);
+        $cart = Cart::with(['items.dish'])
+            ->where('customer_id', $customerId)
+            ->first();
 
-        // حساب المجموع الكلي
-        $subtotal = $cart->items->sum(function ($item) {
-            $price = $item->dish->base_price;
-            if ($item->size) {
-                $price *= $item->size->price_multiplier;
-            }
-            return $price * $item->quantity;
-        });
-
-        // حساب الخصم إذا كان هناك كوبون
-        $discount = 0;
-        if ($cart->coupon_id) {
-            $coupon = Coupon::find($cart->coupon_id);
-            if ($coupon) {
-                if ($coupon->discount_type === 'percentage') {
-                    $discount = $subtotal * ($coupon->discount_value / 100);
-                } else {
-                    $discount = $coupon->discount_value;
-                }
-            }
+        if (!$cart) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'cart' => null,
+                    'items' => [],
+                    'total' => 0
+                ]
+            ], 200);
         }
 
-        // حساب المجموع النهائي
-        $total = $subtotal - $discount;
+        $total = $cart->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
 
         return response()->json([
+            'status' => 'success',
             'data' => [
                 'cart' => $cart,
-                'subtotal' => $subtotal,
-                'discount' => $discount,
-                'total' => $total,
-            ],
-            'message' => 'تم جلب سلة التسوق بنجاح',
+                'total' => $total
+            ]
         ]);
     }
 
     /**
      * إضافة عنصر إلى سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function addItem(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'dish_id' => 'required|exists:dishes,id',
-            'size' => 'nullable|string',
+            'size_name' => 'required|in:small,medium,large',
             'quantity' => 'required|integer|min:1',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
 
-        // التحقق من وجود الطبق وأنه متاح
-        $dish = Dish::findOrFail($request->dish_id);
-        if (!$dish->is_available) {
+        // التحقق من وجود سلة تسوق للعميل
+        $cart = Cart::firstOrCreate(['customer_id' => $customerId]);
+
+        // التحقق من وجود الطبق والحجم المطلوب
+        $dish = Dish::find($request->dish_id);
+
+        if (!$dish) {
             return response()->json([
-                'message' => 'هذا الطبق غير متاح حالياً'
-            ], 422);
+                'status' => 'error',
+                'message' => 'هذا الطبق غير متوفر حالياً'
+            ], 400);
         }
 
-        // التحقق من حجم الطبق إذا تم تحديده
-        $sizeId = null;
-        if ($request->has('size') && $request->size) {
-            $size = DishSize::where('dish_id', $dish->id)
-                ->where('name', $request->size)
-                ->first();
-
-            if (!$size) {
-                return response()->json([
-                    'message' => 'حجم الطبق غير متاح'
-                ], 422);
-            }
-
-            $sizeId = $size->id;
-        }
-
-        // الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
-        $cart = $this->getOrCreateCart($request->user()->id);
-
-        // التحقق مما إذا كان العنصر موجوداً بالفعل في السلة
-        $existingItem = CartItem::where('cart_id', $cart->id)
-            ->where('dish_id', $dish->id)
-            ->where('size_id', $sizeId)
+        // الحصول على سعر الطبق حسب الحجم
+        $dishSize = DishSize::where('dish_id', $request->dish_id)
+            ->where('size', $request->size_name)
             ->first();
 
-        if ($existingItem) {
-            // تحديث الكمية إذا كان العنصر موجوداً بالفعل
-            $existingItem->quantity += $request->quantity;
-            $existingItem->save();
-            $cartItem = $existingItem;
+        if (!$dishSize) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حجم الطبق غير متوفر'
+            ], 400);
+        }
+
+        // التحقق مما إذا كان العنصر موجودًا بالفعل في السلة
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('dish_id', $request->dish_id)
+            ->first();
+
+        if ($cartItem) {
+            // تحديث الكمية إذا كان العنصر موجودًا بالفعل
+            $cartItem->quantity += $request->quantity;
+            $cartItem->price = $dishSize->price ?? 100;
+            $cartItem->save();
         } else {
-            // إنشاء عنصر جديد إذا لم يكن موجوداً
-            $cartItem = CartItem::create([
+            // إنشاء عنصر جديد في السلة
+            $cartItem = new CartItem([
+                'customer_id' => $customerId,
+                'size_name' => $request->size_name,
                 'cart_id' => $cart->id,
-                'dish_id' => $dish->id,
-                'size_id' => $sizeId,
+                'dish_id' => $request->dish_id,
                 'quantity' => $request->quantity,
+                'price' => $dishSize->price ?? 100,
             ]);
+            $cartItem->save();
         }
 
         return response()->json([
-            'data' => $cartItem->load(['dish', 'size']),
-            'message' => 'تم إضافة العنصر إلى سلة التسوق بنجاح',
-        ], 201);
+            'status' => 'success',
+            'message' => 'تمت إضافة العنصر إلى سلة التسوق',
+            'data' => $cartItem
+        ]);
     }
 
     /**
      * تحديث كمية عنصر في سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function updateItem(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'quantity' => 'required|integer|min:1',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::where('customer_id', $customerId)->first();
+
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'سلة التسوق غير موجودة'
+            ], 404);
         }
 
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $id)
+            ->first();
 
-        // التحقق من وجود العنصر في سلة التسوق
-        $cartItem = CartItem::where('id', $id)
-            ->where('cart_id', $cart->id)
-            ->firstOrFail();
+        if (!$cartItem) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'العنصر غير موجود في سلة التسوق'
+            ], 404);
+        }
 
-        // تحديث الكمية
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
 
         return response()->json([
-            'data' => $cartItem->load(['dish', 'size']),
-            'message' => 'تم تحديث الكمية بنجاح',
+            'status' => 'success',
+            'message' => 'تم تحديث كمية العنصر',
+            'data' => $cartItem
         ]);
     }
 
     /**
      * حذف عنصر من سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function removeItem(Request $request, $id)
+    public function removeItem($id)
     {
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::where('customer_id', $customerId)->first();
 
-        // التحقق من وجود العنصر في سلة التسوق
-        $cartItem = CartItem::where('id', $id)
-            ->where('cart_id', $cart->id)
-            ->firstOrFail();
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'سلة التسوق غير موجودة'
+            ], 404);
+        }
 
-        // حذف العنصر
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'العنصر غير موجود في سلة التسوق'
+            ], 404);
+        }
+
         $cartItem->delete();
 
         return response()->json([
-            'message' => 'تم حذف العنصر من سلة التسوق بنجاح',
+            'status' => 'success',
+            'message' => 'تم حذف العنصر من سلة التسوق'
+        ]);
+    }
+
+    /**
+     * تفريغ سلة التسوق
+     */
+    public function clearCart()
+    {
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::where('customer_id', $customerId)->first();
+
+        if ($cart) {
+            foreach ($cart->items as $item) {
+                $item->delete();
+            }
+            $cart->coupon_id = null;
+            $cart->save();
+            $cart->delete();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تفريغ سلة التسوق'
         ]);
     }
 
     /**
      * تطبيق كوبون خصم على سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function applyCoupon(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'code' => 'required|string',
+        $request->validate([
+            'code' => 'required|string|exists:coupons,code'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::where('customer_id', $customerId)->first();
+
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'سلة التسوق غير موجودة'
+            ], 404);
         }
 
-        // البحث عن الكوبون
+        // Check if cart has items
+        if ($cart->items->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'سلة التسوق فارغة'
+            ], 400);
+        }
+
+        // Find the coupon
         $coupon = Coupon::where('code', $request->code)
-            ->where('expires_at', '>', now())
+            ->where('expires_at', '>', Carbon::now())
             ->first();
 
         if (!$coupon) {
             return response()->json([
-                'message' => 'كوبون الخصم غير صالح أو منتهي الصلاحية'
-            ], 422);
+                'status' => 'error',
+                'message' => 'كود الخصم غير صالح أو منتهي الصلاحية'
+            ], 400);
         }
 
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        // Check if coupon is already applied
+        if ($cart->coupon_id === $coupon->id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'تم تطبيق هذا الكوبون مسبقاً'
+            ], 400);
+        }
 
-        // تطبيق الكوبون على السلة
+        // Apply coupon to cart
         $cart->coupon_id = $coupon->id;
         $cart->save();
 
-        // إعادة تحميل السلة مع العناصر والكوبون
-        $cart->load(['items.dish.chef', 'items.size', 'coupon']);
+        // Calculate new total with discount
+        $subtotal = $cart->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+
+        $discount = $this->calculateDiscount($subtotal, $coupon);
+        $total = $subtotal - $discount;
 
         return response()->json([
-            'data' => $cart,
-            'message' => 'تم تطبيق كوبون الخصم بنجاح',
+            'status' => 'success',
+            'message' => 'تم تطبيق كود الخصم بنجاح',
+            'data' => [
+                'coupon' => $coupon,
+                'subtotal' => $subtotal,
+                'discount' => $discount,
+                'total' => $total
+            ]
         ]);
     }
 
     /**
      * إزالة كوبون الخصم من سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function removeCoupon(Request $request)
+    public function removeCoupon()
     {
-        // الحصول على سلة التسوق الحالية للمستخدم
-        $cart = $this->getOrCreateCart($request->user()->id);
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1; // Replace with Auth::user()->customer->id
+        $cart = Cart::where('customer_id', $customerId)->first();
 
-        // إزالة الكوبون
+        if (!$cart) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'سلة التسوق غير موجودة'
+            ], 404);
+        }
+
+        if (!$cart->coupon_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'لا يوجد كوبون مطبق حالياً'
+            ], 400);
+        }
+
         $cart->coupon_id = null;
         $cart->save();
 
+        // Recalculate total without discount
+        $subtotal = $cart->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+
         return response()->json([
-            'message' => 'تم إزالة كوبون الخصم بنجاح',
+            'status' => 'success',
+            'message' => 'تم إزالة كود الخصم بنجاح',
+            'data' => [
+                'subtotal' => $subtotal,
+                'total' => $subtotal
+            ]
         ]);
     }
 
     /**
-     * الحصول على سلة التسوق الحالية للمستخدم أو إنشاء واحدة جديدة
-     *
-     * @param  int  $userId
-     * @return \App\Models\Cart
+     * حساب قيمة الخصم بناءً على نوع القسيمة
      */
-    private function getOrCreateCart($userId)
+    private function calculateDiscount($amount, $coupon)
     {
-        $cart = Cart::where('user_id', $userId)
-            ->where('status', 'active')
-            ->first();
-
-        if (!$cart) {
-            $cart = Cart::create([
-                'user_id' => $userId,
-                'status' => 'active',
-            ]);
+        if ($coupon->discount_type === 'fixed') {
+            return min($coupon->discount_value, $amount);
+        } else {
+            return $amount * ($coupon->discount_value / 100);
         }
-
-        return $cart;
     }
 }
