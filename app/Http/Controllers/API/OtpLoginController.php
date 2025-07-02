@@ -27,7 +27,7 @@ class OtpLoginController extends Controller
         ['email' => $request->email],
             [
                 'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(5),
+                'expires_at' => Carbon::now()->addMinutes(10),
             ]
         );
 
@@ -71,7 +71,7 @@ class OtpLoginController extends Controller
             'token_type' => 'Bearer',
         ]);
     }
-     public function resetPassword(Request $request)
+    public function resetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email',

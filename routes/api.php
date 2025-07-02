@@ -57,6 +57,10 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
 
+use App\Http\Controllers\API\SocialAuthController;
+
+Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
+Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
 
 
 // سلة التسوق
