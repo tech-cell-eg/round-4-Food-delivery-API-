@@ -21,12 +21,13 @@ class DishSize extends Model
      *
      * @var array
      */
-    protected $fillable = [
+    protected $fillable = [ 
         'dish_id',
-        'name',
+        'size',
+        'price',
     ];
 
-    /**
+    /** 
      * العلاقة مع الطبق
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

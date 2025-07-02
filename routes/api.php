@@ -12,6 +12,7 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
+use App\Http\Controllers\Api\Chef\StatisticsController;
 
 
 
@@ -20,8 +21,13 @@ Route::controller(ChefOrderController::class)->/*middleware('auth:sanctum')->*/p
     Route::get('/running', 'runningOrders');
     Route::patch('/{orderId}/done', 'markAsDone');
     Route::patch('/{orderId}/cancel', 'cancelOrder');
+    
 });
 
+Route::controller(StatisticsController::class)->/*middleware('auth:sanctum')->*/prefix('chef/statistics')->group(function () {
+    Route::get('/', 'statistics');
+
+}); 
 
 Route::get('categories', [CategoryController::class, "index"]);
 Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
@@ -53,8 +59,8 @@ Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 // مسارات تتطلب مصادقة
 
 // معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']);
-Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/user', [AuthController::class, 'user']); 
+Route::post('/logout', [AuthController::class, 'logout']); 
 
 
 // سلة التسوق
