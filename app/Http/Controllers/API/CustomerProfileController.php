@@ -46,7 +46,6 @@ class CustomerProfileController extends Controller
 
 public function update(Request $request)
 {
-    \Log::info('Request Data:', $request->all());
 
     $user = $request->user();
 
