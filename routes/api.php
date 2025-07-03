@@ -133,3 +133,4 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
 Route::middleware('auth:sanctum')->get('/profile', [CustomerProfileController::class, 'index']);
+Route::middleware('auth:sanctum')->post('/profile', [CustomerProfileController::class, 'update']);
