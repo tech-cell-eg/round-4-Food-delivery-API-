@@ -1,10 +1,8 @@
 <?php
 
-<<<<<<< HEAD
-use App\Http\Controllers\Api\ChatController;
-=======
+
 use Illuminate\Support\Facades\Route;
->>>>>>> 07af981913428891e18c7ac7bc488526953ac4ff
+
 use Illuminate\Http\Request;
 
 // ==================== Auth ====================
