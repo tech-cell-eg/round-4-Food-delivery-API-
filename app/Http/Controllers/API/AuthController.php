@@ -24,6 +24,12 @@ class AuthController extends Controller
             'phone'    => $request->phone,
         ]);
 
+        if ($request->hasFile('profile_image')) {
+        $image = $request->file('profile_image');
+        $filename = $user->type . '-' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('profile_images'), $filename);
+        $validated['profile_image'] = 'profile_images/' . $filename;
+    }
         if ($request->type === 'chef') {
             $user->chef()->create([
                 'speciality'       => $request->speciality ?? 'Tourism and hotels',
