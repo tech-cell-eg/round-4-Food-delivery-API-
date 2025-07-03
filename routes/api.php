@@ -1,36 +1,36 @@
 <?php
 
-use App\Http\Controllers\API\OtpLoginController;
+use Illuminate\Http\Request;
 
-use App\Http\Controllers\CategoryController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 
-use App\Http\Controllers\Api\Chef\ChefController;
-use App\Http\Controllers\Api\Chef\DishController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
+
 use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\OtpLoginController;
+use App\Http\Controllers\Api\Chef\ChefController;
+use App\Http\Controllers\Api\Chef\DishController;
+use App\Http\Controllers\API\SocialAuthController;
 
 
 
 
-Route::controller(ChefOrderController::class)->middleware('auth:sanctum')->prefix('chef/orders')->group(function () {
+Route::controller(OrderController::class)->middleware('auth:sanctum')->prefix('chef/orders')->group(function () {
     Route::get('/running', 'runningOrders');
     Route::patch('/{orderId}/done', 'markAsDone');
     Route::patch('/{orderId}/cancel', 'cancelOrder');
     
 });
 
-Route::controller(StatisticsController::class)->middleware('auth:sanctum')->prefix('chef/statistics')->group(function () {
-    Route::get('/', 'statistics');
+// Route::controller(StatisticsController::class)->middleware('auth:sanctum')->prefix('chef/statistics')->group(function () {
+//     Route::get('/', 'statistics');
 
-}); 
+// }); 
 
 Route::get('categories', [CategoryController::class, "index"]);
 Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
@@ -71,7 +71,11 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
 
-use App\Http\Controllers\API\SocialAuthController;
+use App\Http\Controllers\API\ChefReviewsController;
+use App\Http\Controllers\Customer\DishesController;
+use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
 
 Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
@@ -122,3 +126,5 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 
 // البحث عن طبق أو مطعم معين
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
+
+Route::middleware('auth:sanctum')->get('/profile', [CustomerProfileController::class, 'index']);
