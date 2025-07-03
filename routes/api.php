@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\API\OtpLoginController;
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
 use App\Http\Controllers\API\ChefReviewsController;
-use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
@@ -66,7 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
 
-
 Route::prefix('password')->group(function () {
     Route::post('/send_otp', [OtpLoginController::class, 'sendOtp']);
     Route::post('/login_otp', [OtpLoginController::class, 'loginWithOtp']);
@@ -78,6 +77,9 @@ use App\Http\Controllers\API\SocialAuthController;
 Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
 
+// معلومات المستخدم وتسجيل الخروج
+Route::get('/user', [AuthController::class, 'user']); 
+Route::post('/logout', [AuthController::class, 'logout']); 
 
 
 // سلة التسوق
