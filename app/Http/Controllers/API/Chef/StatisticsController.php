@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\Chef;
 
-use App\Helpers\ApiResponse;
-use App\Http\Controllers\Controller;
 use App\Models\Chef;
 use App\Models\Order;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class StatisticsController extends Controller
 {
