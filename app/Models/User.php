@@ -67,6 +67,7 @@ class User extends Authenticatable
     }
 
 
+
     public function cart()
 {
     return $this->hasOne(Cart::class, 'customer_id');
@@ -81,7 +82,6 @@ public function addresses()
 {
     return $this->hasMany(Address::class, 'customer_id'); 
 }
-
 
 
 }
