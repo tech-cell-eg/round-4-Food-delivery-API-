@@ -15,8 +15,7 @@ class OrderController extends Controller
 {
     public function runningOrders(Request $request)
     {
-        // $chef = Auth::user()->chef;
-        $chef = Chef::first();
+        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
@@ -34,8 +33,7 @@ class OrderController extends Controller
 
     public function markAsDone(Request $request, $orderId)
     {
-        // $chef = Auth::user()->chef;
-        $chef = Chef::first();
+        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
@@ -57,8 +55,7 @@ class OrderController extends Controller
 
     public function cancelOrder(Request $request, $orderId)
     {
-        // $chef = Auth::user()->chef;
-        $chef = Chef::first();
+        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
