@@ -10,24 +10,25 @@ use App\Http\Controllers\Controller;
 class CustomerProfileController extends Controller
 {
     use ApiResponse;
-    public function index(Request $request)
-    {
-        $user = $request->user();
+public function index(Request $request)
+{
+    $user = $request->user();
 
-        if (!$user) {
-            return ApiResponse::unauthorized('User not authenticated');
-        }
+    if (!$user) {
+        return ApiResponse::unauthorized('User not authenticated');
+    }
 
-        $user->load([
+    // Always load these relations
+    $user->load([
         'cart.items.dish',
         'favorites.dish',
         'addresses',
         'customer',
+        'chef', // in case type is 'chef'
     ]);
 
-
-        return ApiResponse::success([
-    'user' => [
+    // Base user info
+    $userData = [
         'id' => $user->id,
         'name' => $user->name,
         'email' => $user->email,
@@ -35,14 +36,30 @@ class CustomerProfileController extends Controller
         'profile_image' => $user->profile_image,
         'bio' => $user->bio,
         'type' => $user->type,
-    ],
-    'cart' => $user->cart,
-    'favorites' => $user->favorites,
-    'addresses' => $user->addresses,
-    'payment_methods' => optional($user->customer)->preferred_payment_method,
-], 'Profile data retrieved successfully');
+    ];
 
+    // Add additional info based on user type
+    if ($user->type === 'customer') {
+        $extraData = [
+            'cart' => $user->cart,
+            'favorites' => $user->favorites,
+            'addresses' => $user->addresses,
+            'payment_methods' => optional($user->customer)->preferred_payment_method,
+        ];
+    } elseif ($user->type === 'chef') {
+        $extraData = [
+            'chef_profile' => $user->chef, // Return chef model data
+        ];
+    } else {
+        $extraData = [];
     }
+
+    return ApiResponse::success(
+        array_merge(['user' => $userData], $extraData),
+        'Profile data retrieved successfully'
+    );
+}
+
 
 public function update(Request $request)
 {

@@ -16,10 +16,10 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\Api\Chef\ChefController;
-use App\Http\Controllers\Api\Chef\DishController;
-use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\API\Chef\ChefController;
+use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\API\OrderController;
@@ -31,7 +31,7 @@ use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\ChefReviewsController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\API\ChatController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -97,39 +97,37 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('chef/statistics')->group(function () {
         Route::get('/', [StatisticsController::class, 'statistics']);
     });
-});
 
-// ==================== Orders ====================
-Route::get('/orders', [OrderController::class, 'index']);
-Route::get('/orders/{id}', [OrderController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
-Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+    Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
-// ==================== Cart ====================
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart/items', [CartController::class, 'addItem']);
-Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
-Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
-Route::post('/cart/clear', [CartController::class, 'clearCart']);
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
-Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
+    // Cart
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/items', [CartController::class, 'addItem']);
+    Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+    Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+    Route::post('/cart/clear', [CartController::class, 'clearCart']);
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
-// ==================== Payments ====================
-Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'show']);
+    // Payments
+    Route::post('/payments', [PaymentController::class, 'processPayment']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
-// ==================== Reviews ====================
-Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
-Route::post('/reviews', [ReviewController::class, 'store']);
-Route::put('/reviews/{id}', [ReviewController::class, 'update']);
-Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+    // Reviews
+    Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
-// ==================== Chat ====================
-Route::controller(ChatController::class)->group(function () {
-    Route::post('/messages/send', 'sendMessage');
-    Route::get('/conversations/{conversationId}', 'show');
-    Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+    // Chat
+    Route::controller(ChatController::class)->group(function () {
+        Route::post('/messages/send', 'sendMessage');
+        Route::get('/conversations/{conversationId}', 'show');
+        Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+    });
 });
