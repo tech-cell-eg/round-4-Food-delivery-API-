@@ -5,7 +5,6 @@ use App\Http\Controllers\API\OtpLoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
-use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
@@ -21,14 +20,14 @@ use App\Http\Controllers\Api\Chef\StatisticsController;
 
 
 
-Route::controller(ChefOrderController::class)->/*middleware('auth:sanctum')->*/prefix('chef/orders')->group(function () {
+Route::controller(ChefOrderController::class)->middleware('auth:sanctum')->prefix('chef/orders')->group(function () {
     Route::get('/running', 'runningOrders');
     Route::patch('/{orderId}/done', 'markAsDone');
     Route::patch('/{orderId}/cancel', 'cancelOrder');
     
 });
 
-Route::controller(StatisticsController::class)->/*middleware('auth:sanctum')->*/prefix('chef/statistics')->group(function () {
+Route::controller(StatisticsController::class)->middleware('auth:sanctum')->prefix('chef/statistics')->group(function () {
     Route::get('/', 'statistics');
 
 }); 
@@ -38,13 +37,13 @@ Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
 Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
 Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
 
-Route::controller(ChefController::class)->group(function () {
+Route::controller(ChefController::class)->group(function () { 
     Route::get('/open-resturants', 'getOpenChefs')->name("getOpenChefs");
     Route::get('/resturants/{id}', 'showChefWithCategoriesAndMeals')->name("showChefWithCategoriesAndMeals");
 });
 
 
-Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->middleware("auth:sanctum")*/->group(function () {
+Route::controller(DishController::class)->prefix("meals")->name("meals.")->middleware("auth:sanctum")->group(function () {
     Route::get('/', 'index')->name("index");
     Route::get('/{id}', 'show')->name("show");
     Route::post('/', 'store')->name("store");
@@ -77,9 +76,6 @@ use App\Http\Controllers\API\SocialAuthController;
 Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
 
-// معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']); 
-Route::post('/logout', [AuthController::class, 'logout']); 
 
 
 // سلة التسوق
@@ -112,3 +108,17 @@ Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
+
+
+
+//  عرض الأطباق للعميل 
+Route::get('/client/meals', [DishesController::class, 'index']);
+
+// عرض تفاصيل طبق
+Route::get('/client/meals/{id}', [DishesController::class, 'show']);
+
+// عرض أطباق بعد الفلترة
+Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
+
+// البحث عن طبق أو مطعم معين
+Route::get('/client/meals_search/', [DishesController::class, 'search']);

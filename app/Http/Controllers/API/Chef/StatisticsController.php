@@ -12,8 +12,7 @@ class StatisticsController extends Controller
 {
     public function statistics(Request $request)
     {
-        // $chef = Auth::user()->chef;
-        $chef = Chef::first();
+        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
