@@ -93,3 +93,17 @@ Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
+
+
+
+//  عرض الأطباق للعميل 
+Route::get('/client/meals', [DishesController::class, 'index']);
+
+// عرض تفاصيل طبق
+Route::get('/client/meals/{id}', [DishesController::class, 'show']);
+
+// عرض أطباق بعد الفلترة
+Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
+
+// البحث عن طبق أو مطعم معين
+Route::get('/client/meals_search/', [DishesController::class, 'search']);
