@@ -18,8 +18,8 @@ class CustomerFactory extends Factory
      */
     public function definition(): array
     {
-
         return [
+            'id' => \App\Models\User::factory(),
             'preferred_payment_method' => fake()->randomElement([
                 'credit_card',
                 'paypal',

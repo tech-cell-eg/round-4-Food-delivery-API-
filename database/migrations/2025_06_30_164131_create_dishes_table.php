@@ -16,9 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('chef_id');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('image')->nullable();
-            $table->boolean('is_available')->default(true);
-            $table->integer('total_rate')->default(0);
+            $table->string('image')->nullable(); 
+            $table->boolean('is_available')->default(true); 
+            $table->integer('total_rate')->default(0); 
             $table->decimal('avg_rate', 5, 2)->default(0);
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->timestamp('created_at')->useCurrent();

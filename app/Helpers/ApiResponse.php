@@ -2,9 +2,11 @@
 
 namespace App\Helpers;
 
-class ApiResponse
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+trait ApiResponse
 {
-    public static function success($data = null, $message = 'Success', $code = 200)
+    public static function success($data = null, $message = 'Success', $code = 200): JsonResponse
     {
         return response()->json([
             'status' => true,
@@ -72,7 +74,7 @@ class ApiResponse
             $dataKey => $paginator->items(),
 
             // Pagination metadata for client-side navigation and UI
-            'pagination' => [
+                'pagination' => [
                 'total' => $paginator->total(),                   // Total number of records across all pages
                 'count' => $paginator->count(),                   // Number of records in the current page
                 'per_page' => $paginator->perPage(),              // Number of items per page
