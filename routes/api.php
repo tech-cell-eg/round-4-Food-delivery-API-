@@ -21,14 +21,14 @@ use App\Http\Controllers\Api\Chef\StatisticsController;
 
 
 
-Route::controller(ChefOrderController::class)->/*middleware('auth:sanctum')->*/prefix('chef/orders')->group(function () {
+Route::controller(ChefOrderController::class)->middleware('auth:sanctum')->prefix('chef/orders')->group(function () {
     Route::get('/running', 'runningOrders');
     Route::patch('/{orderId}/done', 'markAsDone');
     Route::patch('/{orderId}/cancel', 'cancelOrder');
     
 });
 
-Route::controller(StatisticsController::class)->/*middleware('auth:sanctum')->*/prefix('chef/statistics')->group(function () {
+Route::controller(StatisticsController::class)->middleware('auth:sanctum')->prefix('chef/statistics')->group(function () {
     Route::get('/', 'statistics');
 
 }); 
@@ -38,13 +38,13 @@ Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
 Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
 Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
 
-Route::controller(ChefController::class)->group(function () {
+Route::controller(ChefController::class)->group(function () { 
     Route::get('/open-resturants', 'getOpenChefs')->name("getOpenChefs");
     Route::get('/resturants/{id}', 'showChefWithCategoriesAndMeals')->name("showChefWithCategoriesAndMeals");
 });
 
 
-Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->middleware("auth:sanctum")*/->group(function () {
+Route::controller(DishController::class)->prefix("meals")->name("meals.")->middleware("auth:sanctum")->group(function () {
     Route::get('/', 'index')->name("index");
     Route::get('/{id}', 'show')->name("show");
     Route::post('/', 'store')->name("store");
