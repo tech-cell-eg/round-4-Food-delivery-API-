@@ -64,4 +64,9 @@ class Chef extends Model
         return (bool) $this->is_verified;
     }
 
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
 }

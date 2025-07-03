@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
@@ -29,6 +30,17 @@ Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->mid
     Route::get('/{id}', 'show')->name("show");
     Route::post('/', 'store')->name("store");
 });
+
+
+// Conversation
+Route::controller(ChatController::class)/*->middleware("auth:sanctum")*/->group(function () {
+    Route::post('/messages/send', 'sendMessage');
+    Route::get('/conversations/{conversationId}', 'show');
+    Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+
+});
+
+
 
 // مسارات المصادقة
 Route::post('/register', [AuthController::class, 'register']);
