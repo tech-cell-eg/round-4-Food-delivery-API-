@@ -1,11 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\ChatController;
-use App\Http\Controllers\API\ChefReviewsController;
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\Api\Chef\ChefController;
-use App\Http\Controllers\Api\Chef\DishController;
-
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Route;
