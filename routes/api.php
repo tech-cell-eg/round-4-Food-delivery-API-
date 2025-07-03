@@ -5,7 +5,6 @@ use App\Http\Controllers\API\OtpLoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
-use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use Illuminate\Http\Request;
@@ -76,9 +75,7 @@ use App\Http\Controllers\API\SocialAuthController;
 
 Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
-// معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']); 
-Route::post('/logout', [AuthController::class, 'logout']); 
+
 
 
 // سلة التسوق

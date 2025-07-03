@@ -67,12 +67,21 @@ class AuthController extends Controller
         ], 'Login successful');
     }
 
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
+public function logout(Request $request)
+{
+    $user = $request->user();
 
-        return ApiResponse::success(null, 'Logout successful');
+    if (!$user) {
+        return ApiResponse::error('Unauthenticated', 401);
     }
+
+    // Revoke all tokens
+    $user->tokens()->delete();
+
+    return ApiResponse::success(null, 'Logout successful');
+}
+
+
 
     public function user(Request $request)
     {
