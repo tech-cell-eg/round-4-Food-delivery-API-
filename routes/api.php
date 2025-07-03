@@ -66,6 +66,12 @@ Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
 Route::get('/payments/{id}', [PaymentController::class, 'show']);
+Route::post('/payments/{id}/result', [PaymentController::class, 'updateResult']);
+
+// طرق الدفع
+Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
+Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
+Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
 
 // المراجعات
 
@@ -77,4 +83,3 @@ Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
-

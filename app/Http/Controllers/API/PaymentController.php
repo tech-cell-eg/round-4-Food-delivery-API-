@@ -302,4 +302,86 @@ class PaymentController extends Controller
             ]
         ]);
     }
+
+    /**
+     * عرض صفحة إضافة البطاقة (view)
+     */
+    public function addPaymentMethod()
+    {
+        return view('payment_method');
+    }
+
+    /**
+     * حفظ طريقة دفع جديدة باستخدام payment_method_id من Stripe.js
+     */
+    public function storePaymentMethod(Request $request)
+    {
+        $request->validate([
+            'payment_method_id' => 'required|string',
+        ]);
+        try {
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            // جلب بيانات البطاقة من Stripe للتأكيد
+            $paymentMethod = $stripe->paymentMethods->retrieve($request->payment_method_id, []);
+            // يمكنك هنا ربط البطاقة بعميل أو تخزين الـ id فقط
+            return response()->json([
+                'status' => 'success',
+                'payment_method' => $paymentMethod
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    /**
+     * جلب بيانات طريقة دفع من Stripe عبر id
+     */
+    public function getPaymentMethod($id)
+    {
+        try {
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            $paymentMethod = $stripe->paymentMethods->retrieve($id, []);
+            return response()->json([
+                'status' => 'success',
+                'payment_method' => $paymentMethod
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    /**
+     * تحديث نتيجة الدفع بعد انتهاء العملية من الفرونت
+     */
+    public function updateResult(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:completed,failed,cancelled',
+            'transaction_id' => 'nullable|string',
+            // يمكن إضافة المزيد حسب الحاجة
+        ]);
+
+        $payment = Payment::findOrFail($id);
+        $payment->status = $request->status;
+        $payment->transaction_id = $request->transaction_id ?? $payment->transaction_id;
+        $payment->payment_details = json_encode($request->all());
+        $payment->save();
+
+        // تحديث حالة الطلب إذا نجح الدفع
+        if ($request->status === 'completed') {
+            $order = $payment->order;
+            if ($order) {
+                $order->status = 'processing';
+                $order->save();
+            }
+        }
+
+        return response()->json(['status' => 'success']);
+    }
 }

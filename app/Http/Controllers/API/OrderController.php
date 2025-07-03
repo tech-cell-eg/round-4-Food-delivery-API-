@@ -94,10 +94,10 @@ class OrderController extends Controller
                     ->first();
 
                 if ($coupon) {
-                    $discount = $coupon->discount_type === 'fixed' 
-                        ? $coupon->discount_value 
+                    $discount = $coupon->discount_type === 'fixed'
+                        ? $coupon->discount_value
                         : ($subtotal * $coupon->discount_value / 100);
-                    
+
                     $couponId = $coupon->id;
                 }
             }
