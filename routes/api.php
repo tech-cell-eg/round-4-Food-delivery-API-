@@ -15,7 +15,7 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 
 
