@@ -58,12 +58,10 @@ class CartController extends Controller
         $request->validate([
             'dish_id' => 'required|exists:dishes,id',
             'size_name' => 'required|in:small,medium,large',
-            'quantity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
         ]);
 
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
-
+        $customerId = 1;  // Will be replaced with $customerId = Auth::user()->customer->id;
         // التحقق من وجود سلة تسوق للعميل
         $cart = Cart::firstOrCreate(['customer_id' => $customerId]);
 
@@ -96,26 +94,26 @@ class CartController extends Controller
 
         if ($cartItem) {
             // تحديث الكمية إذا كان العنصر موجودًا بالفعل
-            $cartItem->quantity += $request->quantity;
-            $cartItem->price = $dishSize->price ?? 100;
-            $cartItem->save();
+            $cartItem->update([
+                'quantity' => $cartItem->quantity + 1,
+                'price' => $dishSize->price ?? 100,
+            ]);
         } else {
             // إنشاء عنصر جديد في السلة
-            $cartItem = new CartItem([
+            $cartItem =  CartItem::create([
                 'customer_id' => $customerId,
                 'size_name' => $request->size_name,
                 'cart_id' => $cart->id,
                 'dish_id' => $request->dish_id,
-                'quantity' => $request->quantity,
+                'quantity' => 1,
                 'price' => $dishSize->price ?? 100,
             ]);
-            $cartItem->save();
         }
 
         return response()->json([
             'status' => 'success',
             'message' => 'تمت إضافة العنصر إلى سلة التسوق',
-            'data' => $cartItem
+            'data' => $cart->load('items')
         ]);
     }
 
@@ -150,13 +148,12 @@ class CartController extends Controller
             ], 404);
         }
 
-        $cartItem->quantity = $request->quantity;
-        $cartItem->save();
+        $cartItem->update(['quantity' => $request->quantity]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'تم تحديث كمية العنصر',
-            'data' => $cartItem
+            'data' => $cart->load('items')
         ]);
     }
 

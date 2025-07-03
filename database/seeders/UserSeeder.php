@@ -68,7 +68,7 @@ class UserSeeder extends Seeder
                 'phone' => '+201234567890',
                 'profile_image' => 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=300',
                 'bio' => 'Italian cuisine expert and pasta specialist with international training.',
-                'type' => 'chef',
+                'type' => 'customer',
                 'email_verified_at' => now(),
             ],
             [
@@ -136,7 +136,7 @@ class UserSeeder extends Seeder
                 'profile_image' => 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300',
                 'bio' => 'Seafood specialist with expertise in Mediterranean and Red Sea cuisine.',
 
-                'type' => 'chef',
+                'type' => 'customer',
                 'email_verified_at' => now(),
             ],
             [

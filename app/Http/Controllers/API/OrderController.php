@@ -55,9 +55,8 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'address_id' => 'required|exists:addresses,id',
-            'payment_method' => 'required|in:credit_card,debit_card,cash_on_delivery,wallet',
             'coupon_code' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
@@ -75,37 +74,44 @@ class OrderController extends Controller
             ], 400);
         }
 
+        $restaurantId = $cart->items->first()->dish->chef->id;
+
         DB::beginTransaction();
         try {
             // حساب المجموع الفرعي
-            $subtotal = $cart->items->sum('price');
+            $subtotal = $cart->items->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
 
-            // تطبيق الكوبون إذا كان موجودًا
+            // تطبيق الخصم إذا كان هناك كوبون
             $discount = 0;
             $couponId = null;
+
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
                 $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
-                    ->where('expiry_date', '>=', now())
+                    ->where('expires_at', '>=', now())
                     ->first();
 
                 if ($coupon) {
-                    $discount = $coupon->discount_type === 'percentage'
-                        ? ($subtotal * $coupon->discount_value / 100)
-                        : $coupon->discount_value;
+                    $discount = $coupon->discount_type === 'fixed' 
+                        ? $coupon->discount_value 
+                        : ($subtotal * $coupon->discount_value / 100);
+                    
                     $couponId = $coupon->id;
                 }
             }
 
-            // حساب رسوم التوصيل والضرائب
-            $deliveryFee = 10; // يمكن تغييره حسب المسافة أو قيمة الطلب
-            $tax = $subtotal * 0.15; // ضريبة القيمة المضافة 15%
+            // حساب رسوم التوصيل والضريبة
+            $deliveryFee = 10; // يمكن جعلها ديناميكية
+            $tax = $subtotal * 0.15; // 15% ضريبة
 
             // حساب المجموع النهائي
             $total = $subtotal + $deliveryFee + $tax - $discount;
 
             // إنشاء الطلب
             $order = Order::create([
+                'restaurant_id' => $restaurantId,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
@@ -115,34 +121,21 @@ class OrderController extends Controller
                 'total' => $total,
                 'coupon_id' => $couponId,
                 'status' => 'pending',
+                'order_number' => Order::genNumber(),
                 'notes' => $request->notes,
             ]);
 
-            // إنشاء عناصر الطلب
+            // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
-                $dish = $item->dish;
-                $dishSize = \App\Models\DishSize::where('dish_id', $item->product_id)
-                    ->where('price', $item->price)
-                    ->first();
-
                 OrderItem::create([
                     'order_id' => $order->id,
                     'dish_id' => $item->dish_id,
-                    'dish_name' => $dish->name,
-                    'size_name' => $item->size_name,
+                    'size' => $item->size_name,
                     'quantity' => $item->quantity,
                     'unit_price' => $item->price,
                     'total_price' => $item->price * $item->quantity,
                 ]);
             }
-
-            // إنشاء سجل الدفع
-            $payment = Payment::create([
-                'order_id' => $order->id,
-                'payment_method' => $request->payment_method,
-                'status' => $request->payment_method === 'cash_on_delivery' ? 'pending' : 'completed',
-                'amount' => $total,
-            ]);
 
             // تفريغ سلة التسوق
             CartItem::where('cart_id', $cart->id)->delete();
@@ -153,8 +146,7 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
                 'data' => [
-                    'order' => $order->load(['orderItems', 'payments']),
-                    'payment' => $payment
+                    'order' => $order->load('orderItems')
                 ]
             ]);
         } catch (\Exception $e) {
