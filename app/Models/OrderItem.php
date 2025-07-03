@@ -9,24 +9,18 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    /**
-     * الحقول القابلة للتعبئة الجماعية
-     *
-     * @var array
-     */
     protected $fillable = [
         'order_id',
         'dish_id',
-        'size_id',
+        'dish_name',
+        'size_name',
         'quantity',
         'unit_price',
-        'subtotal',
+        'total_price',
     ];
 
     /**
      * العلاقة مع الطلب
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()
     {
@@ -35,21 +29,9 @@ class OrderItem extends Model
 
     /**
      * العلاقة مع الطبق
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function dish()
     {
         return $this->belongsTo(Dish::class);
-    }
-
-    /**
-     * العلاقة مع حجم الطبق
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function size()
-    {
-        return $this->belongsTo(DishSize::class, 'size_id');
     }
 }
