@@ -24,6 +24,7 @@ class Review extends Model
     protected $fillable = [
         'customer_id',
         'chef_id',
+        'dish_id',
         'rating',
         'comment',
     ];
@@ -75,5 +76,11 @@ class Review extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+    public function customerWithUser()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id')
+            ->select('id')
+            ->with('user:id,name,profile_image');
     }
 }

@@ -24,25 +24,49 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'password' => static::$password ??= Hash::make('password'),
-            'phone' => $this->faker->phoneNumber(),
-            'profile_image' => $this->faker->imageUrl(200, 200, 'people'),
-            'bio' => $this->faker->paragraph(),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'type' => $this->faker->randomElement(['customer', 'chef']),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'phone' => '+2010' . fake()->numerify('#######'),
+            'profile_image' => fake()->imageUrl(300, 300, 'people'),
+            'bio' => fake()->paragraph(),
+            'password' => Hash::make('password'),
+
         ];
     }
+    public function chef()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => 'chef',
+                'bio' => $this->faker->paragraph() . ' Professional chef specializing in ' .
+                    $this->faker->randomElement(['Italian', 'Mediterranean', 'Middle Eastern', 'Asian', 'French']) . ' cuisine.',
+            ];
+        });
+    }
 
+    public function customer()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => 'customer',
+                'bio' => $this->faker->randomElement([
+                    'Food enthusiast exploring new cuisines',
+                    'Home cook looking to improve skills',
+                    'Busy professional who appreciates quality meals',
+                    'Health-conscious eater',
+                    'Parent cooking for family',
+                    'Student learning to cook',
+                ]),
+            ];
+        });
+    }
     /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

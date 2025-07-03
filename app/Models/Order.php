@@ -9,36 +9,29 @@ class Order extends Model
 {
     use HasFactory;
 
-    /**
-     * الحقول القابلة للتعبئة الجماعية
-     *
-     * @var array
-     */
     protected $fillable = [
-        'user_id',
+        'customer_id',
         'address_id',
         'subtotal',
+        'delivery_fee',
+        'tax',
         'discount',
         'total',
+        'coupon_id',
         'status',
         'notes',
-        'coupon_id',
     ];
 
     /**
-     * العلاقة مع المستخدم
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * العلاقة مع العميل
      */
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Customer::class);
     }
 
     /**
      * العلاقة مع العنوان
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function address()
     {
@@ -46,19 +39,7 @@ class Order extends Model
     }
 
     /**
-     * العلاقة مع عناصر الطلب
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function items()
-    {
-        return $this->hasMany(OrderItem::class);
-    }
-
-    /**
      * العلاقة مع الكوبون
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function coupon()
     {
@@ -66,12 +47,26 @@ class Order extends Model
     }
 
     /**
-     * العلاقة مع الدفع
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * العلاقة مع عناصر الطلب
      */
-    public function payment()
+    public function orderItems()
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * العلاقة مع الأطباق عبر عناصر الطلب
+     */
+    public function dishes()
+    {
+        return $this->belongsToMany(Dish::class, 'order_items');
+    }
+
+    /**
+     * العلاقة مع المدفوعات
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

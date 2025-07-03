@@ -16,12 +16,12 @@ class Coupon extends Model
         'discount_type',
         'discount_value',
         'description',
-        'expires_at',
+        'expiry_date',
     ];
 
     protected $casts = [
         'discount_value' => 'decimal:2',
-        'expires_at' => 'datetime',
+        'expiry_date' => 'datetime',
     ];
 
     /**
@@ -37,6 +37,6 @@ class Coupon extends Model
      */
     public function isExpired()
     {
-        return Carbon::now()->greaterThan($this->expires_at);
+        return Carbon::now()->greaterThan($this->expiry_date);
     }
 }

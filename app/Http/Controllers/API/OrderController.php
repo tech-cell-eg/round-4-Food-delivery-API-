@@ -4,241 +4,201 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Address;
-use App\Models\Coupon;
+use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     /**
-     * عرض قائمة طلبات المستخدم
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * عرض قائمة طلبات المستخدم الحالي
      */
-    public function index(Request $request)
+    public function index()
     {
-        $orders = Order::where('user_id', $request->user()->id)
-            ->with(['items.dish', 'address'])
-            ->latest()
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $orders = Order::with(['orderItems', 'payments'])
+            ->where('customer_id', $customerId)
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return response()->json([
-            'data' => $orders,
-            'message' => 'تم جلب الطلبات بنجاح',
+            'status' => 'success',
+            'data' => $orders
         ]);
     }
 
     /**
      * عرض تفاصيل طلب محدد
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $id)
+    public function show($id)
     {
-        $order = Order::where('id', $id)
-            ->where('user_id', $request->user()->id)
-            ->with(['items.dish', 'address', 'payment'])
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
+            ->where('customer_id', $customerId)
+            ->where('id', $id)
             ->firstOrFail();
 
         return response()->json([
-            'data' => $order,
-            'message' => 'تم جلب تفاصيل الطلب بنجاح',
+            'status' => 'success',
+            'data' => $order
         ]);
     }
 
     /**
      * إنشاء طلب جديد من سلة التسوق
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'address_id' => 'required|exists:addresses,id',
+            'payment_method' => 'required|in:credit_card,debit_card,cash_on_delivery,wallet',
+            'coupon_code' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // التحقق من أن العنوان ينتمي للمستخدم الحالي
-        $address = Address::where('id', $request->address_id)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
-
-        // الحصول على سلة التسوق النشطة للمستخدم
-        $cart = Cart::where('user_id', $request->user()->id)
-            ->where('status', 'active')
-            ->with(['items.dish', 'items.size', 'coupon'])
+        //$customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::with(['items.dish'])
+            ->where('customer_id', $customerId)
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
+                'status' => 'error',
                 'message' => 'سلة التسوق فارغة'
-            ], 422);
+            ], 400);
         }
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
+            // حساب المجموع الفرعي
+            $subtotal = $cart->items->sum('price');
 
-            // حساب المجموع الكلي
-            $subtotal = $cart->items->sum(function ($item) {
-                $price = $item->dish->base_price;
-                if ($item->size) {
-                    $price *= $item->size->price_multiplier;
-                }
-                return $price * $item->quantity;
-            });
-
-            // حساب الخصم إذا كان هناك كوبون
+            // تطبيق الكوبون إذا كان موجودًا
             $discount = 0;
-            if ($cart->coupon_id) {
-                $coupon = Coupon::find($cart->coupon_id);
+            $couponId = null;
+            if ($request->has('coupon_code') && !empty($request->coupon_code)) {
+                $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
+                    ->where('is_active', true)
+                    ->where('expiry_date', '>=', now())
+                    ->first();
+
                 if ($coupon) {
-                    if ($coupon->discount_type === 'percentage') {
-                        $discount = $subtotal * ($coupon->discount_value / 100);
-                    } else {
-                        $discount = $coupon->discount_value;
-                    }
+                    $discount = $coupon->discount_type === 'percentage'
+                        ? ($subtotal * $coupon->discount_value / 100)
+                        : $coupon->discount_value;
+                    $couponId = $coupon->id;
                 }
             }
 
+            // حساب رسوم التوصيل والضرائب
+            $deliveryFee = 10; // يمكن تغييره حسب المسافة أو قيمة الطلب
+            $tax = $subtotal * 0.15; // ضريبة القيمة المضافة 15%
+
             // حساب المجموع النهائي
-            $total = $subtotal - $discount;
+            $total = $subtotal + $deliveryFee + $tax - $discount;
 
             // إنشاء الطلب
             $order = Order::create([
-                'user_id' => $request->user()->id,
-                'address_id' => $address->id,
+                'customer_id' => $customerId,
+                'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
+                'delivery_fee' => $deliveryFee,
+                'tax' => $tax,
                 'discount' => $discount,
                 'total' => $total,
+                'coupon_id' => $couponId,
                 'status' => 'pending',
                 'notes' => $request->notes,
-                'coupon_id' => $cart->coupon_id,
             ]);
 
-            // إضافة عناصر الطلب
+            // إنشاء عناصر الطلب
             foreach ($cart->items as $item) {
-                $price = $item->dish->base_price;
-                if ($item->size) {
-                    $price *= $item->size->price_multiplier;
-                }
+                $dish = $item->dish;
+                $dishSize = \App\Models\DishSize::where('dish_id', $item->product_id)
+                    ->where('price', $item->price)
+                    ->first();
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'dish_id' => $item->dish_id,
-                    'size_id' => $item->size_id,
+                    'dish_name' => $dish->name,
+                    'size_name' => $item->size_name,
                     'quantity' => $item->quantity,
-                    'unit_price' => $price,
-                    'subtotal' => $price * $item->quantity,
+                    'unit_price' => $item->price,
+                    'total_price' => $item->price * $item->quantity,
                 ]);
             }
 
-            // تحديث حالة سلة التسوق
-            $cart->status = 'completed';
-            $cart->save();
+            // إنشاء سجل الدفع
+            $payment = Payment::create([
+                'order_id' => $order->id,
+                'payment_method' => $request->payment_method,
+                'status' => $request->payment_method === 'cash_on_delivery' ? 'pending' : 'completed',
+                'amount' => $total,
+            ]);
+
+            // تفريغ سلة التسوق
+            CartItem::where('cart_id', $cart->id)->delete();
 
             DB::commit();
 
             return response()->json([
-                'data' => $order->load(['items.dish', 'address']),
+                'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
-            ], 201);
+                'data' => [
+                    'order' => $order->load(['orderItems', 'payments']),
+                    'payment' => $payment
+                ]
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'حدث خطأ أثناء إنشاء الطلب: ' . $e->getMessage()
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء إنشاء الطلب',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
      * إلغاء طلب
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function cancel(Request $request, $id)
+    public function cancel($id)
     {
-        $order = Order::where('id', $id)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
+        $customerId = Auth::user()->customer->id;
+        $order = Order::where('customer_id', $customerId)
+            ->where('id', $id)
+            ->where('status', 'pending')
+            ->first();
 
-        // التحقق من أن الطلب يمكن إلغاؤه
-        if (!in_array($order->status, ['pending', 'processing'])) {
+        if (!$order) {
             return response()->json([
-                'message' => 'لا يمكن إلغاء هذا الطلب في حالته الحالية'
-            ], 422);
+                'status' => 'error',
+                'message' => 'لا يمكن إلغاء هذا الطلب'
+            ], 400);
         }
 
-        // تحديث حالة الطلب
         $order->status = 'cancelled';
         $order->save();
 
+        // تحديث حالة الدفع إذا كان الدفع مسبقًا
+        $payment = Payment::where('order_id', $order->id)->first();
+        if ($payment && $payment->status === 'completed') {
+            $payment->status = 'refunded';
+            $payment->save();
+        }
+
         return response()->json([
-            'data' => $order,
+            'status' => 'success',
             'message' => 'تم إلغاء الطلب بنجاح',
+            'data' => $order
         ]);
-    }
-
-    /**
-     * تتبع حالة الطلب (للعملاء)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function trackOrder(Request $request, $id)
-    {
-        $order = Order::where('id', $id)
-            ->where('user_id', $request->user()->id)
-            ->with(['items.dish', 'address'])
-            ->firstOrFail();
-
-        // هنا يمكن إضافة منطق إضافي لتتبع الطلب مثل الموقع الحالي للتوصيل
-
-        return response()->json([
-            'data' => [
-                'order' => $order,
-                'status' => $order->status,
-                'estimated_delivery_time' => $this->getEstimatedDeliveryTime($order),
-            ],
-            'message' => 'تم جلب معلومات تتبع الطلب بنجاح',
-        ]);
-    }
-
-    /**
-     * الحصول على الوقت المقدر للتوصيل
-     *
-     * @param  \App\Models\Order  $order
-     * @return string
-     */
-    private function getEstimatedDeliveryTime($order)
-    {
-        // حساب الوقت المقدر للتوصيل بناءً على وقت إنشاء الطلب وأوقات تحضير الأطباق
-        $preparationTime = $order->items->sum(function ($item) {
-            return $item->dish->preparation_time * $item->quantity;
-        });
-
-        // إضافة وقت التوصيل (30 دقيقة افتراضياً)
-        $deliveryTime = 30;
-
-        $totalMinutes = min($preparationTime + $deliveryTime, 120); // بحد أقصى ساعتين
-
-        $createdAt = $order->created_at;
-        $estimatedDelivery = $createdAt->addMinutes($totalMinutes);
-
-        return $estimatedDelivery->format('Y-m-d H:i:s');
     }
 }
