@@ -65,4 +65,9 @@ class Cart extends Model
             return $price * $item->quantity;
         });
     }
+
+    public function getItemsCount()
+    {
+        return $this->items->sum('quantity');
+    }
 }

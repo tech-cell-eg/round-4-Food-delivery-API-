@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Notifications\MessageReceived;
+use Illuminate\Support\Traits\DispatchesJobs;
+
 class Message extends Model
 {
     protected $fillable = [
@@ -14,6 +17,16 @@ class Message extends Model
         'message',
         'read_at',
     ];
+
+    protected static function booted()
+    {
+        static::created(function (Message $message) {
+            // Notify the other participant
+            if ($message->conversation?->otherUser) {
+                $message->conversation->otherUser->notify(new MessageReceived($message));
+            }
+        });
+    }
 
     protected $dates = [
         'read_at',
@@ -34,7 +47,7 @@ class Message extends Model
      */
     public function sender()
     {
-        return $this->morphTo('sender');
+        return $this->morphTo('user');
     }
 
     /**

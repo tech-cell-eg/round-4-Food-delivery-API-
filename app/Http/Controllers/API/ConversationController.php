@@ -17,7 +17,7 @@ class ConversationController extends Controller
     public function getOrCreateConversation($chefId)
     {
         $customer = Auth::user()->customer;
-        
+
         if (!$customer) {
             return response()->json(['message' => 'Customer not found'], 404);
         }
@@ -35,7 +35,7 @@ class ConversationController extends Controller
         }
 
         return response()->json([
-            'conversation' => $conversation->load(['messages' => function($query) {
+            'conversation' => $conversation->load(['messages' => function ($query) {
                 $query->latest()->take(20);
             }])
         ]);
@@ -54,14 +54,16 @@ class ConversationController extends Controller
         $conversation = Conversation::findOrFail($conversationId);
 
         // Check if user is part of the conversation
-        if ($user->customer && $conversation->customer_id !== $user->customer->id ||
-            $user->chef && $conversation->chef_id !== $user->chef->id) {
+        if (
+            $user->customer && $conversation->customer_id !== $user->customer->id ||
+            $user->chef && $conversation->chef_id !== $user->chef->id
+        ) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $message = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_type' => $user->user_type, // 'customer' or 'chef'
+            'sender_type' => $user->type, // 'customer' or 'chef'
             'sender_id' => $user->id,
             'message' => $request->message,
         ]);
@@ -78,9 +80,9 @@ class ConversationController extends Controller
     public function getUserConversations()
     {
         $user = Auth::user();
-        
+
         $conversations = [];
-        
+
         if ($user->user_type === 'customer') {
             $conversations = Conversation::where('customer_id', $user->customer->id)
                 ->with(['chef.user', 'lastMessage'])
@@ -106,7 +108,8 @@ class ConversationController extends Controller
 
         // Check if user is part of the conversation
         if (($user->customer && $conversation->customer_id !== $user->customer->id) ||
-            ($user->chef && $conversation->chef_id !== $user->chef->id)) {
+            ($user->chef && $conversation->chef_id !== $user->chef->id)
+        ) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
