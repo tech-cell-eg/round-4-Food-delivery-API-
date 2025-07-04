@@ -4,6 +4,7 @@ use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
+use App\Http\Controllers\API\ConversationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -41,45 +42,52 @@ Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews'])
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']); // عرض مراجعات طاهي معين
 
 // مسارات تتطلب مصادقة
+Route::middleware('auth:sanctum')->group(function () {
+    // معلومات المستخدم وتسجيل الخروج
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
-// معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']);
-Route::post('/logout', [AuthController::class, 'logout']);
+    // مسارات المحادثة
+    Route::prefix('conversations')->group(function () {
+        Route::get('/', [ConversationController::class, 'getUserConversations']);
+        Route::get('/with-chef/{chefId}', [ConversationController::class, 'getOrCreateConversation']);
+        Route::get('/{conversationId}/messages', [ConversationController::class, 'getMessages']);
+        Route::post('/{conversationId}/send', [ConversationController::class, 'sendMessage']);
+    });
 
+    // سلة التسوق
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/items', [CartController::class, 'addItem']);
+    Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+    Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+    Route::post('/cart/clear', [CartController::class, 'clearCart']);
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
-// سلة التسوق
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart/items', [CartController::class, 'addItem']);
-Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
-Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
-Route::post('/cart/clear', [CartController::class, 'clearCart']);
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
-Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
+    // الطلبات
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+    Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
-// الطلبات
-Route::get('/orders', [OrderController::class, 'index']);
-Route::get('/orders/{id}', [OrderController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
-Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
+    // المدفوعات
+    Route::post('/payments', [PaymentController::class, 'processPayment']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
+    Route::post('/payments/{id}/result', [PaymentController::class, 'updateResult']);
 
-// المدفوعات
-Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'show']);
-Route::post('/payments/{id}/result', [PaymentController::class, 'updateResult']);
+    // طرق الدفع
+    Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
+    Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
+    Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
 
-// طرق الدفع
-Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
-Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
-Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
+    // المراجعات
+    Route::get('/reviews', [ReviewController::class, 'index']);
+    Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+    Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
-// المراجعات
-
-Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
-Route::post('/reviews', [ReviewController::class, 'store']);
-Route::put('/reviews/{id}', [ReviewController::class, 'update']);
-Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
-
-Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
+    Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
+});
