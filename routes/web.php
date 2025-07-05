@@ -6,6 +6,10 @@ use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\DishController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Web\UpdatesController;
+use App\Http\Controllers\Web\MealController;
+
+// Meals routes
+Route::get('/meals', [MealController::class, 'index'])->name('meals.index');
 
 // Cart & Checkout routes
 Route::middleware(['auth'])->group(function () {
@@ -36,8 +40,8 @@ Route::prefix('chat')->name('chat.')->middleware(['auth'])->group(function () {
 });
 
 // مسارات الوجبات (لوحة التحكم)
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    Route::get('dishes', [DishController::class, 'index'])->name('dishes.index');
+Route::prefix('admin')->name('admin-')->middleware(['auth'])->group(function () {
+    Route::get('dishes', [DishController::class, 'index'])->name('dishes-index');
 });
 
 // مسارات المصادقة

@@ -40,11 +40,21 @@
 
             <!-- زر عرض الوجبات -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.dishes.index') }}">
+                <a class="nav-link" href="{{ route('meals.index') }}">
                     <i class="fas fa-utensils"></i>
-                    <span class="d-none d-md-inline">الوجبات</span>
+                    <span class="d-none d-md-inline">قائمة الوجبات</span>
                 </a>
             </li>
+            
+            <!-- رابط لوحة التحكم (للمشرفين) -->
+            @if(Auth::user()->is_admin)
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin-dishes-index') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="d-none d-md-inline">لوحة التحكم</span>
+                </a>
+            </li>
+            @endif
 
             <!-- زر السلة -->
             <li class="nav-item position-relative">
