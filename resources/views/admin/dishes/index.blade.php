@@ -22,19 +22,17 @@
                     <div class="mt-auto d-flex justify-content-between align-items-center">
                         <span class="fw-bold"><i class="fas fa-star text-warning me-1"></i>{{ number_format($dish->avg_rate,1) }}</span>
                         <form action="{{ route('cart.items.store') }}" method="POST" class="d-inline">
-                                @csrf
-                                <input type="hidden" name="dish_id" value="{{ $dish->id }}">
-                                <input type="hidden" name="size_name" value="medium">
-                                <button class="btn btn-sm btn-primary">أضف للسلة</button>
-                            </form>
+                            @csrf
+                            <input type="hidden" name="dish_id" value="{{ $dish->id }}">
+                            <input type="hidden" name="size_name" value="medium">
+                            <button class="btn btn-sm btn-primary">أضف للسلة</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
         @endforeach
     </div>
-
-
 </div>
 
 @endsection

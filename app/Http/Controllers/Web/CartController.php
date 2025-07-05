@@ -59,7 +59,13 @@ class CartController extends Controller
 
         $cartItem->increment('quantity');
 
-        return back()->with('success', 'تم إضافة الوجبة إلى السلة');
+        // جلب جميع الوجبات التي تنتمي لنفس الشيف
+        $dish = Dish::find($request->dish_id);
+        $dishes = Dish::where('chef_id', $dish->chef_id)->get();
+        $cart = Cart::where('customer_id', $userId)->first();
+
+        // هنا سنعيد صفحة مع الوجبات الخاصة بهذا الشيف
+        return redirect()->back()->with('chef', $dish->chef_id)->with('cart', $cart);
     }
 
     /**

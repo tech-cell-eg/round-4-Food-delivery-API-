@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url('/') }}">{{ config('app.name') }}</a>
+    <a class="navbar-brand" href="{{ url('/') }}">@yield('title', config('app.name'))</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -36,16 +36,6 @@
                 </ul>
             </li>
 
-
-
-            <!-- زر عرض الوجبات -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('meals.index') }}">
-                    <i class="fas fa-utensils"></i>
-                    <span class="d-none d-md-inline">قائمة الوجبات</span>
-                </a>
-            </li>
-            
             <!-- رابط لوحة التحكم (للمشرفين) -->
             @if(Auth::user()->is_admin)
             <li class="nav-item">

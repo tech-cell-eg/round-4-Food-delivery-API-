@@ -13,7 +13,7 @@
 
             <div class="row g-3">
                 <div class="col-md-4">
-                    <a href="{{ route('admin.dishes.index') }}" class="text-decoration-none">
+                    <a href="{{ route('admin-dishes-index') }}" class="text-decoration-none">
                         <div class="card text-center shadow-sm h-100">
                             <div class="card-body py-4">
                                 <i class="fas fa-utensils fa-2x mb-2 text-primary"></i>
