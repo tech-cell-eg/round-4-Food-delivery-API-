@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use App\Models\Chef;
 use App\Models\Dish;
-use App\Models\Review;
 use App\Models\User;
+use App\Models\Review;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\CustomerActionNotification;
 
 class ReviewController extends Controller
 {
@@ -106,7 +108,18 @@ class ReviewController extends Controller
             'comment' => $request->comment,
             'created_at' => now(),
         ]);
-
+        // Notify chef if review is for them
+    if ($request->reviewable_type === 'chef') {
+        $chef=Chef::findOrFail($chefId);
+        if ($chef) {
+            $chef->notify(new CustomerActionNotification([
+                'title' => 'New Review',
+                'message' => "{$request->user()->name} left a new review on your profile.",
+                'image' => $user->profile_photo_url ?? null . urlencode($request->user()->name),
+                'time' => now()->diffForHumans(),
+            ]));
+        }
+    }
         return response()->json([
             'data' => $review->load(['customer:id,name,profile_image']),
             'message' => 'تم إضافة المراجعة بنجاح',

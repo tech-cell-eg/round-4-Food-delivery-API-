@@ -10,14 +10,16 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'restaurant_id',
         'customer_id',
         'address_id',
         'subtotal',
+        'coupon_id',
+        'discount',
         'delivery_fee',
         'tax',
-        'discount',
         'total',
-        'coupon_id',
+        'order_number',
         'status',
         'notes',
     ];
@@ -28,6 +30,11 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public static function genNumber()
+    {
+        return 'ORD-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -52,6 +59,14 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * العلاقة مع الأطباق عبر عناصر الطلب
+     */
+    public function dishes()
+    {
+        return $this->belongsToMany(Dish::class, 'order_items');
     }
 
     /**
