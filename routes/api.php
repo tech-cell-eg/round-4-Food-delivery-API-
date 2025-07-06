@@ -1,39 +1,41 @@
 <?php
 
 
-use Illuminate\Support\Facades\Route;
-
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Auth;
+
 // ==================== Auth ====================
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\OtpLoginController;
-use App\Http\Controllers\API\SocialAuthController;
+use App\Http\Controllers\API\CartController;
 
 // ==================== Profile ====================
-use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\ChatController;
 
 // ==================== Categories & Dishes ====================
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\Customer\DishesController;
+use Illuminate\Support\Facades\Notification;
+use App\Http\Controllers\API\OrderController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
-use App\Http\Controllers\API\Chef\StatisticsController;
+use App\Http\Controllers\API\ReviewController;
+use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\OtpLoginController;
 
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\Chef\ChefController;
+use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\API\SocialAuthController;
 
 // ==================== Reviews ====================
-use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\ChefReviewsController;
+use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\API\ChatController;
+use App\Http\Controllers\API\Chef\StatisticsController;
+use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -132,4 +134,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
     });
+
+    // Get all notifications for the logged-in chef
+Route::get('/notifications', function () {
+    return Auth::user()->notifications;
+});
+
+// Get unread notifications only
+Route::get('/notifications/unread', function () {
+    return Auth::user()->unreadNotifications;
+});
+
+// Mark all as read
+Route::post('/notifications/mark-as-read', function () {
+    Auth::user()->unreadNotifications->markAsRead();
+    return response()->json(['status' => 'done']);
+});
 });

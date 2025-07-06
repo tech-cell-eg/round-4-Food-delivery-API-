@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Notifications\CustomerActionNotification;
+use App\Models\User;
+
 class OrderController extends Controller
 {
     /**
@@ -62,10 +65,9 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customer= Auth::user()->customer;
         $cart = Cart::with(['items.dish'])
-            ->where('customer_id', $customerId)
+            ->where('customer_id', $customer->id)
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
@@ -106,7 +108,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'customer_id' => $customerId,
+                'customer_id' => $customer->id,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
@@ -143,6 +145,35 @@ class OrderController extends Controller
                 'status' => $request->payment_method === 'cash_on_delivery' ? 'pending' : 'completed',
                 'amount' => $total,
             ]);
+            // Notify chefs
+            $chefIds = $cart->items->pluck('dish.chef_id')->unique()->filter();
+
+            foreach ($chefIds as $chefId) {
+                $chef = User::find($chefId);
+
+                if ($chef) {
+                    // Get only this chef's dishes from the cart
+                    $chefDishes = $cart->items->filter(function ($item) use ($chefId) {
+                        return $item->dish->chef_id == $chefId;
+                    })->map(function ($item) {
+                        return [
+                            'dish_name' => $item->dish->name,
+                            'size' => $item->size_name,
+                            'quantity' => $item->quantity,
+                            'price' => $item->price,
+                        ];
+                    })->values();
+
+                    // Send notification
+                    $chef->notify(new CustomerActionNotification([
+                        'title' => 'New Order',
+                        'message' => "{$customer->user->name} has placed a new order with your dishes.",
+                        'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
+                        'time' => now()->diffForHumans(),
+                        'dishes' => $chefDishes,
+                    ]));
+                }
+            }
 
             // تفريغ سلة التسوق
             CartItem::where('cart_id', $cart->id)->delete();
@@ -172,8 +203,8 @@ class OrderController extends Controller
      */
     public function cancel($id)
     {
-        $customerId = Auth::user()->customer->id;
-        $order = Order::where('customer_id', $customerId)
+        $customer = Auth::user()->customer;
+        $order = Order::where('customer_id', $customer->id)
             ->where('id', $id)
             ->where('status', 'pending')
             ->first();
@@ -194,6 +225,19 @@ class OrderController extends Controller
             $payment->status = 'refunded';
             $payment->save();
         }
+        // Notify related chefs
+    $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
+    foreach ($chefIds as $chefId) {
+        $chef = User::find($chefId);
+        if ($chef) {
+            $chef->notify(new CustomerActionNotification([
+                'title' => 'Order Cancelled',
+                'message' => "{$customer->user->name} cancelled their order.",
+                'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
+                'time' => now()->diffForHumans(),
+            ]));
+        }
+    }
 
         return response()->json([
             'status' => 'success',
