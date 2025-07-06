@@ -7,152 +7,140 @@ use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
     /**
      * معالجة عملية الدفع للطلب
+     * 
+     * يستقبل معلومات الدفع من الفرونت إند ويقوم بإنشاء سجل دفع
+     * ويعيد معرف الدفع للفرونت إند لمتابعة عملية الدفع
      */
     public function processPayment(Request $request)
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
             'payment_method' => 'required|in:credit_card,debit_card,cash_on_delivery,wallet',
-            'card_number' => 'required_if:payment_method,credit_card,debit_card',
-            'card_expiry' => 'required_if:payment_method,credit_card,debit_card',
-            'card_cvv' => 'required_if:payment_method,credit_card,debit_card',
+            'amount' => 'required|numeric|min:0',
+            'card_token' => 'required_if:payment_method,credit_card,debit_card'
         ]);
 
         $customerId = Auth::user()->customer->id;
-        $order = Order::where('customer_id', $customerId)
-            ->where('id', $request->order_id)
-            ->firstOrFail();
 
-        // التحقق من أن الطلب لم يتم دفعه بالفعل
-        $existingPayment = Payment::where('order_id', $order->id)
-            ->where('status', 'completed')
+        // التحقق من وجود الطلب وأنه ينتمي للعميل الحالي
+        $order = Order::where('id', $request->order_id)
+            ->where('customer_id', $customerId)
             ->first();
 
-        if ($existingPayment) {
+        if (!$order) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'تم دفع هذا الطلب بالفعل'
-            ], 400);
+                'success' => false,
+                'message' => 'الطلب غير موجود أو لا ينتمي لك'
+            ], 404);
         }
 
-        // في حالة وجود دفع معلق، نقوم بتحديثه
-        $payment = Payment::where('order_id', $order->id)->first();
+        // إنشاء سجل دفع جديد بحالة معلقة
+        $payment = Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => $request->payment_method,
+            'amount' => $request->amount,
+            'status' => 'pending',
+            'card_token' => $request->card_token ?? null,
+        ]);
+        
+        Log::info('تم إنشاء سجل دفع جديد', ['payment_id' => $payment->id]);
 
-        if (!$payment) {
-            $payment = new Payment([
-                'order_id' => $order->id,
-                'payment_method' => $request->payment_method,
-                'amount' => $order->total,
+        // إذا كانت طريقة الدفع هي الدفع عند الاستلام
+        if ($request->payment_method === 'cash_on_delivery') {
+            // تحديث حالة الطلب إلى معلق
+            $order->update(['status' => 'pending']);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تسجيل طلبك بنجاح وسيتم الدفع عند الاستلام',
+                'payment_id' => $payment->id,
+                'order_id' => $order->id
             ]);
-        } else {
-            $payment->payment_method = $request->payment_method;
         }
+        
+        // بالنسبة لطرق الدفع الأخرى، نعيد معرف الدفع للفرونت إند
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إنشاء طلب الدفع بنجاح',
+            'payment_id' => $payment->id,
+            'order_id' => $order->id,
+            'amount' => $payment->amount,
+            'payment_method' => $payment->payment_method
+        ]);
+    }
 
-        // معالجة الدفع حسب الطريقة
-        switch ($request->payment_method) {
-            case 'credit_card':
-            case 'debit_card':
-                // هنا يمكن إضافة التكامل مع بوابة الدفع الفعلية
-                $paymentDetails = [
-                    'card_number' => substr($request->card_number, -4), // نخزن فقط آخر 4 أرقام للأمان
-                    'card_expiry' => $request->card_expiry,
-                ];
+    /**
+     * تحديث نتيجة الدفع بعد انتهاء العملية من الفرونت
+     */
+    public function updatePaymentResult(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:completed,failed,cancelled',
+            'transaction_id' => 'nullable|string',
+            'payment_details' => 'nullable|array'
+        ]);
 
-                // محاكاة عملية الدفع
-                $success = true; // يمكن تغييرها لمحاكاة نجاح أو فشل الدفع
-
-                if ($success) {
-                    $payment->status = 'completed';
-                    $payment->transaction_id = 'TXN_' . uniqid();
-                    $payment->payment_details = json_encode($paymentDetails);
-                    $order->status = 'processing';
-                } else {
-                    $payment->status = 'failed';
-                    $payment->payment_details = json_encode([
-                        'error' => 'فشل في معالجة الدفع'
-                    ]);
-                }
-                break;
-
-            case 'cash_on_delivery':
-                $payment->status = 'pending';
-                $order->status = 'processing';
-                break;
-
-            case 'wallet':
-                // هنا يمكن إضافة التحقق من رصيد المحفظة
-                $walletBalance = 1000; // يجب استبدالها بالرصيد الفعلي
-
-                if ($walletBalance >= $order->total) {
-                    $payment->status = 'completed';
-                    $payment->transaction_id = 'WALLET_' . uniqid();
-                    $order->status = 'processing';
-                } else {
-                    $payment->status = 'failed';
-                    $payment->payment_details = json_encode([
-                        'error' => 'رصيد المحفظة غير كافٍ'
-                    ]);
-                }
-                break;
+        $payment = Payment::findOrFail($id);
+        $payment->status = $request->status;
+        $payment->transaction_id = $request->transaction_id ?? $payment->transaction_id;
+        
+        if ($request->has('payment_details')) {
+            $payment->payment_details = json_encode($request->payment_details);
         }
-
+        
         $payment->save();
-        $order->save();
 
-        if ($payment->status === 'completed') {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'تمت معالجة الدفع بنجاح',
-                'data' => [
-                    'payment' => $payment,
-                    'order' => $order
-                ]
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'فشل في معالجة الدفع',
-                'data' => [
-                    'payment' => $payment,
-                    'order' => $order
-                ]
-            ], 400);
+        // تحديث حالة الطلب إذا نجح الدفع
+        if ($request->status === 'completed') {
+            $order = Order::find($payment->order_id);
+            if ($order) {
+                $order->status = 'processing';
+                $order->save();
+            }
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث حالة الدفع بنجاح',
+            'payment' => [
+                'id' => $payment->id,
+                'status' => $payment->status,
+                'order_id' => $payment->order_id
+            ]
+        ]);
     }
 
     /**
      * التحقق من حالة الدفع
      */
-    public function checkPaymentStatus($orderId)
+    public function checkPaymentStatus($id)
     {
-        $customerId = Auth::user()->customer->id;
-        $order = Order::where('customer_id', $customerId)
-            ->where('id', $orderId)
-            ->firstOrFail();
-
-        $payment = Payment::where('order_id', $order->id)->first();
-
-        if (!$payment) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'لم يتم العثور على معلومات الدفع'
-            ], 404);
-        }
+        $payment = Payment::findOrFail($id);
+        $order = Order::find($payment->order_id);
 
         return response()->json([
-            'status' => 'success',
-            'data' => [
-                'payment_status' => $payment->status,
+            'success' => true,
+            'payment' => [
+                'id' => $payment->id,
+                'status' => $payment->status,
                 'payment_method' => $payment->payment_method,
                 'amount' => $payment->amount,
                 'transaction_id' => $payment->transaction_id,
-                'created_at' => $payment->created_at
-            ]
+                'created_at' => $payment->created_at,
+                'updated_at' => $payment->updated_at
+            ],
+            'order' => $order ? [
+                'id' => $order->id,
+                'status' => $order->status,
+                'total' => $order->total
+            ] : null
         ]);
     }
 }

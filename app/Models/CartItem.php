@@ -19,6 +19,7 @@ class CartItem extends Model
         'dish_id',
         'size_name',
         'quantity',
+        'price',
     ];
 
     /**

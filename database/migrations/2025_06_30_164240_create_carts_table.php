@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('coupon_id');
+            $table->enum('status', ['empty', 'filled', 'checked_out', 'ordered', 'delivered', 'cancelled'])->default('empty');
             $table->timestamps();
         });
     }

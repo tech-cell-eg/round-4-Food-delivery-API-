@@ -22,8 +22,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $orders = Order::with(['orderItems', 'payments'])
             ->where('customer_id', $customerId)
             ->orderBy('created_at', 'desc')
@@ -40,8 +39,7 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
             ->where('customer_id', $customerId)
             ->where('id', $id)
@@ -58,16 +56,15 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'address_id' => 'required|exists:addresses,id',
-            'payment_method' => 'required|in:credit_card,debit_card,cash_on_delivery,wallet',
             'coupon_code' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        $customer= Auth::user()->customer;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::with(['items.dish'])
-            ->where('customer_id', $customer->id)
+            ->where('customer_id', $customerId)
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
@@ -77,38 +74,45 @@ class OrderController extends Controller
             ], 400);
         }
 
+        $restaurantId = $cart->items->first()->dish->chef->id;
+
         DB::beginTransaction();
         try {
             // حساب المجموع الفرعي
-            $subtotal = $cart->items->sum('price');
+            $subtotal = $cart->items->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
 
-            // تطبيق الكوبون إذا كان موجودًا
+            // تطبيق الخصم إذا كان هناك كوبون
             $discount = 0;
             $couponId = null;
+
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
                 $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
-                    ->where('expiry_date', '>=', now())
+                    ->where('expires_at', '>=', now())
                     ->first();
 
                 if ($coupon) {
-                    $discount = $coupon->discount_type === 'percentage'
-                        ? ($subtotal * $coupon->discount_value / 100)
-                        : $coupon->discount_value;
+                    $discount = $coupon->discount_type === 'fixed'
+                        ? $coupon->discount_value
+                        : ($subtotal * $coupon->discount_value / 100);
+
                     $couponId = $coupon->id;
                 }
             }
 
-            // حساب رسوم التوصيل والضرائب
-            $deliveryFee = 10; // يمكن تغييره حسب المسافة أو قيمة الطلب
-            $tax = $subtotal * 0.15; // ضريبة القيمة المضافة 15%
+            // حساب رسوم التوصيل والضريبة
+            $deliveryFee = 10; // يمكن جعلها ديناميكية
+            $tax = $subtotal * 0.15; // 15% ضريبة
 
             // حساب المجموع النهائي
             $total = $subtotal + $deliveryFee + $tax - $discount;
 
             // إنشاء الطلب
             $order = Order::create([
-                'customer_id' => $customer->id,
+                'restaurant_id' => $restaurantId,
+                'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
@@ -117,62 +121,20 @@ class OrderController extends Controller
                 'total' => $total,
                 'coupon_id' => $couponId,
                 'status' => 'pending',
+                'order_number' => Order::genNumber(),
                 'notes' => $request->notes,
             ]);
 
-            // إنشاء عناصر الطلب
+            // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
-                $dish = $item->dish;
-                $dishSize = \App\Models\DishSize::where('dish_id', $item->product_id)
-                    ->where('price', $item->price)
-                    ->first();
-
                 OrderItem::create([
                     'order_id' => $order->id,
                     'dish_id' => $item->dish_id,
-                    'dish_name' => $dish->name,
-                    'size_name' => $item->size_name,
+                    'size' => $item->size_name,
                     'quantity' => $item->quantity,
                     'unit_price' => $item->price,
                     'total_price' => $item->price * $item->quantity,
                 ]);
-            }
-
-            // إنشاء سجل الدفع
-            $payment = Payment::create([
-                'order_id' => $order->id,
-                'payment_method' => $request->payment_method,
-                'status' => $request->payment_method === 'cash_on_delivery' ? 'pending' : 'completed',
-                'amount' => $total,
-            ]);
-            // Notify chefs
-            $chefIds = $cart->items->pluck('dish.chef_id')->unique()->filter();
-
-            foreach ($chefIds as $chefId) {
-                $chef = User::find($chefId);
-
-                if ($chef) {
-                    // Get only this chef's dishes from the cart
-                    $chefDishes = $cart->items->filter(function ($item) use ($chefId) {
-                        return $item->dish->chef_id == $chefId;
-                    })->map(function ($item) {
-                        return [
-                            'dish_name' => $item->dish->name,
-                            'size' => $item->size_name,
-                            'quantity' => $item->quantity,
-                            'price' => $item->price,
-                        ];
-                    })->values();
-
-                    // Send notification
-                    $chef->notify(new CustomerActionNotification([
-                        'title' => 'New Order',
-                        'message' => "{$customer->user->name} has placed a new order with your dishes.",
-                        'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
-                        'time' => now()->diffForHumans(),
-                        'dishes' => $chefDishes,
-                    ]));
-                }
             }
 
             // تفريغ سلة التسوق
@@ -184,8 +146,7 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
                 'data' => [
-                    'order' => $order->load(['orderItems', 'payments']),
-                    'payment' => $payment
+                    'order' => $order->load('orderItems')
                 ]
             ]);
         } catch (\Exception $e) {
@@ -226,18 +187,18 @@ class OrderController extends Controller
             $payment->save();
         }
         // Notify related chefs
-    $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
-    foreach ($chefIds as $chefId) {
-        $chef = User::find($chefId);
-        if ($chef) {
-            $chef->notify(new CustomerActionNotification([
-                'title' => 'Order Cancelled',
-                'message' => "{$customer->user->name} cancelled their order.",
-                'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
-                'time' => now()->diffForHumans(),
-            ]));
+        $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
+        foreach ($chefIds as $chefId) {
+            $chef = User::find($chefId);
+            if ($chef) {
+                $chef->notify(new CustomerActionNotification([
+                    'title' => 'Order Cancelled',
+                    'message' => "{$customer->user->name} cancelled their order.",
+                    'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
+                    'time' => now()->diffForHumans(),
+                ]));
+            }
         }
-    }
 
         return response()->json([
             'status' => 'success',

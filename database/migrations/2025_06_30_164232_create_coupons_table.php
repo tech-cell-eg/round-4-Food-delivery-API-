@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('discount_value', 10, 2);
             $table->text('description')->nullable();
             $table->timestamp('expires_at');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
