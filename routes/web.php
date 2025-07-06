@@ -2,8 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Web\CartController
 use App\Http\Controllers\Admin\ChatController;
 use App\Http\Controllers\Admin\DishController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\Web\CustomerController;
+use App\Http\Controllers\Web\ChefController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Web\UpdatesController;
 use App\Http\Controllers\Web\MealController;
@@ -13,11 +17,11 @@ Route::get('/meals', [MealController::class, 'index'])->name('meals.index');
 
 // Cart & Checkout routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/cart', [\App\Http\Controllers\Web\CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/items', [\App\Http\Controllers\Web\CartController::class, 'addItem'])->name('cart.items.store');
-    Route::patch('/cart/items/{id}', [\App\Http\Controllers\Web\CartController::class, 'updateItem'])->name('cart.items.update');
-    Route::delete('/cart/items/{id}', [\App\Http\Controllers\Web\CartController::class, 'removeItem'])->name('cart.items.destroy');
-    Route::post('/cart/clear', [\App\Http\Controllers\Web\CartController::class, 'clear'])->name('cart.clear');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/items', [CartController::class, 'addItem'])->name('cart.items.store');
+    Route::patch('/cart/items/{id}', [CartController::class, 'updateItem'])->name('cart.items.update');
+    Route::delete('/cart/items/{id}', [CartController::class, 'removeItem'])->name('cart.items.destroy');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
     // checkout routes placeholders (PaymentController later)
     Route::get('/checkout', function () {
@@ -47,8 +51,58 @@ Route::prefix('admin')->name('admin-')->middleware(['auth'])->group(function () 
 // مسارات المصادقة
 Auth::routes();
 
+// مسارات الزبون
+Route::middleware(['auth'])->group(function () {
+    // الصفحة الرئيسية للزبون
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/', function () {
+        return redirect('/home');
+    });
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::get('/', function () {
-    return redirect('/home');
+    // طلبات الزبون السابقة
+    Route::get('/orders/history', [OrderController::class, 'history'])
+        ->name('orders.history');
+
+    // المطاعم المتاحة
+    Route::get('/restaurants', [RestaurantController::class, 'index'])
+        ->name('restaurants');
+
+    // المفضلة
+    Route::get('/favorites', [FavoriteController::class, 'index'])
+        ->name('favorites');
+});
+
+// مسارات الشيف
+Route::prefix('chef')->name('chef-')->middleware(['auth'])->group(function () {
+    // لوحة تحكم الشيف
+    Route::get('/dashboard', [ChefController::class, 'dashboard'])
+        ->name('dashboard');
+
+    // إدارة الوجبات
+    Route::resource('meals', DishController::class);
+
+    // طلبات المطعم
+    Route::get('/orders', [ChefController::class, 'orders'])
+        ->name('orders');
+
+    // تحديث حالة الطلب
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->name('orders.update-status');
+});
+// مسارات الشيف
+Route::prefix('customer')->name('customer-')->middleware(['auth'])->group(function () {
+    // لوحة تحكم الشيف
+    Route::get('/dashboard', [CustomerController::class, 'dashboard'])
+        ->name('dashboard');
+
+    // إدارة الوجبات
+    Route::resource('meals', DishController::class);
+
+    // طلبات المطعم
+    Route::get('/orders', [CustomerController::class, 'orders'])
+        ->name('orders');
+
+    // تحديث حالة الطلب
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])
+        ->name('orders.update-status');
 });

@@ -5,7 +5,43 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
-            <!-- روابط التنقل الرئيسية -->
+            @if(auth()->check())
+            @if(auth()->user()->type === 'chef')
+            <!-- روابط خاصة بالشيف -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('chef.dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-1"></i>لوحة التحكم
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('chef.meals.index') }}">
+                    <i class="fas fa-utensils me-1"></i>إدارة الوجبات
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('chef.orders') }}">
+                    <i class="fas fa-list-ul me-1"></i>الطلبات الواردة
+                </a>
+            </li>
+            @else
+            <!-- روابط خاصة بالزبون -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('home') }}">
+                    <i class="fas fa-home me-1"></i>الرئيسية
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('restaurants') }}">
+                    <i class="fas fa-store me-1"></i>المطاعم
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('orders.history') }}">
+                    <i class="fas fa-history me-1"></i>طلباتي السابقة
+                </a>
+            </li>
+            @endif
+            @endif
         </ul>
 
         <ul class="navbar-nav">
@@ -16,7 +52,7 @@
                     {{ Auth::user()->name }}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="/profile">
+                    <li><a class="dropdown-item" href="/{{auth()->user()->type}}/dashboard">
                             <i class="fas fa-user me-2"></i>الملف الشخصي
                         </a></li>
                     <li><a class="dropdown-item" href="{{ url('/settings') }}">
@@ -46,19 +82,18 @@
             </li>
             @endif
 
-            <!-- زر السلة -->
+            <!-- زر السلة (يظهر للزبون فقط) -->
+            @if(auth()->check() && auth()->user()->type === 'customer')
             <li class="nav-item position-relative">
                 <a class="nav-link" href="{{ route('cart.index') }}">
                     <i class="fas fa-shopping-cart"></i>
-                    {{-- <span class="d-none d-md-inline">السلة</span> --}}
-                    @php $cart=[] @endphp
-
+                    @php $cart = session('cart', []); @endphp
                     <span id="cart-count" class="position-absolute top-0 start-75 translate-middle badge rounded-pill bg-danger">
-                        {{ count($cart) > 9 ? '9+' :  0 }}
+                        {{ count($cart) > 9 ? '9+' : count($cart) }}
                     </span>
-
                 </a>
             </li>
+            @endif
 
             <!-- زر المحادثات -->
             <li class="nav-item dropdown">
