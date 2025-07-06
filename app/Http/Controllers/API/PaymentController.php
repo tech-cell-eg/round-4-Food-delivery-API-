@@ -27,7 +27,7 @@ class PaymentController extends Controller
             'card_token' => 'required_if:payment_method,credit_card,debit_card'
         ]);
 
-        $customerId = 1; // سيتم استبداله بـ Auth::user()->customer->id
+        $customerId = Auth::user()->customer->id;
 
         // التحقق من وجود الطلب وأنه ينتمي للعميل الحالي
         $order = Order::where('id', $request->order_id)

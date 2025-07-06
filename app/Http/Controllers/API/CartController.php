@@ -20,8 +20,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
 
         $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
@@ -56,7 +55,7 @@ class CartController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        $customerId = 1;  // Will be replaced with $customerId = Auth::user()->customer->id;
+        $customerId = Auth::user()->customer->id;
         // التحقق من وجود سلة تسوق للعميل
         $cart = Cart::firstOrCreate(['customer_id' => $customerId]);
 
@@ -118,8 +117,7 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
-        // $customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if (!$cart) {
@@ -146,8 +144,7 @@ class CartController extends Controller
      */
     public function removeItem($id)
     {
-        // $customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if (!$cart) {
@@ -172,8 +169,7 @@ class CartController extends Controller
      */
     public function clearCart()
     {
-        // $customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if ($cart) {
@@ -197,8 +193,7 @@ class CartController extends Controller
             'code' => 'required|string|exists:coupons,code'
         ]);
 
-        // $customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if (!$cart) {
@@ -248,8 +243,7 @@ class CartController extends Controller
      */
     public function removeCoupon()
     {
-        // $customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if ($cart) {

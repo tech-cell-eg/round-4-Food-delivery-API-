@@ -19,8 +19,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $orders = Order::with(['orderItems', 'payments'])
             ->where('customer_id', $customerId)
             ->orderBy('created_at', 'desc')
@@ -37,8 +36,7 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
             ->where('customer_id', $customerId)
             ->where('id', $id)
@@ -61,8 +59,7 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        //$customerId = Auth::user()->customer->id;
-        $customerId = 1;
+        $customerId = Auth::user()->customer->id;
         $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
             ->first();
