@@ -59,9 +59,25 @@ class Chef extends Model
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Get the orders for the chef through dishes.
+     */
+    public function orders()
+    {
+        return $this->hasManyThrough(Order::class, Dish::class, 'chef_id', 'id', 'id', 'id')
+            ->whereHas('orderItems.dish', function ($query) {
+                $query->where('chef_id', $this->id);
+            });
+    }
+
     public function isVerified()
     {
         return (bool) $this->is_verified;
+    }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
     }
 
 }

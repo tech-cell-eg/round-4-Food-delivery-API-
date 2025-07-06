@@ -12,6 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Notifications\CustomerActionNotification;
+use App\Models\User;
+
 class OrderController extends Controller
 {
     /**
@@ -161,8 +164,8 @@ class OrderController extends Controller
      */
     public function cancel($id)
     {
-        $customerId = Auth::user()->customer->id;
-        $order = Order::where('customer_id', $customerId)
+        $customer = Auth::user()->customer;
+        $order = Order::where('customer_id', $customer->id)
             ->where('id', $id)
             ->where('status', 'pending')
             ->first();
@@ -182,6 +185,19 @@ class OrderController extends Controller
         if ($payment && $payment->status === 'completed') {
             $payment->status = 'refunded';
             $payment->save();
+        }
+        // Notify related chefs
+        $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
+        foreach ($chefIds as $chefId) {
+            $chef = User::find($chefId);
+            if ($chef) {
+                $chef->notify(new CustomerActionNotification([
+                    'title' => 'Order Cancelled',
+                    'message' => "{$customer->user->name} cancelled their order.",
+                    'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
+                    'time' => now()->diffForHumans(),
+                ]));
+            }
         }
 
         return response()->json([
