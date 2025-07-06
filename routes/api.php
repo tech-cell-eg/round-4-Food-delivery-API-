@@ -126,8 +126,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Chat
     Route::controller(ChatController::class)->group(function () {
+        Route::get('/conversations', 'getConversations');
         Route::post('/messages/send', 'sendMessage');
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+
     });
+
 });
+

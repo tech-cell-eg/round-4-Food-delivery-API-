@@ -30,8 +30,7 @@ class NewConversationMessageEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('conversation.' . $this->messageResource->conversation_id),
-
+            new PresenceChannel('conversation.' . $this->messageResource->conversation_id),
         ];
     }
 }
