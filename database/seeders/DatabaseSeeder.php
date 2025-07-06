@@ -25,8 +25,6 @@ class DatabaseSeeder extends Seeder
             DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
             CouponSeeder::class,        // Create coupons (depends on chefs)
             ReviewSeeder::class,
-            OrderSeeder::class,         
-            OrderItemSeeder::class,     
         ]);
     }
 }
