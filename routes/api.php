@@ -12,7 +12,6 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ReviewController;
 
-
 Route::get('categories', [CategoryController::class, "index"]);
 Route::get('categories/meal_types', [CategoryController::class, "mealTypes"]);
 Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
@@ -23,7 +22,6 @@ Route::controller(ChefController::class)->group(function () {
     Route::get('/resturants/{id}', 'showChefWithCategoriesAndMeals')->name("showChefWithCategoriesAndMeals");
 });
 
-
 Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->middleware("auth:sanctum")*/->group(function () {
     Route::get('/', 'index')->name("index");
     Route::get('/{id}', 'show')->name("show");
@@ -33,6 +31,9 @@ Route::controller(DishController::class)->prefix("meals")->name("meals.")/*->mid
 // مسارات المصادقة
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+// معلومات المستخدم وتسجيل الخروج
+Route::get('/user', [AuthController::class, 'user']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 // مسارات عامة لا تتطلب مصادقة
 Route::get('/categories', [CategoryController::class, 'index']); // عرض جميع الأقسام
@@ -41,12 +42,6 @@ Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews'])
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']); // عرض مراجعات طاهي معين
 
 // مسارات تتطلب مصادقة
-
-// معلومات المستخدم وتسجيل الخروج
-Route::get('/user', [AuthController::class, 'user']);
-Route::post('/logout', [AuthController::class, 'logout']);
-
-
 // سلة التسوق
 Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);

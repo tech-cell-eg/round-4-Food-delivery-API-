@@ -11,6 +11,7 @@ use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Helpers\ApiResponse;
 
 class CartController extends Controller
 {
@@ -27,21 +28,21 @@ class CartController extends Controller
             ->first();
 
         if (!$cart) {
-            return \App\Helpers\ApiResponse::success([
-    'cart' => null,
-    'items' => [],
-    'total' => 0
-], 'سلة التسوق فارغة', 200);
+            return ApiResponse::success([
+                'cart' => null,
+                'items' => [],
+                'total' => 0
+            ], 'سلة التسوق فارغة', 200);
         }
 
         $total = $cart->items->sum(function ($item) {
             return $item->price * $item->quantity;
         });
 
-        return \App\Helpers\ApiResponse::success([
-    'cart' => $cart,
-    'total' => $total
-], 'تم جلب بيانات السلة بنجاح', 200);
+        return ApiResponse::success([
+            'cart' => $cart,
+            'total' => $total
+        ], 'تم جلب بيانات السلة بنجاح', 200);
     }
 
     /**
@@ -63,9 +64,10 @@ class CartController extends Controller
         $dish = Dish::find($request->dish_id);
 
         if (!$dish) {
-            return \App\Helpers\ApiResponse::error(
-                'message' => 'هذا الطبق غير متوفر حالياً'
-            ), 400;
+            return ApiResponse::error(
+                ['message' => 'هذا الطبق غير متوفر حالياً'],
+                400
+            );
         }
 
         // الحصول على سعر الطبق حسب الحجم
@@ -74,9 +76,9 @@ class CartController extends Controller
             ->first();
 
         if (!$dishSize) {
-            return \App\Helpers\ApiResponse::error(
+            return ApiResponse::error([
                 'message' => 'حجم الطبق غير متوفر'
-            ), 400;
+            ], 400);
         }
 
         // التحقق مما إذا كان العنصر موجودًا بالفعل في السلة
@@ -103,8 +105,8 @@ class CartController extends Controller
         }
 
         return \App\Helpers\ApiResponse::success([
-    'cart' => $cart->load('items')
-], 'تمت إضافة العنصر إلى سلة التسوق', 200);
+            'cart' => $cart->load('items')
+        ], 'تمت إضافة العنصر إلى سلة التسوق', 200);
     }
 
     /**
@@ -135,8 +137,8 @@ class CartController extends Controller
         $cartItem->update(['quantity' => $request->quantity]);
 
         return \App\Helpers\ApiResponse::success([
-    'cart' => $cart->load('items')
-], 'تم تحديث كمية العنصر', 200);
+            'cart' => $cart->load('items')
+        ], 'تم تحديث كمية العنصر', 200);
     }
 
     /**
@@ -200,12 +202,12 @@ class CartController extends Controller
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if (!$cart) {
-            return \App\Helpers\ApiResponse::error('سلة التسوق غير موجودة', 404);
+            return ApiResponse::error('سلة التسوق غير موجودة', 404);
         }
 
         // Check if cart has items
         if ($cart->items->isEmpty()) {
-            return \App\Helpers\ApiResponse::error('سلة التسوق فارغة', 400);
+            return ApiResponse::error('سلة التسوق فارغة', 400);
         }
 
         // Find the coupon
@@ -214,12 +216,12 @@ class CartController extends Controller
             ->first();
 
         if (!$coupon) {
-            return \App\Helpers\ApiResponse::error('كود الخصم غير صالح أو منتهي الصلاحية', 400);
+            return ApiResponse::error('كود الخصم غير صالح أو منتهي الصلاحية', 400);
         }
 
         // Check if coupon is already applied
         if ($cart->coupon_id === $coupon->id) {
-            return \App\Helpers\ApiResponse::error('تم تطبيق هذا الكوبون مسبقاً', 400);
+            return ApiResponse::error('تم تطبيق هذا الكوبون مسبقاً', 400);
         }
 
         // Apply coupon to cart
@@ -229,40 +231,39 @@ class CartController extends Controller
         // Calculate new total with discount
         $subtotal = $cart->items->sum(function ($item) {
             return $item->price * $item->quantity;
+        });
+
+        $discount = $this->calculateDiscount($subtotal, $coupon);
+        $total = $subtotal - $discount;
+
+        return ApiResponse::success([
+            'cart' => $cart,
+            'total' => $total,
+            'discount' => $discount,
+        ], 'تم تطبيق الكوبون بنجاح', 200);
     }
 
-    $cartItem = CartItem::where('cart_id', $cart->id)
-        ->where('id', $id)
-        ->first();
+    /**
+     * تفريغ سلة التسوق
+     */
+    public function removeCoupon()
+    {
+        // $customerId = Auth::user()->customer->id;
+        $customerId = 1;
+        $cart = Cart::where('customer_id', $customerId)->first();
 
-    if (!$cartItem) {
-        return \App\Helpers\ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
-    }
-
-    $cartItem->delete();
-
-    return \App\Helpers\ApiResponse::success([], 'تم حذف العنصر من سلة التسوق', 200);
-}
-
-/**
- * تفريغ سلة التسوق
- */
-public function clearCart()
-{
-    // $customerId = Auth::user()->customer->id;
-    $customerId = 1;
-    $cart = Cart::where('customer_id', $customerId)->first();
-
-    if ($cart) {
-        foreach ($cart->items as $item) {
-            $item->delete();
+        if ($cart) {
+            foreach ($cart->items as $item) {
+                $item->delete();
+            }
+            $cart->coupon_id = null;
+            $cart->save();
+            $cart->delete();
         }
-        $cart->coupon_id = null;
-        $cart->save();
-        $cart->delete();
+
+        return ApiResponse::success([], 'تم تفريغ سلة التسوق', 200);
     }
 
-    return \App\Helpers\ApiResponse::success([], 'تم تفريغ سلة التسوق', 200);
     private function calculateDiscount($amount, $coupon)
     {
         if ($coupon->discount_type === 'fixed') {
