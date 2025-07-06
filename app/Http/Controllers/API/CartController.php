@@ -131,12 +131,12 @@ class CartController extends Controller
             ->first();
 
         if (!$cartItem) {
-            return \App\Helpers\ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
+            return ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
         }
 
         $cartItem->update(['quantity' => $request->quantity]);
 
-        return \App\Helpers\ApiResponse::success([
+        return ApiResponse::success([
             'cart' => $cart->load('items')
         ], 'تم تحديث كمية العنصر', 200);
     }
@@ -159,12 +159,12 @@ class CartController extends Controller
             ->first();
 
         if (!$cartItem) {
-            return \App\Helpers\ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
+            return ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
         }
 
         $cartItem->delete();
 
-        return \App\Helpers\ApiResponse::success([], 'تم حذف العنصر من سلة التسوق', 200);
+        return ApiResponse::success([], 'تم حذف العنصر من سلة التسوق', 200);
     }
 
     /**
@@ -185,7 +185,7 @@ class CartController extends Controller
             $cart->delete();
         }
 
-        return \App\Helpers\ApiResponse::success([], 'تم تفريغ سلة التسوق', 200);
+        return ApiResponse::success([], 'تم تفريغ سلة التسوق', 200);
     }
 
     /**

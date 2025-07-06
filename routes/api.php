@@ -60,8 +60,8 @@ Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'show']);
-Route::post('/payments/{id}/result', [PaymentController::class, 'updateResult']);
+Route::get('/payments/{id}', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/payments/{id}/result', [PaymentController::class, 'updatePaymentResult']);
 
 // طرق الدفع
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
