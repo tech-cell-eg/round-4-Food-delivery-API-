@@ -7,13 +7,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
+use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Profile ====================
 use App\Http\Controllers\API\ChatController;
 
 // ==================== Categories & Dishes ====================
 use Illuminate\Support\Facades\Notification;
-use App\Http\Controllers\API\OrderController;
 
 // ==================== Chef ====================
 use App\Http\Controllers\API\ReviewController;
@@ -89,6 +92,23 @@ Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews'])
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
 
+
+//  عرض الأطباق للعميل 
+Route::get('/client/meals', [DishesController::class, 'index']);
+
+// عرض تفاصيل طبق
+Route::get('/client/meals/{id}', [DishesController::class, 'show']);
+
+// عرض أطباق بعد الفلترة
+Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
+
+// البحث عن طبق أو مطعم معين
+Route::get('/client/meals_search/', [DishesController::class, 'search']);
+
+// إضافة طبق للمفضلة
+
+
+Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
