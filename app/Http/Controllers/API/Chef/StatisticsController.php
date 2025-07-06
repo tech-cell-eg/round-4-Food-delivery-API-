@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Chef;
+namespace App\Http\Controllers\API\Chef;
 
 use App\Models\Chef;
 use App\Models\Order;

@@ -1,41 +1,49 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
 
 // ==================== Auth ====================
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\OtpLoginController;
-use App\Http\Controllers\API\SocialAuthController;
+use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
+use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Profile ====================
-use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\ChatController;
 
 // ==================== Categories & Dishes ====================
-use App\Http\Controllers\API\CategoryController;
-use App\Http\Controllers\Customer\DishesController;
+use Illuminate\Support\Facades\Notification;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
-use App\Http\Controllers\API\Chef\StatisticsController;
+use App\Http\Controllers\API\ReviewController;
+use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\OtpLoginController;
 
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\Chef\ChefController;
+use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\API\SocialAuthController;
 
 // ==================== Reviews ====================
-use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\ChefReviewsController;
+use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\API\ChatController;
+use App\Http\Controllers\API\Chef\StatisticsController;
+use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+// معلومات المستخدم وتسجيل الخروج
+Route::get('/user', [AuthController::class, 'user']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::prefix('password')->group(function () {
     Route::post('/send_otp', [OtpLoginController::class, 'sendOtp']);
@@ -43,32 +51,64 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
 
-Route::get('/auth/redirect/google', [SocialAuthController::class, 'redirectToGoogle']);
-Route::get('/auth/callback/google', [SocialAuthController::class, 'handleGoogleCallback']);
+// مسارات تتطلب مصادقة
+// سلة التسوق
+Route::get('/cart', [CartController::class, 'index']);
+Route::post('/cart/items', [CartController::class, 'addItem']);
+Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+Route::post('/cart/clear', [CartController::class, 'clearCart']);
+Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
-// ==================== Public Customer Routes ====================
-// Categories & Dishes
-Route::get('categories', [CategoryController::class, 'index']);
-Route::get('categories/meal_types', [CategoryController::class, 'mealTypes']);
-Route::get('categories/{category}/dishes', [CategoryController::class, 'getDishesByCategory']);
-Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
-Route::get('/categories/{id}', [CategoryController::class, 'show']);
+// الطلبات
+Route::get('/orders', [OrderController::class, 'index']);
+Route::get('/orders/{id}', [OrderController::class, 'show']);
+Route::post('/orders', [OrderController::class, 'store']);
+Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
-// Chef
-Route::get('/open-resturants', [ChefController::class, 'getOpenChefs'])->name("getOpenChefs");
-Route::get('/resturants/{id}', [ChefController::class, 'showChefWithCategoriesAndMeals'])->name("showChefWithCategoriesAndMeals");
+// المدفوعات
+Route::post('/payments', [PaymentController::class, 'processPayment']);
+Route::get('/payments/{id}', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/payments/{id}/result', [PaymentController::class, 'updatePaymentResult']);
 
-// Client Dishes
-Route::get('/client/meals', [DishesController::class, 'index']);
-Route::get('/client/meals/{id}', [DishesController::class, 'show']);
-Route::get('/client/meals_filter', [DishesController::class, 'filter']);
-Route::get('/client/meals_search', [DishesController::class, 'search']);
+// طرق الدفع
+Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
+Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
+Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
+
+// المراجعات
+
+Route::get('/reviews', [ReviewController::class, 'index']);
+Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+Route::post('/reviews', [ReviewController::class, 'store']);
+Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 // Reviews
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']);
 Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
 
+
+//  عرض الأطباق للعميل 
+Route::get('/client/meals', [DishesController::class, 'index']);
+
+// عرض تفاصيل طبق
+Route::get('/client/meals/{id}', [DishesController::class, 'show']);
+
+// عرض أطباق بعد الفلترة
+Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
+
+// البحث عن طبق أو مطعم معين
+Route::get('/client/meals_search/', [DishesController::class, 'search']);
+
+// إضافة طبق للمفضلة
+
+
+Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
@@ -133,5 +173,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
 
+
+    // Get all notifications for the logged-in chef
+    Route::get('/notifications', function () {
+        return Auth::user()->notifications;
+    });
+
+    // Get unread notifications only
+    Route::get('/notifications/unread', function () {
+        return Auth::user()->unreadNotifications;
+    });
+
+    // Mark all as read
+    Route::post('/notifications/mark-as-read', function () {
+        Auth::user()->unreadNotifications->markAsRead();
+        return response()->json(['status' => 'done']);
+    });
 });
 
