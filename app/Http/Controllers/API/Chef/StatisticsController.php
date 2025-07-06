@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Api\Chef;
+namespace App\Http\Controllers\API\Chef;
 
-use App\Helpers\ApiResponse;
-use App\Http\Controllers\Controller;
 use App\Models\Chef;
 use App\Models\Order;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class StatisticsController extends Controller
 {
     public function statistics(Request $request)
     {
-        // $chef = Auth::user()->chef;
-        $chef = Chef::first();
+        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
