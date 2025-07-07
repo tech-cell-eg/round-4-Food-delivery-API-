@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -75,6 +76,12 @@ class OrderController extends Controller
         }
 
         $restaurantId = $cart->items->first()->dish->chef->id;
+        if (!$restaurantId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'برجاء تحديد المطعم'
+            ], 400);
+        }
 
         DB::beginTransaction();
         try {
@@ -88,7 +95,7 @@ class OrderController extends Controller
             $couponId = null;
 
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
-                $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
+                $coupon = Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -111,7 +118,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'restaurant_id' => $restaurantId,
+                'chef_id' => $restaurantId,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
