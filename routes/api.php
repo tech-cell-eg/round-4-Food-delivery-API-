@@ -34,7 +34,6 @@ use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -174,6 +173,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
 
+    // Chat
+    Route::controller(ChatController::class)->group(function () {
+        Route::get('/conversations', 'getConversations');
+        Route::post('/messages/send', 'sendMessage');
+        Route::get('/conversations/{conversationId}', 'show');
+        Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+    });
+
+
     // Get all notifications for the logged-in chef
     Route::get('/notifications', function () {
         return Auth::user()->notifications;
@@ -190,4 +198,3 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['status' => 'done']);
     });
 });
-

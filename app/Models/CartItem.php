@@ -17,7 +17,7 @@ class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'dish_id',
-        'size_name',
+        'size_id',
         'quantity',
         'price',
     ];
@@ -49,7 +49,7 @@ class CartItem extends Model
      */
     public function size()
     {
-        return self::where(['dish_id' => $this->dish_id, 'size_name' => $this->size_name])->first();
+        return $this->belongsTo(DishSize::class, 'size_id', 'id');
     }
 
     /**
