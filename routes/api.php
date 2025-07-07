@@ -34,9 +34,7 @@ use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\API\Chef\StatisticsController;
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -170,7 +168,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/messages/send', 'sendMessage');
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
-
     });
 
 
@@ -190,4 +187,3 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['status' => 'done']);
     });
 });
-

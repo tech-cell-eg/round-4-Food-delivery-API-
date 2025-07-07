@@ -76,4 +76,12 @@ class Order extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    /**
+     * العلاقة مع سجل تغييرات حالة الطلب
+     */
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
 }

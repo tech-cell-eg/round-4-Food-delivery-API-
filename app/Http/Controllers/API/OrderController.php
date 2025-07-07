@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -14,9 +15,24 @@ use Illuminate\Support\Facades\DB;
 
 use App\Notifications\CustomerActionNotification;
 use App\Models\User;
+use App\Helpers\ApiResponse;
+use App\Models\OrderStatusHistory;
 
 class OrderController extends Controller
 {
+    /**
+     * سجل تتبع حالة الطلب
+     */
+    protected function logOrderStatus($order, $status, $note = null)
+    {
+        OrderStatusHistory::create([
+            'order_id'   => $order->id,
+            'status'     => $status,
+            'note'       => $note,
+            'changed_by' => Auth::id(),
+            'created_at' => now(),
+        ]);
+    }
     /**
      * عرض قائمة طلبات المستخدم الحالي
      */
@@ -40,15 +56,24 @@ class OrderController extends Controller
     public function show($id)
     {
         $customerId = Auth::user()->customer->id;
-        $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
-            ->where('customer_id', $customerId)
-            ->where('id', $id)
-            ->firstOrFail();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $order
-        ]);
+        $order = Order::find($id);
+
+        if (!$order) {
+            return ApiResponse::success([
+                'message' => 'لم يتم العثور على الطلب'
+            ], 200);
+        }
+
+        if ($customerId != $order->customer_id) {
+            return ApiResponse::error([
+                'message' => 'هذا الطلب يخص شخص آخر، لا يمكننا عرض البيانات'
+            ], 403);
+        }
+
+        return ApiResponse::success([
+            'order' => $order
+        ], 'تم جلب بيانات الطلب بنجاح', 200);
     }
 
     /**
@@ -88,7 +113,7 @@ class OrderController extends Controller
             $couponId = null;
 
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
-                $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
+                $coupon = Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -124,6 +149,8 @@ class OrderController extends Controller
                 'order_number' => Order::genNumber(),
                 'notes' => $request->notes,
             ]);
+            // سجل أول حالة للطلب
+            $this->logOrderStatus($order, 'pending', 'تم إنشاء الطلب');
 
             // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
@@ -171,20 +198,20 @@ class OrderController extends Controller
             ->first();
 
         if (!$order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'لا يمكن إلغاء هذا الطلب'
+            return ApiResponse::error([
+                'message' => 'لم يتم العثور على الطلب'
             ], 400);
         }
 
         $order->status = 'cancelled';
-        $order->save();
+        $order->update();
+        $this->logOrderStatus($order, 'cancelled', 'تم إلغاء الطلب بواسطة العميل');
 
         // تحديث حالة الدفع إذا كان الدفع مسبقًا
         $payment = Payment::where('order_id', $order->id)->first();
         if ($payment && $payment->status === 'completed') {
             $payment->status = 'refunded';
-            $payment->save();
+            $payment->update();
         }
         // Notify related chefs
         $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
@@ -200,10 +227,26 @@ class OrderController extends Controller
             }
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم إلغاء الطلب بنجاح',
-            'data' => $order
-        ]);
+        return ApiResponse::success([
+            'order' => $order->load('orderItems')
+        ], 'تم إلغاء الطلب بنجاح', 200);
+    }
+
+    public function trackOrder($id)
+    {
+        $customerId = Auth::user()->customer->id;
+        $order = Order::where('customer_id', $customerId)
+            ->where('id', $id)
+            ->first();
+
+        if (!$order) {
+            return ApiResponse::error([
+                'message' => 'لم يتم العثور على الطلب'
+            ], 400);
+        }
+
+        return ApiResponse::success([
+            'order' => $order->load(['orderItems', 'statusHistories'])
+        ], 'تم جلب بيانات الطلب بنجاح', 200);
     }
 }

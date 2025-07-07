@@ -24,12 +24,17 @@ class CartController extends Controller
 
         $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
-            ->first();
+            ->firstOrCreate([
+                'customer_id' => $customerId,
+                'coupon_id' => null,
+                'status' => 'empty'
+            ]);
 
         if (!$cart) {
             $cart = Cart::create([
                 'customer_id' => $customerId,
                 'coupon_id' => null,
+                'status' => 'empty'
             ]);
             return ApiResponse::success([
                 'cart' => $cart,
@@ -43,7 +48,8 @@ class CartController extends Controller
         });
 
         return ApiResponse::success([
-            'cart' => $cart,
+            'cart' => $cart->load('items.dish'),
+            'items' => $cart->items->load(['dish', 'size']),
             'total' => $total
         ], 'تم جلب بيانات السلة بنجاح', 200);
     }
@@ -57,10 +63,14 @@ class CartController extends Controller
             'dish_id' => 'required|exists:dishes,id',
             'size_name' => 'required|in:small,medium,large',
         ]);
-
+        // معرف المستخدم صاحب جلسة الدخول
         $customerId = Auth::user()->customer->id;
         // التحقق من وجود سلة تسوق للعميل
-        $cart = Cart::firstOrCreate(['customer_id' => $customerId]);
+        $cart = Cart::where('customer_id', $customerId)->firstOrCreate([
+            'customer_id' => $customerId,
+            'coupon_id' => null,
+            'status' => 'empty'
+        ]);
 
         // التحقق من وجود الطبق والحجم المطلوب
         $dish = Dish::find($request->dish_id);
@@ -83,20 +93,20 @@ class CartController extends Controller
         }
 
         // التحقق مما إذا كان العنصر موجودًا بالفعل في السلة
-        $cartItem = CartItem::where('cart_id', $cart->id)
+        $existCartItem = CartItem::where('cart_id', $cart->id)
             ->where('dish_id', $request->dish_id)
             ->first();
 
-        if ($cartItem) {
+        if ($existCartItem) {
             // تحديث الكمية إذا كان العنصر موجودًا بالفعل
-            $cartItem->quantity = $cartItem->quantity + 1;
-            $cartItem->price = $dishSize->price * $cartItem->quantity;
-            $cartItem->update();
+            $existCartItem->quantity = $existCartItem->quantity + 1;
+            $existCartItem->price = $dishSize->price * $existCartItem->quantity;
+            $existCartItem->update();
         } else {
             // إنشاء عنصر جديد في السلة
             $cartItem =  CartItem::create([
                 'customer_id' => $customerId,
-                'size_name' => $request->size_name,
+                'size_id' => $dishSize->id,
                 'cart_id' => $cart->id,
                 'dish_id' => $request->dish_id,
                 'quantity' => 1,
@@ -105,7 +115,9 @@ class CartController extends Controller
         }
 
         return ApiResponse::success([
-            'cart' => $cart->load('items')
+            'cart' => $cart->load('items.dish'),
+            'items' => $cart->items->load(['dish', 'size']),
+            'total' => $cart->items->sum('price')
         ], 'تمت إضافة العنصر إلى سلة التسوق', 200);
     }
 
@@ -161,12 +173,18 @@ class CartController extends Controller
             ->first();
 
         if (!$cartItem) {
-            return ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
+            return ApiResponse::error([
+                'message' => 'العنصر غير موجود في سلة التسوق'
+            ], 404);
         }
 
         $cartItem->delete();
 
-        return ApiResponse::success([], 'تم حذف العنصر من سلة التسوق', 200);
+        return ApiResponse::success([
+            'cart' => $cart->load('items.dish'),
+            'items' => $cart->items->load(['dish', 'size']),
+            'total' => $cart->items->sum('price')
+        ], 'تم حذف العنصر من سلة التسوق', 200);
     }
 
     /**
@@ -177,16 +195,21 @@ class CartController extends Controller
         $customerId = Auth::user()->customer->id;
         $cart = Cart::where('customer_id', $customerId)->first();
 
-        if ($cart) {
-            foreach ($cart->items as $item) {
-                $item->delete();
-            }
-            $cart->coupon_id = null;
-            $cart->save();
-            $cart->delete();
+        if ($cart && $cart->items->isEmpty()) {
+            return ApiResponse::success([
+                'cart' => $cart,
+                'items' => []
+            ], 'لم نجد لديك أطباق فى السلة', 200);
         }
 
-        return ApiResponse::success(['cart' => $cart, 'items' => []], 'تم تفريغ سلة التسوق', 200);
+        if ($cart) {
+            $cart->dropItems();
+            return ApiResponse::success(
+                ['cart' => $cart, 'items' => []],
+                'تم تفريغ سلة التسوق',
+                200
+            );
+        }
     }
 
     /**
@@ -225,8 +248,9 @@ class CartController extends Controller
         }
 
         // Apply coupon to cart
-        $cart->coupon_id = $coupon->id;
-        $cart->save();
+        $cart->update([
+            'coupon_id' => $coupon->id
+        ]);
 
         // Calculate new total with discount
         $subtotal = $cart->items->sum(function ($item) {
@@ -240,6 +264,7 @@ class CartController extends Controller
             'cart' => $cart,
             'total' => $total,
             'discount' => $discount,
+            'coupon' => $coupon,
         ], 'تم تطبيق الكوبون بنجاح', 200);
     }
 
