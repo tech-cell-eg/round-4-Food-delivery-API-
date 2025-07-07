@@ -40,4 +40,9 @@ class MessagesSeenEvent implements ShouldBroadcast
         ];
     }
 
+    public function broadcastAs(): string
+    {
+        return 'conversation.messages.seen';
+    }
+
 }

@@ -6,13 +6,13 @@ use App\Models\Conversation;
 
 Broadcast::channel('conversation.{conversationId}', function ($user, $conversationId) {
     $conversation = Conversation::find($conversationId);
-    
+
     if (!$conversation) {
         return false;
     }
 
     $isParticipant = false;
-    
+
     if ($user->type === 'customer') {
         $customer = $user->customer;
         $isParticipant = $customer && $conversation->customer_id === $customer->id;

@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\Api\Chef\OrderController as ChefOrderController;
 use App\Http\Controllers\Api\Chef\StatisticsController;
 use App\Http\Controllers\Customer\FavoriteController;
 
@@ -91,7 +90,7 @@ Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
 
 
-//  عرض الأطباق للعميل 
+//  عرض الأطباق للعميل
 Route::get('/client/meals', [DishesController::class, 'index']);
 
 // عرض تفاصيل طبق
@@ -109,6 +108,7 @@ Route::get('/client/meals_search/', [DishesController::class, 'search']);
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
+
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
@@ -122,6 +122,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', 'index')->name("index");
         Route::get('/{id}', 'show')->name("show");
         Route::post('/', 'store')->name("store");
+    });
+
+    // Chat
+    Route::controller(ChatController::class)->group(function () {
+        Route::get('/conversations', 'getConversations');
+        Route::post('/messages/send', 'sendMessage');
+        Route::get('/conversations/{conversationId}', 'show');
+        Route::delete("messages/{messageId}/destroy", 'destroyMessage');
+        Route::post('/conversation/typing-status', 'typingStatus');
+
     });
 
     // Chef Orders
@@ -161,6 +171,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+
 
     // Chat
     Route::controller(ChatController::class)->group(function () {
