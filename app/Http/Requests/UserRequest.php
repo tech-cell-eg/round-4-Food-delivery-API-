@@ -25,7 +25,8 @@ class UserRequest extends FormRequest
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:8',
-        // 'type' => 'required|in:customer,chef',
+        //'type' => 'required|in:customer,chef',
+
         'phone' => 'nullable|string|max:20',
 
         //Image must be a valid image file under 2MB
@@ -56,7 +57,7 @@ public function messages(): array
         'profile_image.max' => 'The image must be smaller than 2MB.',
         'bio.string' => 'The bio must be text.',
         'bio.max' => 'The bio may not be longer than 1000 characters.',
-        'preferred_payment_method.in' => 'The payment method must be one of: cash_on_delivery, credit_card, paypal.',
+        //'preferred_payment_method.in' => 'The payment method must be one of: cash_on_delivery, credit_card, paypal.',
     ];
 }
 
