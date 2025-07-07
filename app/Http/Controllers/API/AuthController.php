@@ -42,7 +42,10 @@ class AuthController extends Controller
         //         'preferred_payment_method' => $request->preferred_payment_method ?? 'cash_on_delivery',
         //     ]);
         // }
-
+        $user->customer()->create([
+            
+                'preferred_payment_method' => $request->preferred_payment_method ?? null,
+            ]);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return ApiResponse::created([
