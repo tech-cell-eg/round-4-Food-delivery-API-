@@ -24,19 +24,11 @@ class CartController extends Controller
 
         $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
-            ->first();
-
-        if (!$cart) {
-            $cart = Cart::create([
+            ->firstOrCreate([
                 'customer_id' => $customerId,
                 'coupon_id' => null,
             ]);
-            return ApiResponse::success([
-                'cart' => $cart,
-                'items' => [],
-                'total' => 0
-            ], 'سلة التسوق فارغة', 200);
-        }
+
 
         $total = $cart->items->sum(function ($item) {
             return $item->price * $item->quantity;
