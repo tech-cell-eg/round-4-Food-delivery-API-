@@ -36,8 +36,13 @@ class MessagesSeenEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('conversation.' . $this->conversationId),
+            new PresenceChannel('conversation.' . $this->conversationId),
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'conversation.messages.seen';
     }
 
 }

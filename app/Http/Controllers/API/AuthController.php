@@ -30,7 +30,10 @@ class AuthController extends Controller
         $image->move(public_path('profile_images'), $filename);
         $validated['profile_image'] = 'profile_images/' . $filename;
     }
-        //if ($request->type === 'chef') {
+
+
+        // if ($request->type === 'chef') {
+
         //     $user->chef()->create([
         //         'speciality'       => $request->speciality ?? 'Tourism and hotels',
         //         'experience_years' => $request->experience_years ?? 1,
@@ -42,6 +45,11 @@ class AuthController extends Controller
         //         'preferred_payment_method' => $request->preferred_payment_method ?? 'cash_on_delivery',
         //     ]);
         // }
+
+        $user->customer()->create([
+            
+                'preferred_payment_method' => $request->preferred_payment_method ?? null,
+            ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

@@ -31,6 +31,17 @@ class Cart extends Model
     }
 
     /**
+     * افراغ جميع عناصر السلة
+     */
+    public function dropItems()
+    {
+        $this->items()->delete();
+        $this->update([
+            'status' => 'empty'
+        ]);
+    }
+
+    /**
      * العلاقة مع عناصر السلة
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
