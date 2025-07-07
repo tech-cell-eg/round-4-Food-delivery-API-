@@ -10,14 +10,14 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NewConversationMessageEvent implements ShouldBroadcast
+class UserTypingEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(public $messageResource)
+    public function __construct(public $conversationId, public $userId, public $status)
     {
         //
     }
@@ -30,12 +30,21 @@ class NewConversationMessageEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PresenceChannel('conversation.' . $this->messageResource->conversation_id),
+            new PresenceChannel('conversation.' . $this->conversationId),
+        ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            "conversationId" => $this->conversationId,
+            "userId" => $this->userId,
+            "status" => $this->status
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'conversation.new.message';
+        return 'user.typing';
     }
 }
