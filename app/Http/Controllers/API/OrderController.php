@@ -63,9 +63,8 @@ class OrderController extends Controller
         ]);
 
         $customerId = Auth::user()->customer->id;
-        $cart = Cart::with(['items.dish'])
-            ->where('customer_id', $customerId)
-            ->first();
+        $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
+
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
@@ -74,7 +73,17 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $restaurantId = $cart->items->first()->dish->chef->id;
+        $firstItem = $cart->items->first();
+
+if (!$firstItem || !$firstItem->dish || !$firstItem->dish->chef) {
+    return response()->json([
+        'status' => 'error',
+        'message' => 'لا يمكن تحديد الطاهي لهذا الطلب. تأكد من أن الوجبة تحتوي على طاهي مرتبط.'
+    ], 400);
+}
+
+$chefId = $firstItem->dish->chef->id;
+
 
         DB::beginTransaction();
         try {
@@ -111,7 +120,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'restaurant_id' => $restaurantId,
+                'chef_id' => $chefId,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,

@@ -29,9 +29,9 @@ class Dish extends Model
      * Get the chef that owns the dish.
      */
     public function chef()
-    {
-        return $this->belongsTo(Chef::class);
-    }
+{
+    return $this->belongsTo(Chef::class, 'chef_id');
+}
 
     /**
      * Get the category that owns the dish.
