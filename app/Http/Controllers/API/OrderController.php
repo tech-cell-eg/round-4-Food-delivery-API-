@@ -142,7 +142,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'chef_id' => $restaurantId,
+                'chef_id' => $cart->items->first()->dish->chef->id,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
