@@ -100,6 +100,12 @@ class OrderController extends Controller
         }
 
         $restaurantId = $cart->items->first()->dish->chef->id;
+        if (!$restaurantId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'برجاء تحديد المطعم'
+            ], 400);
+        }
 
         DB::beginTransaction();
         try {
@@ -136,7 +142,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'restaurant_id' => $restaurantId,
+                'chef_id' => $restaurantId,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,

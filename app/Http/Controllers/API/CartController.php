@@ -30,18 +30,6 @@ class CartController extends Controller
                 'status' => 'empty'
             ]);
 
-        if (!$cart) {
-            $cart = Cart::create([
-                'customer_id' => $customerId,
-                'coupon_id' => null,
-                'status' => 'empty'
-            ]);
-            return ApiResponse::success([
-                'cart' => $cart,
-                'items' => [],
-                'total' => 0
-            ], 'سلة التسوق فارغة', 200);
-        }
 
         $total = $cart->items->sum(function ($item) {
             return $item->price * $item->quantity;
