@@ -88,9 +88,8 @@ class OrderController extends Controller
         ]);
 
         $customerId = Auth::user()->customer->id;
-        $cart = Cart::with(['items.dish'])
-            ->where('customer_id', $customerId)
-            ->first();
+        $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
+
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
@@ -99,14 +98,7 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $restaurantId = $cart->items->first()->dish->chef->id;
-        if (!$restaurantId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'برجاء تحديد المطعم'
-            ], 400);
-        }
-        //return $restaurantId;
+
         DB::beginTransaction();
         try {
             // حساب المجموع الفرعي
@@ -142,7 +134,9 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'chef_id' => $restaurantId,
+
+                'chef_id' => $chefId,
+
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,

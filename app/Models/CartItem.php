@@ -38,9 +38,10 @@ class CartItem extends Model
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function dish()
-    {
-        return $this->belongsTo(Dish::class);
-    }
+{
+    return $this->belongsTo(Dish::class);
+}
+
 
     /**
      * العلاقة مع حجم الطبق

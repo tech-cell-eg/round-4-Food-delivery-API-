@@ -26,6 +26,7 @@ class UserRequest extends FormRequest
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:8',
         //'type' => 'required|in:customer,chef',
+
         'phone' => 'nullable|string|max:20',
 
         //Image must be a valid image file under 2MB
