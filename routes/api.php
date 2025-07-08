@@ -189,6 +189,3 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-
-// ALL ADMIN ROUTES IN THIS FILE
-require __DIR__ . '/admin.php';

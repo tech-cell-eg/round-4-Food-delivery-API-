@@ -17,8 +17,8 @@ class AdminSeeder extends Seeder
     {
         $user = User::create([
                 'name' => 'Tiba Grill',
-                'email' => 'contact2@tibagrill2.com',
-                'password' => Hash::make('password123'),
+                'email' => 'mohamedahmeddev333@gmail.com',
+                'password' => Hash::make('mohamedahmeddev333@gmail.com'),
                 'phone' => '+201020129655',
                 'profile_image' => 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=300',
                 'bio' => 'Serving authentic Egyptian grilled dishes with a modern twist in a cozy setting.',
