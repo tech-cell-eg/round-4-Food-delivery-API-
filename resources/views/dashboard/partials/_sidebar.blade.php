@@ -28,9 +28,9 @@
                 <div class="menu-title">Admins</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Admins</a> {{-- route('admin.admins.index') --}}
+                <li> <a href="{{ route('admin.admins.index') }}"><i class='bx bx-radio-circle'></i>All Admins</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Admin</a> {{-- route('admin.admins.create') --}}
+                <li> <a href="{{ route('admin.admins.create') }}"><i class='bx bx-radio-circle'></i>Add New Admin</a>
                 </li>
             </ul>
         </li>
@@ -61,6 +61,36 @@
                 <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Chef</a> {{-- route('admin.chefs.create') --}}
                 </li>
                 <li> <a href="#"><i class='bx bx-radio-circle'></i>Pending Approval</a> {{-- route('admin.chefs.pending') --}}
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-label">Access Control</li>
+
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='bx bx-shield'></i>
+                </div>
+                <div class="menu-title">Roles</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('admin.roles.index') }}"><i class='bx bx-radio-circle'></i>All Roles</a>
+                </li>
+                <li> <a href="{{ route('admin.roles.create') }}"><i class='bx bx-radio-circle'></i>Add New Role</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='bx bx-key'></i>
+                </div>
+                <div class="menu-title">Permissions</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('admin.permissions.index') }}"><i class='bx bx-radio-circle'></i>All Permissions</a>
+                </li>
+                <li> <a href="{{ route('admin.permissions.create') }}"><i class='bx bx-radio-circle'></i>Add New Permission</a>
                 </li>
             </ul>
         </li>

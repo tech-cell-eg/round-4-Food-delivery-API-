@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="en">
 
-@include('dashboard.partials._head')
+<head>
+    @include('dashboard.partials._head')
+
+    <title>@yield("title")</title>
+</head>
+
+
 
 <body>
 <!--wrapper-->

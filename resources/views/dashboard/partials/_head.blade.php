@@ -1,4 +1,3 @@
-<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,5 +21,3 @@
     <link rel="stylesheet" href="{{ asset('assets/css') }}/dark-theme.css"/>
     <link rel="stylesheet" href="{{ asset('assets/css') }}/semi-dark.css"/>
     <link rel="stylesheet" href="{{ asset('assets/css') }}/header-colors.css"/>
-    <title>Rocker - Bootstrap 5 Admin Dashboard Template</title>
-</head>

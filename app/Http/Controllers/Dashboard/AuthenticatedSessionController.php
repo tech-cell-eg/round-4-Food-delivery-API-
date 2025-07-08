@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\API\Dashboard;
+namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -25,6 +24,11 @@ class AuthenticatedSessionController extends Controller
             'email' => $request->email,
             'password' => $request->password,
         ])) {
+            $admin = Auth::guard('admin')->user()->admin;
+
+            $admin->last_login_at = now();
+            $admin->save();
+
             return redirect()->route('admin.dashboard')->with('success', 'Logged in successfully.');
         }
 

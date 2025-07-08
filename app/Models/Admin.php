@@ -11,6 +11,13 @@ class Admin extends Model
 
     public $timestamps = false;
 
+    protected $guard_name = 'admin';
+
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'int';
+
+
     protected $fillable = [
         "id",
         "status",
@@ -23,6 +30,8 @@ class Admin extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, "id", "id");
     }
+
+
 }

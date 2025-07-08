@@ -1,6 +1,6 @@
 $(function() {
     "use strict";
-	
+
 	// chart 1
 	$('#chart1').sparkline([5,8,7,10,9,10,8,6,4,6,8,7,6,8], {
             type: 'bar',
@@ -11,7 +11,7 @@ $(function() {
             barColor: '#fff'
         });
 
-     
+
     // chart 2
     $("#chart2").sparkline([0,5,3,7,5,10,3,6,5,10], {
             type: 'line',
@@ -22,8 +22,8 @@ $(function() {
             fillColor: 'transparent',
             spotColor: '#fff',
         })
-		
-	
+
+
 	// chart 3
      $("#chart3").sparkline([2,3,4,5,4,3,2,3,4,5,6,5,4,3,4,5], {
         type: 'discrete',
@@ -33,10 +33,10 @@ $(function() {
         lineHeight: 22
 
      });
-	 
-	 
 
-	// chart 4	
+
+
+	// chart 4
 	$("#chart4").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {
 		type: 'line',
 		width: '100',
@@ -44,11 +44,11 @@ $(function() {
 		lineWidth: '2',
 		lineColor: '#ffffff',
 		fillColor: 'transparent'
-		
-	});
-	
 
-  
+	});
+
+
+
 // chart 5
  var ctx = document.getElementById('chart5').getContext('2d');
 
@@ -75,7 +75,7 @@ $(function() {
               target: 'origin',
               above: gradientStroke1,   // Area will be red above the origin
               //below: 'rgb(21 202 32 / 100%)'   // And blue below the origin
-              }, 
+              },
             tension: 0.4,
             borderWidth: 2
           }, {
@@ -89,7 +89,7 @@ $(function() {
               target: 'origin',
               above: gradientStroke2,   // Area will be red above the origin
               //below: 'rgb(21 202 32 / 100%)'   // And blue below the origin
-              }, 
+              },
             tension: 0.4,
             borderWidth: 2
           }]
@@ -132,7 +132,7 @@ $(function() {
 
    // chart 6
     var ctx = document.getElementById("chart6").getContext('2d');
-   
+
       var gradientStroke3 = ctx.createLinearGradient(0, 0, 0, 300);
       gradientStroke3.addColorStop(0, '#42e695');
       gradientStroke3.addColorStop(1, '#3bb2b8');
@@ -184,10 +184,10 @@ $(function() {
 				  }
 			  }
       });
-	  
-	  
-	  
-	  
+
+
+
+
   // chart 7
  var ctx = document.getElementById('chart7').getContext('2d');
 
@@ -208,7 +208,7 @@ $(function() {
               target: 'origin',
               above: gradientStroke1,   // Area will be red above the origin
               //below: 'rgb(21 202 32 / 100%)'   // And blue below the origin
-              }, 
+              },
             borderColor: gradientStroke1,
             tension: 0.4,
             pointRadius :"0",
@@ -229,10 +229,10 @@ $(function() {
 					  }
 				  }
 			  }
-      });  
-	  
-	  
-	  
+      });
+
+
+
 
 // world map
 
@@ -265,7 +265,7 @@ jQuery('#dashboard-map').vectorMap(
     markers : [{
         latLng : [21.00, 78.00],
         name : 'I Love My India'
-      
+
       }],
     hoverOpacity: null,
     normalizeFunction: 'linear',
@@ -286,8 +286,8 @@ jQuery('#dashboard-map').vectorMap(
             lineColor: '#dd4b39',
             fillColor: 'rgba(221, 75, 57, 0.5)',
             spotColor: '#dd4b39',
-    }); 
-	
+    });
+
 	// chart 9
 	$("#chart9").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -298,8 +298,8 @@ jQuery('#dashboard-map').vectorMap(
             fillColor: 'rgba(59, 89, 152, 0.5)',
             spotColor: '#3b5998',
     });
-	
-	
+
+
 	// chart 10
 	$("#chart10").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -310,8 +310,8 @@ jQuery('#dashboard-map').vectorMap(
             fillColor: 'rgba(85, 172, 238, 0.5)',
             spotColor: '#55acee',
     });
-	
-	
+
+
 	// chart 11
 	$("#chart11").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -322,8 +322,8 @@ jQuery('#dashboard-map').vectorMap(
             fillColor: 'rgba(9, 118, 180, 0.5)',
             spotColor: '#0976b4',
     });
-	
-	
+
+
 	// chart 12
 	$("#chart12").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -334,8 +334,8 @@ jQuery('#dashboard-map').vectorMap(
             fillColor: 'rgba(23, 105, 255, 0.5)',
             spotColor: '#1769ff',
     });
-	
-	
+
+
 	// chart 13
 	$("#chart13").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -346,8 +346,8 @@ jQuery('#dashboard-map').vectorMap(
             fillColor: 'rgba(234, 76, 137, 0.5)',
             spotColor: '#ea4c89',
     });
-	
-	
+
+
 	// chart 14
 	$("#chart14").sparkline([3,5,3,7,5,10,3,6,5,0], {
             type: 'line',
@@ -359,7 +359,7 @@ jQuery('#dashboard-map').vectorMap(
             spotColor: '#42e695',
     });
 
-	
+
    // chart 15
    $('#chart15').sparkline([5,8,7,10,9,10,8,6,4,6,8,7,6,8,10,8,6,0], {
             type: 'bar',
@@ -369,8 +369,8 @@ jQuery('#dashboard-map').vectorMap(
             resize: true,
             barSpacing: '5',
             barColor: '#fff'
-        });	
-	
+        });
+
 
 
 
@@ -418,12 +418,12 @@ jQuery('#dashboard-map').vectorMap(
               position: 'bottom'
 					  }
 				  }
-				 
+
 			  }
       });
 
 
-	  
+
 // chart 17
 var ctx = document.getElementById("chart17").getContext('2d');
 
@@ -467,7 +467,7 @@ var ctx = document.getElementById("chart17").getContext('2d');
               position: 'bottom'
 					  }
 				  }
-				 
+
 			  }
       });
 
@@ -514,17 +514,17 @@ var ctx = document.getElementById("chart18").getContext('2d');
               position: 'bottom'
 					  }
 				  }
-				 
+
 			  }
       });
-	  
-	  
-	  
+
+
+
 });
 
 
  // Index Notification
-	 
+
 	 function info_noti(){
 		Lobibox.notify('default', {
 		pauseDelayOnHover: true,
@@ -532,6 +532,6 @@ var ctx = document.getElementById("chart18").getContext('2d');
 		size: 'mini',
 		position: 'top right',
 		icon: 'bx bx-info-circle',
-		msg: 'This is Gradient Color Dashboard'
+		msg: 'This is Gradient Color dashboard'
 		});
-	  } 
+	  }

@@ -1,5 +1,6 @@
 @extends('dashboard.layouts.master')
 
+@section("title", "Admin Dashboard")
 
 @section("content")
 
