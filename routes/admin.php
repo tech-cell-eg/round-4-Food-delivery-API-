@@ -16,6 +16,5 @@ Route::prefix('admin')->group(function () {
         Route::post("logout", "logout")->name("logout")->middleware("admin_auth");
     });
 
-
 });
 
