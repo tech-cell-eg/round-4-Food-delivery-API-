@@ -2,6 +2,7 @@
 
 return [
 
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -37,6 +38,10 @@ return [
 
     'guards' => [
         'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+        'admin' => [
             'driver' => 'session',
             'provider' => 'users',
         ],

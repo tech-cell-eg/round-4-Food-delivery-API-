@@ -34,9 +34,7 @@ use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\API\Chef\StatisticsController;
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -93,7 +91,7 @@ Route::get('/chefs/{chefId}/reviews', [ReviewController::class, 'chefReviews']);
 Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
 
 
-//  عرض الأطباق للعميل 
+//  عرض الأطباق للعميل
 Route::get('/client/meals', [DishesController::class, 'index']);
 
 // عرض تفاصيل طبق
@@ -191,3 +189,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+
+// ALL ADMIN ROUTES IN THIS FILE
+require __DIR__ . '/admin.php';

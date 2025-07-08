@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chefs', function (Blueprint $table) {
-            $table->foreignId('id')
-                ->constrained('users')
-                ->onDelete('cascade')
-                ->primary(); //  مفتاح أساسي وأجنبي في نفس الوقت
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+
             $table->string('speciality')->nullable();
             $table->integer('experience_years')->nullable();
             $table->string('national_id')->nullable();

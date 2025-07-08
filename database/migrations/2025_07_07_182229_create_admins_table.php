@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('admins', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
 
-            $table->string('preferred_payment_method')->nullable();
-            $table->timestamps();
+            $table->timestamp('last_login_at')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('admins');
     }
 };

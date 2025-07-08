@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('address_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('coupon_id')->constrained()->onDelete('cascade');
-            $table->foreignId('restaurant_id')->constrained()->onDelete('cascade');
+            $table->foreignId('chef_id')->constrained()->onDelete('cascade');
             $table->string('order_number')->unique();
             $table->enum('status', ['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled'])->default('pending');
 
