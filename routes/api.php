@@ -28,12 +28,14 @@ use App\Http\Controllers\API\Chef\ChefController;
 use App\Http\Controllers\API\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
 
+use App\Http\Controllers\API\Chef\IngredientsController;
 // ==================== Reviews ====================
 use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
+
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -103,9 +105,9 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
 // إضافة طبق للمفضلة
-
-
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
+
+Route::get("ingredients", [IngredientsController::class, 'index']);
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
 
