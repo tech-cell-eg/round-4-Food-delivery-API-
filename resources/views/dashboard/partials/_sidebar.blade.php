@@ -42,9 +42,9 @@
                 <div class="menu-title">Customers</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Customers</a> {{-- route('admin.customers.index') --}}
+                <li> <a href="{{ route('admin.customers.index')  }}"><i class='bx bx-radio-circle'></i>All Customers</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Customer</a> {{-- route('admin.customers.create') --}}
+                <li> <a href="{{ route('admin.customers.create') }}"><i class='bx bx-radio-circle'></i>Add New Customer</a>
                 </li>
             </ul>
         </li>

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Dashboard\AdminsController;
 use App\Http\Controllers\Dashboard\AuthenticatedSessionController;
+use App\Http\Controllers\Dashboard\CustomersController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\AdminProfileController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use Illuminate\Support\Facades\Route;
@@ -25,8 +27,15 @@ Route::prefix('admin')->group(function () {
         Route::resource("permissions", PermissionController::class)->except(["show"]);
 
         Route::resource("admins", AdminsController::class)->except(["show"]);
-    });
 
+        Route::controller(AdminProfileController::class)->prefix("profile")->name("profile.")->group(function () {
+            Route::get("edit", "edit")->name("edit");
+            Route::put("update", "update")->name("update");
+        });
+
+        Route::resource("customers", CustomersController::class)->except(["show"]);
+
+    });
 
 
 });
