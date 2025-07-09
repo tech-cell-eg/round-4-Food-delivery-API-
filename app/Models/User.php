@@ -56,7 +56,7 @@ class User extends Authenticatable
      */
     public function customer()
     {
-        return $this->hasOne(Customer::class, 'id');
+        return $this->hasOne(Customer::class, 'id', 'id');
     }
 
     /**
@@ -64,7 +64,7 @@ class User extends Authenticatable
      */
     public function chef()
     {
-        return $this->hasOne(Chef::class, 'id');
+        return $this->hasOne(Chef::class, 'id', 'id');
     }
 
 
