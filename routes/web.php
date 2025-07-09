@@ -19,3 +19,8 @@ Route::get('/', function () {
 //Route::get('/chat-test', function () {
 //    return view('chat');
 //});
+
+
+
+// ALL ADMIN ROUTES IN THIS FILE
+require __DIR__ . '/admin.php';
