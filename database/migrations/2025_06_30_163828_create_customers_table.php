@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['active', 'inactive'])->default('active');
+
             $table->string('preferred_payment_method')->nullable();
             $table->timestamps();
         });
