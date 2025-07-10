@@ -29,6 +29,7 @@ use App\Http\Controllers\API\Chef\ChefController;
 use App\Http\Controllers\API\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
 
+use App\Http\Controllers\API\Chef\IngredientsController;
 // ==================== Reviews ====================
 use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
@@ -51,7 +52,6 @@ Route::prefix('password')->group(function () {
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
-Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);
 Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
 Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
@@ -104,9 +104,15 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
 // إضافة طبق للمفضلة
-
-
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
+
+Route::get("ingredients", [IngredientsController::class, 'index']);
+
+Route::Controller(ChefController::class)->group(function () {
+    Route::get("open-resturants", "getOpenChefs");
+    Route::get("resturants/{id}", "getOpenChefs");
+
+});
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
     // Auth

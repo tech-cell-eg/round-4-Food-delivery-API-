@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Traits\MediaHandler;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 class AdminProfileController extends Controller
 {
+    use MediaHandler;
+
     public function edit()
     {
         return view("dashboard.pages.profile.edit");
@@ -34,7 +37,7 @@ class AdminProfileController extends Controller
             $profileImagePath = $admin->profile_image;
             if ($request->hasFile('profile_image')) {
                 if ($admin->profile_image && Storage::disk('public')->exists($admin->profile_image)) {
-                    Storage::disk('public')->delete($admin->profile_image);
+                    $this->deleteImage($admin->profile_image);
                 }
 
                 $profileImagePath = $this->storeImage($request->file('profile_image'), 'users_images');
@@ -61,10 +64,4 @@ class AdminProfileController extends Controller
         }
     }
 
-    protected function storeImage(UploadedFile $image, string $folder = 'users_images'): string
-    {
-        $uniqueName = time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
-
-        return $image->storeAs($folder, $uniqueName, 'public');
-    }
 }
