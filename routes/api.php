@@ -10,23 +10,23 @@ use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\ChatController;
 
 // ==================== Profile ====================
-use App\Http\Controllers\API\ReviewController;
+use App\Http\Controllers\ChefOrderController;
 
 // ==================== Categories & Dishes ====================
-use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\ReviewController;
 
 // ==================== Chef ====================
+use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\CategoryController;
+
 use App\Http\Controllers\API\OtpLoginController;
 
 use App\Http\Controllers\Api\Chef\ChefController;
-
-use App\Http\Controllers\API\Chef\OrderController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
-use App\Http\Controllers\API\SocialAuthController;
+use App\Http\Controllers\API\Chef\OrderController;
 
-use App\Http\Controllers\API\Chef\IngredientsController;
+use App\Http\Controllers\API\SocialAuthController;
 // ==================== Reviews ====================
 
 use App\Http\Controllers\API\ChefReviewsController;
@@ -38,7 +38,8 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\ChefOrderController;
+use App\Http\Controllers\API\Chef\IngredientsController;
+use App\Http\Controllers\Customer\NotificationController;
 
 
 // ==================== Auth Routes ====================
@@ -200,14 +201,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Get all notifications for the logged-in chef
-    Route::get('/notifications', function () {
-        return Auth::user()->notifications;
-    });
+    Route::get('/notifications', [NotificationController::class, 'index']);
 
     // Get unread notifications only
-    Route::get('/notifications/unread', function () {
-        return Auth::user()->unreadNotifications;
-    });
+    Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
 
     // Mark all as read
     Route::post('/notifications/mark-as-read', function () {
