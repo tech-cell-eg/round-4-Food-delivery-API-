@@ -22,6 +22,7 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OtpLoginController;
 use App\Http\Controllers\API\Chef\ChefController;
 
+use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
@@ -143,16 +144,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Chef Orders
-    // Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
-    //     Route::get('/running', 'runningOrders');
-    //     Route::patch('/{orderId}/done', 'markAsDone');
-    //     Route::patch('/{orderId}/cancel', 'cancelOrder');
-    // });
+    Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
+         Route::get('/running', 'runningOrders');
+         Route::patch('/{orderId}/done', 'markAsDone');
+         Route::patch('/{orderId}/cancel', 'cancelOrder');
+     });
 
     // Statistics
-    // Route::prefix('chef/statistics')->group(function () {
-    //     Route::get('/', [StatisticsController::class, 'statistics']);
-    // });
+     Route::prefix('chef/statistics')->group(function () {
+         Route::get('/', [StatisticsController::class, 'statistics']);
+     });
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
