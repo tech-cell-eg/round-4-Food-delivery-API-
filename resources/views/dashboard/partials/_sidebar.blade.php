@@ -118,11 +118,9 @@
                 <div class="menu-title">Dishes</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Dishes</a> {{-- route('admin.dishes.index') --}}
+                <li> <a href="{{ route('admin.dishes.index') }}"><i class='bx bx-radio-circle'></i>All Dishes</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Dish</a> {{-- route('admin.dishes.create') --}}
-                </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Featured Dishes</a> {{-- route('admin.dishes.featured') --}}
+                <li> <a href="{{ route('admin.dishes.create') }}"><i class='bx bx-radio-circle'></i>Add New Dish</a>
                 </li>
             </ul>
         </li>

@@ -14,3 +14,5 @@
 <script>
     new PerfectScrollbar(".app-container")
 </script>
+
+@yield('scripts')

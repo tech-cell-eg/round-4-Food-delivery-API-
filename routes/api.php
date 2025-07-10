@@ -187,7 +187,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'processPayment']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
-    // Reviews 
+    // Reviews
     Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);

@@ -30,7 +30,7 @@ class Dish extends Model
      */
     public function chef()
 {
-    return $this->belongsTo(Chef::class, 'chef_id');
+    return $this->belongsTo(Chef::class, 'chef_id', "id");
 }
 
     /**
