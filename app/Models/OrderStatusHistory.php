@@ -10,6 +10,7 @@ class OrderStatusHistory extends Model
     use HasFactory;
 
     public $timestamps = false;
+    protected $table = 'order_status_histories';
 
     protected $fillable = [
         'order_id',

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\CustomerActionNotification;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -41,6 +42,9 @@ class ReviewController extends Controller
             'message' => 'تم جلب المراجعات بنجاح',
         ]);
     }
+
+
+
     /**
      * عرض قائمة المراجعات لطبق معين
      *
@@ -50,7 +54,7 @@ class ReviewController extends Controller
     public function index()
     {
 
-        $reviews = Review::where([])
+        $reviews = Review::where(['chef_id' => Auth::id()])->orwhere(['customer_id' => Auth::id()])
             ->with(['customer:id,name,profile_image', 'chef:id,name'])
             ->latest('created_at')
             ->get();
@@ -109,17 +113,17 @@ class ReviewController extends Controller
             'created_at' => now(),
         ]);
         // Notify chef if review is for them
-    if ($request->reviewable_type === 'chef') {
-        $chef=Chef::findOrFail($chefId);
-        if ($chef) {
-            $chef->notify(new CustomerActionNotification([
-                'title' => 'New Review',
-                'message' => "{$request->user()->name} left a new review on your profile.",
-                'image' => $user->profile_photo_url ?? null . urlencode($request->user()->name),
-                'time' => now()->diffForHumans(),
-            ]));
+        if ($request->reviewable_type === 'chef') {
+            $chef = Chef::findOrFail($chefId);
+            if ($chef) {
+                $chef->notify(new CustomerActionNotification([
+                    'title' => 'New Review',
+                    'message' => "{$request->user()->name} left a new review on your profile.",
+                    'image' => $user->profile_photo_url ?? null . urlencode($request->user()->name),
+                    'time' => now()->diffForHumans(),
+                ]));
+            }
         }
-    }
         return response()->json([
             'data' => $review->load(['customer:id,name,profile_image']),
             'message' => 'تم إضافة المراجعة بنجاح',
