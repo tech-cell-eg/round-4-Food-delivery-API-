@@ -33,13 +33,14 @@ use App\Http\Controllers\API\ChefReviewsController;
 
 use App\Http\Controllers\Customer\DishesController;
 // ==================== Reviews ====================
+use App\Http\Controllers\ShipmentAddressController;
 use App\Http\Controllers\Customer\FavoriteController;
-use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
-use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 //use App\Http\Controllers\ChefOrderController;
-use App\Http\Controllers\ShipmentAddressController;
+use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\Customer\NotificationController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
