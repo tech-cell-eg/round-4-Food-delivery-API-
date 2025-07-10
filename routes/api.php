@@ -30,7 +30,7 @@ use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
 // ==================== Reviews ====================
 use App\Http\Controllers\Customer\FavoriteController;
-// use App\Http\Controllers\Api\Chef\StatisticsController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
