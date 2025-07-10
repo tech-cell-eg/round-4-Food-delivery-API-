@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\Chef\ChefController;
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\Chef\IngredientsController;
 use App\Http\Controllers\API\Chef\OrderController;
+use App\Http\Controllers\API\OrderController as AliasOrderController;
 
 use App\Http\Controllers\API\SocialAuthController;
 // ==================== Reviews ====================
@@ -34,14 +35,19 @@ use App\Http\Controllers\API\ChefReviewsController;
 
 use App\Http\Controllers\Customer\DishesController;
 // ==================== Reviews ====================
+use App\Http\Controllers\ShipmentAddressController;
 use App\Http\Controllers\Customer\FavoriteController;
-use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
+
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
+
+use App\Http\Controllers\API\Chef\StatisticsController;
+
 //use App\Http\Controllers\ChefOrderController;
-use App\Http\Controllers\ShipmentAddressController;
+use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\Customer\NotificationController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -73,11 +79,11 @@ Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
 // الطلبات
-Route::get('/orders', [OrderController::class, 'index']);
-Route::get('/orders/{id}', [OrderController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
-Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
+Route::get('/orders', [AliasOrderController::class, 'index']);
+Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+Route::post('/orders', [AliasOrderController::class, 'store']);
+Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);

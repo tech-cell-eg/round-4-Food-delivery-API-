@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\CustomersController;
 use App\Http\Controllers\Dashboard\CategoriesController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\IngredientsController;
 use App\Http\Controllers\Dashboard\AdminProfileController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
@@ -38,7 +39,8 @@ Route::prefix('admin')->group(function () {
         Route::resource("customers", CustomersController::class)->except(["show"]);
 
         Route::resource("categories", CategoriesController::class)->except(["show"]);
-    });
 
+        Route::resource("ingredients", IngredientsController::class)->except(["show"]);
+    });
 
 });
