@@ -5,6 +5,9 @@
         "This file is @generated automatically"
     ],
     "content-hash": "b5721b09d8a0144f9ad4ac77735854fc",
+
+    "content-hash": "a8ca01cb59af3af49521f09539b31263",
+    "content-hash": "f9a19fb927e9b9cdeb5ad4adc40e1536",
     "packages": [
         {
             "name": "brick/math",
@@ -1118,6 +1121,7 @@
             "time": "2025-02-03T10:55:03+00:00"
         },
         {
+
             "name": "laravel/cashier",
             "version": "v15.7.0",
             "source": {
@@ -2370,6 +2374,7 @@
             "time": "2024-12-08T08:18:47+00:00"
         },
         {
+
             "name": "moneyphp/money",
             "version": "v4.7.1",
             "source": {
@@ -4102,6 +4107,7 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.0"
             },
             "time": "2025-06-25T14:20:11+00:00"
+
         },
         {
             "name": "spatie/laravel-permission",
@@ -5357,6 +5363,7 @@
             "time": "2024-09-09T11:45:10+00:00"
         },
         {
+
             "name": "symfony/polyfill-intl-icu",
             "version": "v1.32.0",
             "source": {

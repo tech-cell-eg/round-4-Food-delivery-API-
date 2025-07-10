@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Events\MessagesSeenEvent;
+use App\Events\UserTypingEvent;
 use App\Helpers\ApiResponse;
 use App\Http\Requests\StoreNewMessageRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Events\NewConversationMessageEvent;
 use App\Http\Controllers\Controller;
@@ -15,10 +17,31 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 
 class ChatController extends Controller
 {
+    public function typingStatus(Request $request)
+    {
+        try {
+            $request->validate([
+                'conversation_id' => 'required|integer|exists:conversations,id',
+                'status' => 'required|string|in:typing,stopped_typing,recording,stopped_recording',
+            ]);
+        } catch (ValidationException $exception) {
+            return ApiResponse::validationError($exception->errors());
+        }
+
+        event(new UserTypingEvent(
+            $request->conversation_id,
+            auth()->id(),
+            $request->status
+        ));
+
+        return ApiResponse::success();
+    }
+
     public function getConversations()
     {
         $authenticatedUser = Auth::user();
