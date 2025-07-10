@@ -16,19 +16,7 @@ class ReviewSeeder extends Seeder
 
         Review::factory()
             ->count(10)
-            ->positive()
             ->create();
 
-
-        Review::factory()
-            ->count(5)
-            ->negative()
-            ->create();
-
-
-        Review::factory()
-            ->count(3)
-            ->rating(1)
-            ->create();
     }
 }
