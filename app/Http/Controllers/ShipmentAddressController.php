@@ -22,11 +22,15 @@ class ShipmentAddressController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'post_code' => 'nullable',
-            'address_text' => 'required',
-            'street' => 'required',
-            'appartment' => 'required',
-            'lable' => 'required',
+            'lat' => 'required',
+            'lon' => 'required',
+            'class' => 'nullable',
+            'type' => 'nullable',
+            'place_rank' => 'nullable',
+            'name' => 'required',
+            'importance' => 'nullable',
+            'display_name' => 'required',
+            'address' => 'required',
             'is_default' => 'required',
         ]);
 
@@ -37,15 +41,18 @@ class ShipmentAddressController extends Controller
             ], 400);
         }
 
-
         $address = Address::create([
-            'customer_id' => Auth::user()->id,
-            'post_code' => $request->post_code,
-            'address_text' => $request->address_text,
-            'street' => $request->street,
-            'appartment' => $request->appartment,
-            'lable' => $request->lable,
-            'is_default' => $request->is_default,
+            'customer_id' =>    Auth::id(),
+            'lat' =>            $request->lat,
+            'lon' =>            $request->lon,
+            'class' =>          $request->class,
+            'type' =>           $request->type,
+            'place_rank' =>     $request->place_rank,
+            'name' =>           $request->name,
+            'importance' =>     $request->importance,
+            'display_name' =>   $request->display_name,
+            'address' =>        json_encode($request->address),
+            'is_default' =>     $request->is_default ?? false,
         ]);
 
         return ApiResponse::success([

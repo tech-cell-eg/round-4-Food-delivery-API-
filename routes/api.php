@@ -40,8 +40,6 @@ use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Chat ====================
 
-use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\Customer\NotificationController;
 
 use App\Http\Controllers\API\Chef\StatisticsController;
 
