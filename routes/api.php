@@ -53,7 +53,6 @@ Route::prefix('password')->group(function () {
 });
 
 Route::prefix('email')->group(function () {
-    Route::post('/send_otp', [OtpLoginController::class, 'sendOtp']);
     Route::post('/verify_otp', [OtpLoginController::class, 'verifyOtp']);
 });
 

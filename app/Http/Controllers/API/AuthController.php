@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\User;
+use App\Models\PasswordOtp;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 
 class AuthController extends Controller
@@ -22,15 +25,15 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'type'     => 'customer',
             'phone'    => $request->phone,
-        
+
         ]);
 
         if ($request->hasFile('profile_image')) {
-        $image = $request->file('profile_image');
-        $filename = $user->type . '-' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $image->move(public_path('profile_images'), $filename);
-        $validated['profile_image'] = 'profile_images/' . $filename;
-    }
+            $image = $request->file('profile_image');
+            $filename = $user->type . '-' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('profile_images'), $filename);
+            $validated['profile_image'] = 'profile_images/' . $filename;
+        }
 
 
         // if ($request->type === 'chef') {
@@ -47,10 +50,23 @@ class AuthController extends Controller
         //     ]);
         // }
 
+        $otp = 1234;
+        PasswordOtp::updateOrCreate(
+            ['email' => $request->email],
+            [
+                'otp' => $otp,
+                'expires_at' => Carbon::now()->addMinutes(10),
+            ]
+        );
+
+        Mail::raw("Your login OTP is: $otp", function ($message) use ($request) {
+            $message->to($request->email)->subject('Your Login OTP');
+        });
+
         $user->customer()->create([
-            
-                'preferred_payment_method' => $request->preferred_payment_method ?? null,
-            ]);
+
+            'preferred_payment_method' => $request->preferred_payment_method ?? null,
+        ]);
         return ApiResponse::created([
             'user'         => $user,
         ], 'User created successfully');
@@ -77,19 +93,19 @@ class AuthController extends Controller
         ], 'Login successful');
     }
 
-public function logout(Request $request)
-{
-    $user = $request->user();
+    public function logout(Request $request)
+    {
+        $user = $request->user();
 
-    if (!$user) {
-        return ApiResponse::error('Unauthenticated', 401);
+        if (!$user) {
+            return ApiResponse::error('Unauthenticated', 401);
+        }
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        return ApiResponse::success(null, 'Logout successful');
     }
-
-    // Revoke all tokens
-    $user->tokens()->delete();
-
-    return ApiResponse::success(null, 'Logout successful');
-}
 
 
 
