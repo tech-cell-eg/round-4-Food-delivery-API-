@@ -174,7 +174,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
-
     // Chat
     Route::controller(ChatController::class)->group(function () {
         Route::get('/conversations', 'getConversations');
@@ -182,7 +181,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
     });
-
 
     // Get all notifications for the logged-in chef
     Route::get('/notifications', function () {
