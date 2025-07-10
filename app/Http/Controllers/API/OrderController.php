@@ -225,14 +225,14 @@ class OrderController extends Controller
         $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
         foreach ($chefIds as $chefId) {
             $chef = User::find($chefId);
-            // if ($chef) {
-            //     $chef->notify(new CustomerActionNotification([
-            //         'title' => 'Order Cancelled',
-            //         'message' => "{$customer->user->name} cancelled their order.",
-            //         'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
-            //         'time' => now()->diffForHumans(),
-            //     ]));
-            // }
+            if ($chef) {
+                $chef->notify(new CustomerActionNotification([
+                    'title' => 'Order Cancelled',
+                    'message' => "{$customer->user->name} cancelled their order.",
+                    'image' => $customer->user->profile_photo ?? null . urlencode($customer->user->name),
+                    'time' => now()->diffForHumans(),
+                ]));
+            }
         }
 
         return ApiResponse::success([

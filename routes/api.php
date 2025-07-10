@@ -38,9 +38,8 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\API\Chef\IngredientsController;
-use App\Http\Controllers\Customer\NotificationController;
-
+//use App\Http\Controllers\ChefOrderController;
+use App\Http\Controllers\ShipmentAddressController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -211,4 +210,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Auth::user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'done']);
     });
+
+    // Address
+    Route::post('/address', [ShipmentAddressController::class, 'store']);
+    Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
+    Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
+    Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
 });
