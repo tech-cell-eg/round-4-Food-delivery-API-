@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\ChatController;
-use Illuminate\Support\Facades\Notification;
-use App\Http\Controllers\API\OrderController;
 
 // ==================== Profile ====================
 use App\Http\Controllers\API\ReviewController;
@@ -23,7 +21,7 @@ use App\Http\Controllers\API\OtpLoginController;
 
 use App\Http\Controllers\Api\Chef\ChefController;
 
-use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
+use App\Http\Controllers\API\Chef\OrderController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
@@ -40,7 +38,7 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
-use App\Http\Controllers\API\Chef\IngredientsController;
+use App\Http\Controllers\ChefOrderController;
 
 
 // ==================== Auth Routes ====================
@@ -81,8 +79,10 @@ Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'checkPaymentStatus']);
-Route::post('/payments/{id}/result', [PaymentController::class, 'updatePaymentResult']);
+
+Route::post('/orders/{id}/update-payment-status', [PaymentController::class, 'updatePaymentStatus']);
+Route::post('/orders/{id}/check-payment-status', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/orders/{id}/refund', [PaymentController::class, 'refundPayment']);
 
 // طرق الدفع
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
@@ -92,11 +92,10 @@ Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod
 // المراجعات
 
 Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+Route::get('/reviews/{id}/show', [ReviewController::class, 'show']);
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 // Reviews
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']);
@@ -125,7 +124,6 @@ Route::get("ingredients", [IngredientsController::class, 'index']);
 Route::controller(ChefController::class)->group(function () {
     Route::get("open-resturants", "getOpenChefs");
     Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
-
 });
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
@@ -138,7 +136,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
 
-    
+
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {
         Route::get('/', 'index')->name("index");
@@ -153,20 +151,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
         Route::post('/conversation/typing-status', 'typingStatus');
-
     });
 
     // Chef Orders
     Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
-         Route::get('/running', 'runningOrders');
-         Route::patch('/{orderId}/done', 'markAsDone');
-         Route::patch('/{orderId}/cancel', 'cancelOrder');
-     });
+        Route::get('/running', 'runningOrders');
+        Route::patch('/{orderId}/done', 'markAsDone');
+        Route::patch('/{orderId}/cancel', 'cancelOrder');
+    });
 
     // Statistics
-     Route::prefix('chef/statistics')->group(function () {
-         Route::get('/', [StatisticsController::class, 'statistics']);
-     });
+    Route::prefix('chef/statistics')->group(function () {
+        Route::get('/', [StatisticsController::class, 'statistics']);
+    });
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
@@ -188,12 +185,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'processPayment']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
-    // Reviews
-    Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+    // Reviews 
+    Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-
 
     // Chat
     Route::controller(ChatController::class)->group(function () {
@@ -202,7 +198,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
     });
-
 
     // Get all notifications for the logged-in chef
     Route::get('/notifications', function () {
