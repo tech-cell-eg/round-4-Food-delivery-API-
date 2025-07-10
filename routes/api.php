@@ -51,6 +51,9 @@ Route::prefix('password')->group(function () {
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('categories/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
