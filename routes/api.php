@@ -25,7 +25,7 @@ use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\Chef\OrderController;
-use App\Http\Controllers\API\OrderController as AliasOrderController;
+use App\Http\Controllers\OrderController as AliasOrderController;
 
 use App\Http\Controllers\API\SocialAuthController;
 // ==================== Reviews ====================
