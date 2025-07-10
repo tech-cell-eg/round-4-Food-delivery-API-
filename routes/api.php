@@ -89,9 +89,6 @@ Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
 Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
 Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
 
-// Address
-Route::post('/address', [ShipmentAddressController::class, 'store']);
-
 // المراجعات
 
 Route::get('/reviews', [ReviewController::class, 'index']);
@@ -217,7 +214,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Auth::user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'done']);
     });
-    
-    // Shipment Address
+
+    // Address
     Route::post('/address', [ShipmentAddressController::class, 'store']);
+    Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
+    Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
+    Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
 });
