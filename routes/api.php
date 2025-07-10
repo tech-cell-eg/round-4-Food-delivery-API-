@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\Chef\OrderController;
+use App\Http\Controllers\API\OrderController as AliasOrderController;
 
 use App\Http\Controllers\API\SocialAuthController;
 // ==================== Reviews ====================
@@ -72,11 +73,11 @@ Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
 // الطلبات
-Route::get('/orders', [OrderController::class, 'index']);
-Route::get('/orders/{id}', [OrderController::class, 'show']);
-Route::post('/orders', [OrderController::class, 'store']);
-Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
+Route::get('/orders', [AliasOrderController::class, 'index']);
+Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+Route::post('/orders', [AliasOrderController::class, 'store']);
+Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
