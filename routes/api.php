@@ -27,6 +27,10 @@ use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
+
+use App\Http\Controllers\API\Chef\IngredientsController;
+// ==================== Reviews ====================
+
 use App\Http\Controllers\API\ChefReviewsController;
 
 use App\Http\Controllers\Customer\DishesController;
@@ -61,7 +65,6 @@ Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesB
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
-Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);
 Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
 Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
@@ -117,6 +120,7 @@ Route::get('/client/meals_search/', [DishesController::class, 'search']);
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
+
 
 Route::controller(ChefController::class)->group(function () {
     Route::get("open-resturants", "getOpenChefs");

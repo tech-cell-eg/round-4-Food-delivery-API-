@@ -7,6 +7,7 @@ use App\Http\Requests\CreateNewCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\Customer;
 use App\Models\User;
+use App\Traits\MediaHandler;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,8 @@ use Illuminate\Support\Str;
 
 class CustomersController extends Controller
 {
+    use MediaHandler;
+
     /**
      * Display a listing of the resource.
      */
@@ -112,13 +115,6 @@ class CustomersController extends Controller
     }
 
 
-    protected function storeImage(UploadedFile $image, string $folder = 'users_images'): string
-    {
-        $uniqueName = time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
-
-        return $image->storeAs($folder, $uniqueName, 'public');
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -180,7 +176,7 @@ class CustomersController extends Controller
 
         if ($request->hasFile("profile_image")) {
             if ($customer->user && $customer->user->profile_image && Storage::disk('public')->exists($customer->user->profile_image)) {
-                Storage::disk('public')->delete($customer->user->profile_image);
+                $this->deleteImage($customer->user->profile_image);
             }
 
             $userData['profile_image'] = $this->storeImage($request->file('profile_image'), 'users_images');
@@ -198,7 +194,7 @@ class CustomersController extends Controller
         $customer = Customer::findOrFail($id);
 
         if ($customer->user && $customer->user->profile_image && Storage::disk('public')->exists($customer->user->profile_image)) {
-            Storage::disk('public')->delete($customer->user->profile_image);
+            $this->deleteImage($customer->user->profile_image);
         }
 
         if ($customer->user) {

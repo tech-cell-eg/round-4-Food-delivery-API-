@@ -104,9 +104,9 @@
                 <div class="menu-title">Categories</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Categories</a> {{-- route('admin.categories.index') --}}
+                <li> <a href="{{ route('admin.categories.index') }}"><i class='bx bx-radio-circle'></i>All Categories</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Category</a> {{-- route('admin.categories.create') --}}
+                <li> <a href="{{ route('admin.categories.create') }}"><i class='bx bx-radio-circle'></i>Add New Category</a>
                 </li>
             </ul>
         </li>
