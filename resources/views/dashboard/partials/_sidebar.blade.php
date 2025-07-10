@@ -127,6 +127,19 @@
             </ul>
         </li>
 
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class='bx bx-food-menu'></i></div>
+                <div class="menu-title">Ingredient</div>
+            </a>
+            <ul>
+                <li> <a href="{{ route('admin.ingredients.index') }}"><i class='bx bx-radio-circle'></i>All Ingredients</a></li>
+                <li> <a href="{{ route('admin.ingredients.create') }}"><i class='bx bx-radio-circle'></i>Add New Ingredient</a></li>
+            </ul>
+        </li>
+
+
+
         <li class="menu-label">Orders & Sales</li>
 
         <li>
