@@ -94,7 +94,7 @@ class OtpLoginController extends Controller
         return ApiResponse::success(null, 'Password reset successfully');
     }
 
-    public function verifyOtp(Request $request)
+    public function verifyEmail(Request $request)
     {
         $request->validate(['email' => 'required|email', 'otp' => 'required|string']);
 
