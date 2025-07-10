@@ -8,20 +8,26 @@ use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class StatisticsController extends Controller
 {
     public function statistics(Request $request)
     {
-        $chef = Auth::user()->chef;
+        $chef = Chef::first();
+//        $chef = Auth::user()->chef;
 
         if (!$chef) {
             return ApiResponse::unauthorized();
         }
 
+        $period = $request->input('period', 'all');
+
         $ordersQuery = Order::whereHas('orderItems.dish', function ($q) use ($chef) {
             $q->where('chef_id', $chef->id);
         });
+
+        $ordersQuery = $this->applyDateFilter($ordersQuery, $period);
 
         $totalOrders = (clone $ordersQuery)->count();
         $runningOrders = (clone $ordersQuery)->whereIn('status', ['processing', 'on_the_way'])->count();
@@ -30,7 +36,8 @@ class StatisticsController extends Controller
         $cancelledOrders = (clone $ordersQuery)->where('status', 'cancelled')->count();
         $revenue = (clone $ordersQuery)->where('status', 'delivered')->sum('total');
 
-        return ApiResponse::success([ 
+        return ApiResponse::success([
+            'period' => $period,
             'total_orders' => $totalOrders,
             'running_orders' => $runningOrders,
             'pending_orders' => $pendingOrders,
@@ -39,4 +46,26 @@ class StatisticsController extends Controller
             'revenue' => $revenue,
         ]);
     }
-} 
+
+
+    private function applyDateFilter($query, $period)
+    {
+        $now = Carbon::now();
+
+        switch ($period) {
+            case 'today':
+                return $query->whereDate('created_at', $now->toDateString());
+
+            case 'last_month':
+                $lastMonth = $now->copy()->subMonth();
+                return $query->whereMonth('created_at', $lastMonth->month)
+                           ->whereYear('created_at', $lastMonth->year);
+
+            case 'last_year':
+                return $query->whereYear('created_at', $now->year - 1);
+
+            default:
+                return $query;
+        }
+    }
+}
