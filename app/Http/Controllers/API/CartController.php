@@ -48,8 +48,7 @@ class CartController extends Controller
         });
 
         return ApiResponse::success([
-            'cart' => $cart->load('items.dish'),
-            'items' => $cart->items->load(['dish', 'size']),
+            'cart' => $cart->load('items.dish', 'items.size'),
             'total' => $total
         ], 'تم جلب بيانات السلة بنجاح', 200);
     }
@@ -99,8 +98,7 @@ class CartController extends Controller
         }
 
         return ApiResponse::success([
-            'cart' => $cart->load('items.dish'),
-            'items' => $cart->items->load(['dish', 'size']),
+            'cart' => $cart->load('items.dish', 'items.size'),
             'total' => $cart->items->sum('price')
         ], 'تمت إضافة العنصر إلى سلة التسوق', 200);
     }
@@ -129,7 +127,8 @@ class CartController extends Controller
         ]);
 
         return ApiResponse::success([
-            'cart' => $cart->load('items')
+            'cart' => $cart->load('items.dish', 'items.size'),
+            'total' => $cart->items->sum('price')
         ], 'تم تحديث كمية العنصر', 200);
     }
 
@@ -149,8 +148,7 @@ class CartController extends Controller
         $cartItem->delete();
 
         return ApiResponse::success([
-            'cart' => $cart->load('items.dish'),
-            'items' => $cart->items->load(['dish', 'size']),
+            'cart' => $cart->load('items.dish', 'items.size'),
             'total' => $cart->items->sum('price')
         ], 'تم حذف العنصر من سلة التسوق', 200);
     }
@@ -208,7 +206,7 @@ class CartController extends Controller
         $total = $subtotal - $discount;
 
         return ApiResponse::success([
-            'cart' => $cart,
+            'cart' => $cart->load('items.dish', 'items.size'),
             'total' => $total,
             'discount' => $discount,
             'coupon' => $coupon,
@@ -229,7 +227,10 @@ class CartController extends Controller
             $cart->delete();
         }
 
-        return ApiResponse::success([], 'تم تفريغ سلة التسوق', 200);
+        return ApiResponse::success([
+            'cart' => $cart->load('items.dish', 'items.size'),
+            'total' => $cart->items->sum('price')
+        ], 'تم ازالة الكوبون بنجاح', 200);
     }
 
     private function calculateDiscount($amount, $coupon)

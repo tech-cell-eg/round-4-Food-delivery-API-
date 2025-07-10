@@ -7,34 +7,41 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\ChatController;
+use Illuminate\Support\Facades\Notification;
 use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
-use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Profile ====================
-use App\Http\Controllers\API\ChatController;
+use App\Http\Controllers\API\ReviewController;
 
 // ==================== Categories & Dishes ====================
-use Illuminate\Support\Facades\Notification;
+use App\Http\Controllers\API\PaymentController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OtpLoginController;
 
+use App\Http\Controllers\Api\Chef\ChefController;
+
+use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
 
 use App\Http\Controllers\API\Chef\IngredientsController;
 // ==================== Reviews ====================
+
 use App\Http\Controllers\API\ChefReviewsController;
+
 use App\Http\Controllers\Customer\DishesController;
+// ==================== Reviews ====================
+use App\Http\Controllers\Customer\FavoriteController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\Chef\IngredientsController;
+
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -48,6 +55,13 @@ Route::prefix('password')->group(function () {
     Route::post('/login_otp', [OtpLoginController::class, 'loginWithOtp']);
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
+
+Route::post('/email/verify', [OtpLoginController::class, 'verifyEmail']);
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
@@ -107,9 +121,10 @@ Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
-Route::Controller(ChefController::class)->group(function () {
+
+Route::controller(ChefController::class)->group(function () {
     Route::get("open-resturants", "getOpenChefs");
-    Route::get("resturants/{id}", "getOpenChefs");
+    Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
 
 });
 // ==================== Protected Routes (Sanctum) ====================
@@ -123,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
 
+    
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {
         Route::get('/', 'index')->name("index");
@@ -142,15 +158,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Chef Orders
     Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
-        Route::get('/running', 'runningOrders');
-        Route::patch('/{orderId}/done', 'markAsDone');
-        Route::patch('/{orderId}/cancel', 'cancelOrder');
-    });
+         Route::get('/running', 'runningOrders');
+         Route::patch('/{orderId}/done', 'markAsDone');
+         Route::patch('/{orderId}/cancel', 'cancelOrder');
+     });
 
     // Statistics
-    Route::prefix('chef/statistics')->group(function () {
-        Route::get('/', [StatisticsController::class, 'statistics']);
-    });
+     Route::prefix('chef/statistics')->group(function () {
+         Route::get('/', [StatisticsController::class, 'statistics']);
+     });
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);

@@ -49,14 +49,14 @@ class PaymentController extends Controller
             'status' => 'pending',
             'card_token' => $request->card_token ?? null,
         ]);
-        
+
         Log::info('تم إنشاء سجل دفع جديد', ['payment_id' => $payment->id]);
 
         // إذا كانت طريقة الدفع هي الدفع عند الاستلام
         if ($request->payment_method === 'cash_on_delivery') {
             // تحديث حالة الطلب إلى معلق
             $order->update(['status' => 'pending']);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'تم تسجيل طلبك بنجاح وسيتم الدفع عند الاستلام',
@@ -64,7 +64,7 @@ class PaymentController extends Controller
                 'order_id' => $order->id
             ]);
         }
-        
+
         // بالنسبة لطرق الدفع الأخرى، نعيد معرف الدفع للفرونت إند
         return response()->json([
             'success' => true,
@@ -90,11 +90,11 @@ class PaymentController extends Controller
         $payment = Payment::findOrFail($id);
         $payment->status = $request->status;
         $payment->transaction_id = $request->transaction_id ?? $payment->transaction_id;
-        
+
         if ($request->has('payment_details')) {
             $payment->payment_details = json_encode($request->payment_details);
         }
-        
+
         $payment->save();
 
         // تحديث حالة الطلب إذا نجح الدفع
@@ -122,25 +122,12 @@ class PaymentController extends Controller
      */
     public function checkPaymentStatus($id)
     {
-        $payment = Payment::findOrFail($id);
-        $order = Order::find($payment->order_id);
-
+        $order = Order::find($id);
+        $payment = Payment::where('order_id', $id)->first();
         return response()->json([
             'success' => true,
-            'payment' => [
-                'id' => $payment->id,
-                'status' => $payment->status,
-                'payment_method' => $payment->payment_method,
-                'amount' => $payment->amount,
-                'transaction_id' => $payment->transaction_id,
-                'created_at' => $payment->created_at,
-                'updated_at' => $payment->updated_at
-            ],
-            'order' => $order ? [
-                'id' => $order->id,
-                'status' => $order->status,
-                'total' => $order->total
-            ] : null
+            'order' => $order,
+            'payment' => $payment
         ]);
     }
 }

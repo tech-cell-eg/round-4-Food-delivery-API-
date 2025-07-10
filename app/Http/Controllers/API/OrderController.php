@@ -135,8 +135,7 @@ class OrderController extends Controller
             // إنشاء الطلب
             $order = Order::create([
 
-                'chef_id' => $chefId,
-
+                'chef_id' => $cart->items->first()->dish->chef_id,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
@@ -156,7 +155,7 @@ class OrderController extends Controller
             foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'chef_id' => $restaurantId,
+                    'chef_id' => $order->chef_id,
                     'dish_id' => $item->dish_id,
                     'size' => $item->size_name,
                     'quantity' => $item->quantity,
@@ -166,7 +165,7 @@ class OrderController extends Controller
             }
 
             // تفريغ سلة التسوق
-            CartItem::where('cart_id', $cart->id)->delete();
+            $cart->dropItems();
 
             DB::commit();
 
