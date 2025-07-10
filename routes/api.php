@@ -30,7 +30,7 @@ use App\Http\Controllers\API\ChefReviewsController;
 use App\Http\Controllers\Customer\DishesController;
 // ==================== Reviews ====================
 use App\Http\Controllers\Customer\FavoriteController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
+// use App\Http\Controllers\Api\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
@@ -49,6 +49,8 @@ Route::prefix('password')->group(function () {
     Route::post('/login_otp', [OtpLoginController::class, 'loginWithOtp']);
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
+
+Route::get('/categories', [CategoryController::class, 'index']);
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
@@ -145,9 +147,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // });
 
     // Statistics
-    Route::prefix('chef/statistics')->group(function () {
-        Route::get('/', [StatisticsController::class, 'statistics']);
-    });
+    // Route::prefix('chef/statistics')->group(function () {
+    //     Route::get('/', [StatisticsController::class, 'statistics']);
+    // });
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
