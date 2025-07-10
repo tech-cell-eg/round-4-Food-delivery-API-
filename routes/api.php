@@ -51,6 +51,11 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
 
+Route::prefix('email')->group(function () {
+    Route::post('/send_otp', [OtpLoginController::class, 'sendOtp']);
+    Route::post('/verify_otp', [OtpLoginController::class, 'verifyOtp']);
+});
+
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
 Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);

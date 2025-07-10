@@ -51,13 +51,8 @@ class AuthController extends Controller
             
                 'preferred_payment_method' => $request->preferred_payment_method ?? null,
             ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return ApiResponse::created([
             'user'         => $user,
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
         ], 'User created successfully');
     }
 
