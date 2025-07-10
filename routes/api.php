@@ -25,6 +25,7 @@ use App\Http\Controllers\API\OtpLoginController;
 use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
 use App\Http\Controllers\Api\Chef\DishController;
+use App\Http\Controllers\API\Chef\IngredientsController;
 use App\Http\Controllers\API\Chef\OrderController;
 use App\Http\Controllers\API\OrderController as AliasOrderController;
 
@@ -39,7 +40,10 @@ use App\Http\Controllers\ShipmentAddressController;
 use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Chat ====================
+
+
 use App\Http\Controllers\API\Chef\StatisticsController;
+
 //use App\Http\Controllers\ChefOrderController;
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
