@@ -20,7 +20,8 @@ use App\Http\Controllers\API\PaymentController;
 // ==================== Chef ====================
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OtpLoginController;
-use App\Http\Controllers\API\Chef\ChefController;
+
+use App\Http\Controllers\Api\Chef\ChefController;
 
 use App\Http\Controllers\API\Chef\OrderController as ChefOrderController;
 // ==================== Orders, Cart, Payment ====================
@@ -114,6 +115,12 @@ Route::get('/client/meals_search/', [DishesController::class, 'search']);
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
+
+Route::Controller(ChefController::class)->group(function () {
+    Route::get("open-resturants", "getOpenChefs");
+    Route::get("resturants/{id}", "getOpenChefs");
+
+});
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
 
