@@ -107,9 +107,9 @@ Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
-Route::Controller(ChefController::class)->group(function () {
+Route::controller(ChefController::class)->group(function () {
     Route::get("open-resturants", "getOpenChefs");
-    Route::get("resturants/{id}", "getOpenChefs");
+    Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
 
 });
 // ==================== Protected Routes (Sanctum) ====================
