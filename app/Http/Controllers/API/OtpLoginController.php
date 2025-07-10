@@ -109,7 +109,7 @@ class OtpLoginController extends Controller
             return ApiResponse::error('Invalid or expired OTP');
         }
 
-        return ApiResponse::success(null, 'OTP verified successfully');
+        return ApiResponse::success(null, 'OTP verified successfully to to login');
     }
 }
 

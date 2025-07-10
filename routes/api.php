@@ -7,34 +7,39 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
-use App\Http\Controllers\Customer\FavoriteController;
-
-// ==================== Profile ====================
 use App\Http\Controllers\API\ChatController;
 
+// ==================== Profile ====================
+use App\Http\Controllers\ChefOrderController;
+
 // ==================== Categories & Dishes ====================
-use Illuminate\Support\Facades\Notification;
+use App\Http\Controllers\API\ReviewController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\CategoryController;
+
 use App\Http\Controllers\API\OtpLoginController;
 
+use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
-use App\Http\Controllers\API\SocialAuthController;
+use App\Http\Controllers\Api\Chef\DishController;
+use App\Http\Controllers\API\Chef\OrderController;
 
-use App\Http\Controllers\API\Chef\IngredientsController;
+use App\Http\Controllers\API\SocialAuthController;
 // ==================== Reviews ====================
+
 use App\Http\Controllers\API\ChefReviewsController;
+
 use App\Http\Controllers\Customer\DishesController;
+// ==================== Reviews ====================
+use App\Http\Controllers\Customer\FavoriteController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
+//use App\Http\Controllers\ChefOrderController;
+use App\Http\Controllers\ShipmentAddressController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -48,6 +53,13 @@ Route::prefix('password')->group(function () {
     Route::post('/login_otp', [OtpLoginController::class, 'loginWithOtp']);
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
+
+Route::post('/email/verify', [OtpLoginController::class, 'verifyEmail']);
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
 
 // مسارات تتطلب مصادقة
 // سلة التسوق
@@ -67,8 +79,10 @@ Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'checkPaymentStatus']);
-Route::post('/payments/{id}/result', [PaymentController::class, 'updatePaymentResult']);
+
+Route::post('/orders/{id}/update-payment-status', [PaymentController::class, 'updatePaymentStatus']);
+Route::post('/orders/{id}/check-payment-status', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/orders/{id}/refund', [PaymentController::class, 'refundPayment']);
 
 // طرق الدفع
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
@@ -78,11 +92,10 @@ Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod
 // المراجعات
 
 Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+Route::get('/reviews/{id}/show', [ReviewController::class, 'show']);
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 // Reviews
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']);
@@ -107,10 +120,10 @@ Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
-Route::Controller(ChefController::class)->group(function () {
-    Route::get("open-resturants", "getOpenChefs");
-    Route::get("resturants/{id}", "getOpenChefs");
 
+Route::controller(ChefController::class)->group(function () {
+    Route::get("open-resturants", "getOpenChefs");
+    Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
 });
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
@@ -122,6 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
+
 
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {
@@ -137,7 +151,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
         Route::post('/conversation/typing-status', 'typingStatus');
-
     });
 
     // Chef Orders
@@ -172,12 +185,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'processPayment']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
-    // Reviews
-    Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+    // Reviews 
+    Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-
 
     // Chat
     Route::controller(ChatController::class)->group(function () {
@@ -187,20 +199,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
     });
 
-
     // Get all notifications for the logged-in chef
-    Route::get('/notifications', function () {
-        return Auth::user()->notifications;
-    });
+    Route::get('/notifications', [NotificationController::class, 'index']);
 
     // Get unread notifications only
-    Route::get('/notifications/unread', function () {
-        return Auth::user()->unreadNotifications;
-    });
+    Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
 
     // Mark all as read
     Route::post('/notifications/mark-as-read', function () {
         Auth::user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'done']);
     });
+
+    // Address
+    Route::post('/address', [ShipmentAddressController::class, 'store']);
+    Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
+    Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
+    Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
 });

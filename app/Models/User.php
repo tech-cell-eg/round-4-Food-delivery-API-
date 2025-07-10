@@ -51,7 +51,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 
@@ -74,23 +73,22 @@ class User extends Authenticatable
 
 
     public function cart()
-{
-    return $this->hasOne(Cart::class, 'customer_id');
-}
+    {
+        return $this->hasOne(Cart::class, 'customer_id');
+    }
 
-public function favorites()
-{
-    return $this->hasMany(Favorite::class, 'customer_id');
-}
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'customer_id');
+    }
 
-public function addresses()
-{
-    return $this->hasMany(Address::class, 'customer_id');
-}
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'customer_id');
+    }
 
     public function admin()
     {
         return $this->hasOne(Admin::class, "id", "id");
     }
-
 }

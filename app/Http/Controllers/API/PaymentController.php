@@ -79,30 +79,27 @@ class PaymentController extends Controller
     /**
      * تحديث نتيجة الدفع بعد انتهاء العملية من الفرونت
      */
-    public function updatePaymentResult(Request $request, $id)
+    public function updatePaymentStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|in:completed,failed,cancelled',
             'transaction_id' => 'nullable|string',
-            'payment_details' => 'nullable|array'
+            'amount' => 'nullable|numeric'
         ]);
 
-        $payment = Payment::findOrFail($id);
+        $order = Order::find($id);
+        $payment = $order->payment;
         $payment->status = $request->status;
-        $payment->transaction_id = $request->transaction_id ?? $payment->transaction_id;
+        $payment->transaction_id = $request->transaction_id;
+        $payment->amount = $request->amount;
 
-        if ($request->has('payment_details')) {
-            $payment->payment_details = json_encode($request->payment_details);
-        }
-
-        $payment->save();
+        $payment->update();
 
         // تحديث حالة الطلب إذا نجح الدفع
         if ($request->status === 'completed') {
             $order = Order::find($payment->order_id);
             if ($order) {
-                $order->status = 'processing';
-                $order->save();
+                $order->update(['status' => 'completed']);
             }
         }
 
