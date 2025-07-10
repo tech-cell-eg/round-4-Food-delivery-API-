@@ -15,6 +15,7 @@ class Customer extends Model
     protected $fillable = [
         'id',
         'preferred_payment_method',
+        "status"
     ];
 
     /**
