@@ -167,13 +167,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [StatisticsController::class, 'statistics']);
     });
 
-    // Orders
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-    Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
-
     // Cart
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart/items', [CartController::class, 'addItem']);
