@@ -35,7 +35,6 @@ use App\Http\Controllers\Api\Chef\StatisticsController;
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\API\Chef\IngredientsController;
-use App\Http\Controllers\Api\Customer\SetLocationController;
 
 
 // ==================== Auth Routes ====================
