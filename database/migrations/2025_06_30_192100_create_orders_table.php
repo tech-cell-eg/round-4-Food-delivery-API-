@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('coupon_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('chef_id')->constrained()->onDelete('cascade');
             $table->string('order_number')->unique();
-            $table->enum('status', ['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled', 'completed'])->default('pending');
 
             // Payment fields
             $table->string('payment_status')->default('pending')->comment('pending, paid, failed, refunded');

@@ -67,9 +67,7 @@ class AuthController extends Controller
 
             'preferred_payment_method' => $request->preferred_payment_method ?? null,
         ]);
-        return ApiResponse::created([
-            'user'         => $user,
-        ], 'User created successfully');
+        return ApiResponse::created(null, 'You should check your email for the OTP');
     }
 
     public function login(Request $request)

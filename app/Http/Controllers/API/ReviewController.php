@@ -43,8 +43,6 @@ class ReviewController extends Controller
         ]);
     }
 
-
-
     /**
      * عرض قائمة المراجعات لطبق معين
      *
@@ -54,7 +52,7 @@ class ReviewController extends Controller
     public function index()
     {
 
-        $reviews = Review::where(['chef_id' => Auth::id()])->orwhere(['customer_id' => Auth::id()])
+        $reviews = Review::where([])
             ->with(['customer:id,name,profile_image', 'chef:id,name'])
             ->latest('created_at')
             ->get();
@@ -90,42 +88,43 @@ class ReviewController extends Controller
         $dish = Dish::findOrFail($request->dish_id);
 
         // الحصول على معرف الطاهي من الطبق
-        $chefId = $dish->chef_id;
+        $chefId = $dish->chef->id;
 
         // التحقق من أن المستخدم لم يقم بمراجعة هذا الطبق من قبل
-        $existingReview = Review::where('dish_id', $request->dish_id)
-            ->where('customer_id', $request->user()->id)
+        $existingReview = Review::where(['dish_id' => $request->dish_id, 'customer_id' => Auth::id()])
             ->first();
+        //return $existingReview;
 
         if ($existingReview) {
             return response()->json([
                 'message' => 'لقد قمت بمراجعة هذا الطبق من قبل. يمكنك تحديث المراجعة الحالية بدلاً من إضافة مراجعة جديدة.'
-            ], 422);
+            ], 200);
         }
 
         // إنشاء المراجعة
         $review = Review::create([
-            'customer_id' => rand(1, 10),
-            'chef_id' => $request->chef_id,
+            'customer_id' => Auth::id(),
+            'chef_id' => $chefId,
             'dish_id' => $request->dish_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
             'created_at' => now(),
         ]);
+
         // Notify chef if review is for them
-        if ($request->reviewable_type === 'chef') {
-            $chef = Chef::findOrFail($chefId);
-            if ($chef) {
-                $chef->notify(new CustomerActionNotification([
-                    'title' => 'New Review',
-                    'message' => "{$request->user()->name} left a new review on your profile.",
-                    'image' => $user->profile_photo_url ?? null . urlencode($request->user()->name),
-                    'time' => now()->diffForHumans(),
-                ]));
-            }
-        }
+        $chef = Chef::findOrFail($chefId);
+        // if ($chef) {
+        //     $chef->notify(new CustomerActionNotification([
+        //         'title' => 'New Review',
+        //         'message' => "{$request->user()->name} left a new review on your profile.",
+        //         'image' => $chef->profile_photo_url ?? null . urlencode($request->user()->name),
+        //         'time' => now()->diffForHumans(),
+        //     ]));
+        // }
+
+
         return response()->json([
-            'data' => $review->load(['customer:id,name,profile_image']),
+            'data' => $review->load(['customer:id,name,profile_image', 'chef:id,name', 'dish:id,name']),
             'message' => 'تم إضافة المراجعة بنجاح',
         ], 201);
     }
@@ -209,9 +208,9 @@ class ReviewController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function userReviews(Request $request)
+    public function userReviews()
     {
-        $reviews = Review::where('customer_id', $request->user()->id)
+        $reviews = Review::where('customer_id', Auth::id())
             ->with(['dish:id,name,image', 'chef:id,name'])
             ->latest('created_at')
             ->paginate(10);

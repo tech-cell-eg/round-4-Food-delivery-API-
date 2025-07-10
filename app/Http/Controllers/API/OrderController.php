@@ -72,7 +72,7 @@ class OrderController extends Controller
         }
 
         return ApiResponse::success([
-            'order' => $order
+            'order' => $order->load('payments'),
         ], 'تم جلب بيانات الطلب بنجاح', 200);
     }
 
@@ -134,7 +134,7 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-
+                'payment_method' => $request->payment_method,
                 'chef_id' => $cart->items->first()->dish->chef_id,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
@@ -164,6 +164,13 @@ class OrderController extends Controller
                 ]);
             }
 
+            Payment::create([
+                'order_id' => $order->id,
+                'status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'amount' => $total,
+            ]);
+
             // تفريغ سلة التسوق
             $cart->dropItems();
 
@@ -173,7 +180,8 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
                 'data' => [
-                    'order' => $order->load('orderItems')
+                    'order' => $order->load('orderItems'),
+                    'payment' => Payment::where('order_id', $order->id)->first()
                 ]
             ]);
         } catch (\Exception $e) {
