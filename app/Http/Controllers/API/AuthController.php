@@ -22,6 +22,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'type'     => 'customer',
             'phone'    => $request->phone,
+        
         ]);
 
         if ($request->hasFile('profile_image')) {
