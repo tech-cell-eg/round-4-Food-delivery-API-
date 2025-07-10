@@ -7,34 +7,35 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\ChatController;
+use Illuminate\Support\Facades\Notification;
 use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
-use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Profile ====================
-use App\Http\Controllers\API\ChatController;
+use App\Http\Controllers\API\ReviewController;
 
 // ==================== Categories & Dishes ====================
-use Illuminate\Support\Facades\Notification;
+use App\Http\Controllers\API\PaymentController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OtpLoginController;
+use App\Http\Controllers\API\Chef\ChefController;
 
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
-
-use App\Http\Controllers\API\Chef\IngredientsController;
-// ==================== Reviews ====================
 use App\Http\Controllers\API\ChefReviewsController;
+
 use App\Http\Controllers\Customer\DishesController;
+// ==================== Reviews ====================
+use App\Http\Controllers\Customer\FavoriteController;
+use App\Http\Controllers\Api\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
+use App\Http\Controllers\API\Chef\IngredientsController;
+use App\Http\Controllers\Api\Customer\SetLocationController;
 
 
 // ==================== Auth Routes ====================
@@ -118,7 +119,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
+    Route::post('/set-location', SetLocationController::class);
 
+    
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {
         Route::get('/', 'index')->name("index");
@@ -137,11 +140,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Chef Orders
-    Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
-        Route::get('/running', 'runningOrders');
-        Route::patch('/{orderId}/done', 'markAsDone');
-        Route::patch('/{orderId}/cancel', 'cancelOrder');
-    });
+    // Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
+    //     Route::get('/running', 'runningOrders');
+    //     Route::patch('/{orderId}/done', 'markAsDone');
+    //     Route::patch('/{orderId}/cancel', 'cancelOrder');
+    // });
 
     // Statistics
     Route::prefix('chef/statistics')->group(function () {
