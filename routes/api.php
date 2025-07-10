@@ -118,7 +118,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
-    Route::post('/set-location', SetLocationController::class);
 
     
     // Chef Meals
