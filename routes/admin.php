@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Dashboard\AdminsController;
 use App\Http\Controllers\Dashboard\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\CustomersController;
+use App\Http\Controllers\Dashboard\CategoriesController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\AdminProfileController;
 use App\Http\Controllers\Dashboard\PermissionController;
@@ -35,6 +37,7 @@ Route::prefix('admin')->group(function () {
 
         Route::resource("customers", CustomersController::class)->except(["show"]);
 
+        Route::resource("categories", CategoriesController::class)->except(["show"]);
     });
 
 

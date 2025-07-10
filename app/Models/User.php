@@ -28,6 +28,9 @@ class User extends Authenticatable
         'profile_image',
         'bio',
         'type',
+        'address',
+        'latitude',
+        'longitude',
     ];
 
     /**

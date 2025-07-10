@@ -7,6 +7,7 @@ use App\Http\Requests\CreateNewAdminRequest;
 use App\Http\Requests\UpdateAdminRequest;
 use App\Models\Admin;
 use App\Models\User;
+use App\Traits\MediaHandler;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use Spatie\Permission\Models\Role;
 
 class AdminsController extends Controller
 {
+    use MediaHandler;
+
     /**
      * Display a listing of the resource.
      */
@@ -74,12 +77,6 @@ class AdminsController extends Controller
         }
     }
 
-    protected function storeImage(UploadedFile $image, string $folder = 'users_images'): string
-    {
-        $uniqueName = time() . '_' . Str::random(20) . '.' . $image->getClientOriginalExtension();
-
-        return $image->storeAs($folder, $uniqueName, 'public');
-    }
 
     protected function storeNewUserAdmin(Array $validatedData, $request): int
     {
@@ -94,8 +91,7 @@ class AdminsController extends Controller
         ];
 
         if($request->hasFile('profile_image')) {
-            $imagePath = $this->storeImage($request->file('profile_image'), 'users_images');
-            $userData['profile_image'] = $imagePath;
+            $userData['profile_image'] = $this->storeImage($request->file('profile_image'), 'users_images');
         }
 
         $user = User::create($userData);
@@ -141,7 +137,7 @@ class AdminsController extends Controller
 
         if ($request->hasFile('profile_image')) {
             if ($admin->user && $admin->user->profile_image && Storage::disk('public')->exists($admin->user->profile_image)) {
-                Storage::disk('public')->delete($admin->user->profile_image);
+                $this->deleteImage($admin->user->profile_image);
             }
 
             $imagePath = $this->storeImage($request->file('profile_image'), 'users_images');
@@ -188,7 +184,7 @@ class AdminsController extends Controller
         $admin = Admin::findOrFail($id);
 
         if ($admin->user && $admin->user->profile_image && Storage::disk('public')->exists($admin->user->profile_image)) {
-            Storage::disk('public')->delete($admin->user->profile_image);
+            $this->deleteImage($admin->user->profile_image);
         }
 
         if ($admin->user) {

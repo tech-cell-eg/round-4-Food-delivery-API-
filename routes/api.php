@@ -7,35 +7,39 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\API\OrderController;
-use App\Http\Controllers\Api\Chef\StatisticsController;
-use App\Http\Controllers\Customer\FavoriteController;
-
-// ==================== Profile ====================
 use App\Http\Controllers\API\ChatController;
 
+// ==================== Profile ====================
+use App\Http\Controllers\API\ReviewController;
+
 // ==================== Categories & Dishes ====================
-use Illuminate\Support\Facades\Notification;
+use App\Http\Controllers\API\PaymentController;
 
 // ==================== Chef ====================
-use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\OtpLoginController;
 
+use App\Http\Controllers\Api\Chef\ChefController;
+
+use App\Http\Controllers\API\Chef\OrderController;
 // ==================== Orders, Cart, Payment ====================
-use App\Http\Controllers\API\Chef\ChefController;
-use App\Http\Controllers\API\Chef\DishController;
+use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\SocialAuthController;
 
 use App\Http\Controllers\API\Chef\IngredientsController;
 // ==================== Reviews ====================
+
 use App\Http\Controllers\API\ChefReviewsController;
+
 use App\Http\Controllers\Customer\DishesController;
+// ==================== Reviews ====================
+use App\Http\Controllers\Customer\FavoriteController;
+use App\Http\Controllers\API\Chef\StatisticsController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\ChefOrderController;
+
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -50,9 +54,15 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [OtpLoginController::class, 'resetPassword']);
 });
 
+Route::post('/email/verify', [OtpLoginController::class, 'verifyEmail']);
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
+Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
+
 // مسارات تتطلب مصادقة
 // سلة التسوق
-Route::get('/cart', [CartController::class, 'index']);
 Route::post('/cart/items', [CartController::class, 'addItem']);
 Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
 Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
@@ -109,6 +119,12 @@ Route::get('/client/meals_search/', [DishesController::class, 'search']);
 Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
+
+
+Route::controller(ChefController::class)->group(function () {
+    Route::get("open-resturants", "getOpenChefs");
+    Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
+});
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -119,6 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
+
 
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {

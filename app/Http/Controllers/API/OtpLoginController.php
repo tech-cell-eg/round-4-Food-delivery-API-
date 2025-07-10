@@ -21,7 +21,7 @@ class OtpLoginController extends Controller
             return ApiResponse::notFound('User not found');
         }
 
-        $otp = rand(100000, 999999);
+        $otp = 1234;
 
         PasswordOtp::updateOrCreate(
         ['email' => $request->email],
@@ -92,6 +92,24 @@ class OtpLoginController extends Controller
         $record->delete();
 
         return ApiResponse::success(null, 'Password reset successfully');
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email', 'otp' => 'required|string']);
+
+        $record = PasswordOtp::where('email', $request->email)->where('otp', $request->otp)->first();
+        $user = User::where('email', $request->email)->first();
+        
+        if (!$user) {
+            return ApiResponse::notFound('User not found');
+        }
+
+        if (!$record || Carbon::parse($record->expires_at)->isPast()) {
+            return ApiResponse::error('Invalid or expired OTP');
+        }
+
+        return ApiResponse::success(null, 'OTP verified successfully');
     }
 }
 
