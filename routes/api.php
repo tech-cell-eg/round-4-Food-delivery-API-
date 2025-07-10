@@ -35,7 +35,7 @@ use App\Http\Controllers\Customer\DishesController;
 
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
-
+use App\Http\Controllers\ChefOrderController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -69,8 +69,10 @@ Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
-Route::get('/payments/{id}', [PaymentController::class, 'checkPaymentStatus']);
-Route::post('/payments/{id}/result', [PaymentController::class, 'updatePaymentResult']);
+
+Route::post('/orders/{id}/update-payment-status', [PaymentController::class, 'updatePaymentStatus']);
+Route::post('/orders/{id}/check-payment-status', [PaymentController::class, 'checkPaymentStatus']);
+Route::post('/orders/{id}/refund', [PaymentController::class, 'refundPayment']);
 
 // طرق الدفع
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
@@ -80,11 +82,10 @@ Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod
 // المراجعات
 
 Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+Route::get('/reviews/{id}/show', [ReviewController::class, 'show']);
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
 
 // Reviews
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']);
@@ -133,7 +134,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/conversations/{conversationId}', 'show');
         Route::delete("messages/{messageId}/destroy", 'destroyMessage');
         Route::post('/conversation/typing-status', 'typingStatus');
-
     });
 
     // Chef Orders
@@ -168,8 +168,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments', [PaymentController::class, 'processPayment']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
-    // Reviews
-    Route::get('/user/reviews', [ReviewController::class, 'userReviews']);
+    // Reviews 
+    Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
