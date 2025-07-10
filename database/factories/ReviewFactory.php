@@ -21,7 +21,7 @@ class ReviewFactory extends Factory
         return [
             'customer_id' => User::factory()->create()->id,
             'chef_id' => User::factory()->create()->id,
-            // 'dish_id' => Dish::factory()->create()->id,
+            'dish_id' => Dish::factory()->create()->id,
             'rating' => fake()->numberBetween(1, 5),
             'comment' => fake()->paragraph,
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
