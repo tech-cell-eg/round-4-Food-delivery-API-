@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Auth;
 
+use App\Http\Controllers\API\Chef\StatisticsController;
 // ==================== Auth ====================
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
