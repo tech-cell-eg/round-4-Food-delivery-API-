@@ -39,7 +39,7 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 // ==================== Chat ====================
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\ChefOrderController;
-
+use App\Http\Controllers\ShipmentAddressController;
 
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
@@ -88,6 +88,9 @@ Route::post('/orders/{id}/refund', [PaymentController::class, 'refundPayment']);
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
 Route::post('/payment-methods', [PaymentController::class, 'storePaymentMethod']);
 Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod']);
+
+// Address
+Route::post('/address', [ShipmentAddressController::class, 'store']);
 
 // المراجعات
 
@@ -214,4 +217,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Auth::user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'done']);
     });
+    
+    // Shipment Address
+    Route::post('/address', [ShipmentAddressController::class, 'store']);
 });
