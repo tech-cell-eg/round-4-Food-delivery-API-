@@ -55,7 +55,7 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $customerId = Auth::user()->customer->id;
+        $customerId = Auth::id();
 
         $order = Order::find($id);
 
@@ -88,6 +88,7 @@ class OrderController extends Controller
         ]);
 
         $customerId = Auth::id();
+
         $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
@@ -254,5 +255,44 @@ class OrderController extends Controller
         return ApiResponse::success([
             'order' => $order->load(['orderItems', 'statusHistories'])
         ], 'تم جلب بيانات الطلب بنجاح', 200);
+    }
+
+    /* change order status */
+    public function changeOrderStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
+        ]);
+
+        $order = Order::find($id);
+
+        if (!$order) {
+            return ApiResponse::error([
+                'message' => 'لم يتم العثور على الطلب'
+            ], 400);
+        }
+
+        $order->status = $validated['status'];
+        $order->update();
+        $this->logOrderStatus($order, $validated['status'], 'تم تغيير حالة الطلب');
+
+        return ApiResponse::success([
+            'order' => $order->load('orderItems')
+        ], 'تم تغيير حالة الطلب بنجاح', 200);
+    }
+
+
+    /* Chef Completed Orders */
+    public function chefCompletedOrders(Request $request)
+    {
+        $chef = Auth::user();
+        if ($chef->type !== 'chef') {
+            return ApiResponse::unauthorized('You are not authorized to access this resource.');
+        }
+
+        $orders = Order::where(['status' => 'completed', 'chef_id' => $chef->id])
+            ->with(['orderItems.dish'])
+            ->paginate(5);
+        return ApiResponse::withPagination($orders);
     }
 }

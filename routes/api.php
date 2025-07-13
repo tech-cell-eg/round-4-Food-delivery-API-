@@ -76,19 +76,13 @@ Route::post('/cart/clear', [CartController::class, 'clearCart']);
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
-// الطلبات
-Route::get('/orders', [AliasOrderController::class, 'index']);
-Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
-Route::post('/orders', [AliasOrderController::class, 'store']);
-Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
-Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
-
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
-
 Route::post('/orders/{id}/update-payment-status', [PaymentController::class, 'updatePaymentStatus']);
 Route::post('/orders/{id}/check-payment-status', [PaymentController::class, 'checkPaymentStatus']);
 Route::post('/orders/{id}/refund', [PaymentController::class, 'refundPayment']);
+Route::post('/payments', [PaymentController::class, 'processPayment']);
+Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
 // طرق الدفع
 Route::get('/payment-methods', [PaymentController::class, 'addPaymentMethod']);
@@ -171,12 +165,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [StatisticsController::class, 'statistics']);
     });
 
-    // Orders
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{id}', [OrderController::class, 'show']);
-    Route::post('/orders', [OrderController::class, 'store']);
-    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']);
-    Route::get('/orders/{id}/track', [OrderController::class, 'trackOrder']);
+    // Orders - محمية بالمصادقة
+    Route::get('/orders', [AliasOrderController::class, 'index']);
+    Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+    Route::post('/store/new/order', [AliasOrderController::class, 'store']);
+    Route::post('/change/order/status/{id}', [AliasOrderController::class, 'changeOrderStatus']);
+    Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
+    Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+
+    // Orders Lists and filtering
+    Route::get('/chef/completed-orders', [AliasOrderController::class, 'chefCompletedOrders'])->name('chef-completed-orders');
+    Route::get('/chef/running-orders', [AliasOrderController::class, 'chefRunningOrders'])->name('chef-running-orders');
+    Route::get('/customer/orders', [AliasOrderController::class, 'customerOrders'])->name('customer-orders');
 
     // Cart
     Route::get('/cart', [CartController::class, 'index']);
@@ -186,10 +186,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/clear', [CartController::class, 'clearCart']);
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
-
-    // Payments
-    Route::post('/payments', [PaymentController::class, 'processPayment']);
-    Route::get('/payments/{id}', [PaymentController::class, 'show']);
 
     // Reviews 
     Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);

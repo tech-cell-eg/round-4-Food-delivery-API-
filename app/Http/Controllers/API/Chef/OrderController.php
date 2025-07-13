@@ -74,5 +74,4 @@ class OrderController extends Controller
 
         return ApiResponse::success([], "Order was successfully cancelled.");
     }
-
 }

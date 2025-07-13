@@ -77,6 +77,11 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function completedOrders()
+    {
+        return $this->where('status', 'completed')->get();
+    }
+
     public function payment()
     {
         return $this->hasOne(Payment::class);
