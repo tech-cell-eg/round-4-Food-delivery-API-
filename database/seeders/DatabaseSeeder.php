@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             IngredientSeeder::class,    // Create ingredients
             ChefSeeder::class,          // Create chef profiles (depends on users)
             CustomerSeeder::class,      // Create customers (depends on users)
+            ConversationsTableSeeder::class, // Create conversations (depends on chefs and customers)
+            MessagesTableSeeder::class, // Create messages (depends on conversations and users)
             DishSeeder::class,          // Create dishes (depends on chefs and categories)
             DishSizeSeeder::class,      // Create dish sizes (depends on dishes)
             DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
@@ -28,6 +30,8 @@ class DatabaseSeeder extends Seeder
             // ReviewSeeder::class,
             OrderSeeder::class,
             OrderItemSeeder::class,
+            MessagesTableSeeder::class,
+            ConversationsTableSeeder::class,
         ]);
     }
 }
