@@ -13,6 +13,8 @@ use App\Http\Controllers\API\ChatController;
 // ==================== Profile ====================
 use App\Http\Controllers\ChefOrderController;
 
+use App\Http\Controllers\API\Chef\OrderController as ResturantOrderContrller; // Mohamed
+
 // ==================== Categories & Dishes ====================
 use App\Http\Controllers\API\ReviewController;
 
@@ -161,7 +163,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Chef Orders
-    Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
+    Route::controller(ResturantOrderContrller::class)->prefix('chef/orders')->group(function () {
         Route::get('/running', 'runningOrders');
         Route::patch('/{orderId}/done', 'markAsDone');
         Route::patch('/{orderId}/cancel', 'cancelOrder');
