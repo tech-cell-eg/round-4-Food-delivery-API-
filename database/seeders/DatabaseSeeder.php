@@ -30,8 +30,7 @@ class DatabaseSeeder extends Seeder
             // ReviewSeeder::class,
             OrderSeeder::class,
             OrderItemSeeder::class,
-            MessagesTableSeeder::class,
-            ConversationsTableSeeder::class,
+            PaymentSeeder::class,       // Create payments (depends on orders)
         ]);
     }
 }
