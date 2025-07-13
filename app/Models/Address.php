@@ -11,11 +11,15 @@ class Address extends Model
 
     protected $fillable = [
         'customer_id',
-        'post_code',
-        'address_text',
-        'street',
-        'appartment',
-        'lable',
+        'lat',
+        'lon',
+        'class',
+        'type',
+        'place_rank',
+        'name',
+        'importance',
+        'display_name',
+        'address',
         'is_default',
     ];
 

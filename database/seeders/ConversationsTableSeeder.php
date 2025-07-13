@@ -51,4 +51,4 @@ class ConversationsTableSeeder extends Seeder
         }
 
     }
-} 
+

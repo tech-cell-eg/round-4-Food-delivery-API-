@@ -73,4 +73,3 @@ class MessagesTableSeeder extends Seeder
         }
 
     }
-} 

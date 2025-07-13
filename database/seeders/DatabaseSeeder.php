@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         // Run seeders in the correct order to maintain foreign key relationships
         $this->call([
             AddressesTableSeeder::class,
+            AdminSeeder::class,
             UserSeeder::class,          // Create users first (for chefs)
             CategorySeeder::class,      // Create categories
             IngredientSeeder::class,    // Create ingredients
@@ -25,7 +26,7 @@ class DatabaseSeeder extends Seeder
             DishSeeder::class,          // Create dishes (depends on chefs and categories)
             DishSizeSeeder::class,      // Create dish sizes (depends on dishes)
             DishIngredientSeeder::class, // Link dishes with ingredients (depends on dishes and ingredients)
-            CouponSeeder::class,        // Create coupons (depends on chefs)
+            CouponSeeder::class,
             AdminSeeder::class,
             // ReviewSeeder::class,
             OrderSeeder::class,

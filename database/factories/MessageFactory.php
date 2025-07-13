@@ -85,4 +85,4 @@ class MessageFactory extends Factory
             'updated_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
         ]);
     }
-} 
+
