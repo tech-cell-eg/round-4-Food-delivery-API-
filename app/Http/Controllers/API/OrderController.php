@@ -87,9 +87,8 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $customerId = Auth::user()->customer->id;
+        $customerId = Auth::id();
         $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
-
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
@@ -97,7 +96,6 @@ class OrderController extends Controller
                 'message' => 'سلة التسوق فارغة'
             ], 400);
         }
-
 
         DB::beginTransaction();
         try {

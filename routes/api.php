@@ -13,6 +13,8 @@ use App\Http\Controllers\API\ChatController;
 // ==================== Profile ====================
 use App\Http\Controllers\ChefOrderController;
 
+use App\Http\Controllers\API\Chef\OrderController as ResturantOrderContrller; // Mohamed
+
 // ==================== Categories & Dishes ====================
 use App\Http\Controllers\API\ReviewController;
 
@@ -43,6 +45,9 @@ use App\Http\Controllers\Customer\FavoriteController;
 // ==================== Chat ====================
 
 use App\Http\Controllers\API\Chef;
+
+use App\Http\Controllers\API\Chef\StatisticsController;
+
 //use App\Http\Controllers\ChefOrderController;
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
@@ -75,6 +80,15 @@ Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
 Route::post('/cart/clear', [CartController::class, 'clearCart']);
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
+
+
+// الطلبات
+Route::get('/orders', [AliasOrderController::class, 'index']);
+Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+Route::post('/orders', [AliasOrderController::class, 'store']);
+Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
+
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
@@ -153,7 +167,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Chef Orders
-    Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
+    Route::controller(ResturantOrderContrller::class)->prefix('chef/orders')->group(function () {
         Route::get('/running', 'runningOrders');
         Route::patch('/{orderId}/done', 'markAsDone');
         Route::patch('/{orderId}/cancel', 'cancelOrder');

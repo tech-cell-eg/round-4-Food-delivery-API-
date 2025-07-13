@@ -17,8 +17,6 @@ class PaymentSeeder extends Seeder
         $orders = Order::all();
 
         if ($orders->isEmpty()) {
-            $this->command->warn('لا توجد طلبات في قاعدة البيانات. لا يمكن إنشاء مدفوعات بدون طلبات.');
-            $this->command->info('يرجى تشغيل OrderSeeder أولاً قبل PaymentSeeder.');
             return;
         } else {
             // إنشاء مدفوعات للطلبات الموجودة
