@@ -80,4 +80,12 @@ class Dish extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    /**
+     * Get the order items for the dish.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

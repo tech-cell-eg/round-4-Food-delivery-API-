@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\Dashboard\AdminsController;
 use App\Http\Controllers\Dashboard\AuthenticatedSessionController;
+use App\Http\Controllers\Dashboard\ChefsController;
 use App\Http\Controllers\Dashboard\CustomersController;
 use App\Http\Controllers\Dashboard\CategoriesController;
 use App\Http\Controllers\Dashboard\DishesController;
@@ -44,6 +45,8 @@ Route::prefix('admin')->group(function () {
         Route::resource("ingredients", IngredientsController::class)->except(["show"]);
 
         Route::resource("dishes", DishesController::class)->except(["show"]);
+
+        Route::resource("chefs", ChefsController::class)->except(["show"]);
 
     });
 
