@@ -79,13 +79,13 @@ class PaymentSeeder extends Seeder
                     'transaction_id' => 'txn_' . fake()->uuid,
                 ]);
                 break;
-            
+
             case 'pending':
                 $payment->update([
                     'transaction_id' => null,
                 ]);
                 break;
-            
+
             case 'failed':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
@@ -95,7 +95,7 @@ class PaymentSeeder extends Seeder
                     ]),
                 ]);
                 break;
-            
+
             case 'refunded':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
@@ -117,14 +117,14 @@ class PaymentSeeder extends Seeder
     private function getRandomWeightedElement($weightedValues)
     {
         $rand = mt_rand(1, array_sum($weightedValues));
-        
+
         foreach ($weightedValues as $key => $weight) {
             $rand -= $weight;
             if ($rand <= 0) {
                 return $key;
             }
         }
-        
+
         return array_key_first($weightedValues);
     }
-} 
+}

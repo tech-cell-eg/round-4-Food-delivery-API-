@@ -71,5 +71,5 @@ class MessagesTableSeeder extends Seeder
                 ->recent()
                 ->create();
         }
-
     }
+}
