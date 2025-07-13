@@ -56,11 +56,9 @@
                 <div class="menu-title">Chefs</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Chefs</a> {{-- route('admin.chefs.index') --}}
+                <li> <a href="{{ route('admin.chefs.index') }}"><i class='bx bx-radio-circle'></i>All Chefs</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Chef</a> {{-- route('admin.chefs.create') --}}
-                </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Pending Approval</a> {{-- route('admin.chefs.pending') --}}
+                <li> <a href="{{ route('admin.chefs.create') }}"><i class='bx bx-radio-circle'></i>Add New Chef</a>
                 </li>
             </ul>
         </li>
