@@ -24,6 +24,7 @@ class Order extends Model
         'notes',
     ];
 
+
     /**
      * العلاقة مع العميل
      */

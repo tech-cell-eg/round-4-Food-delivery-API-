@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             CouponSeeder::class,        // Create coupons (depends on chefs)
             AdminSeeder::class,
             // ReviewSeeder::class,
+            OrderSeeder::class,
+            OrderItemSeeder::class,
         ]);
     }
 }
