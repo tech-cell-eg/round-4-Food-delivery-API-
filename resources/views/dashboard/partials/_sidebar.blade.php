@@ -181,11 +181,9 @@
                 <div class="menu-title">Coupons</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Coupons</a> {{-- route('admin.coupons.index') --}}
+                <li> <a href="{{ route('admin.coupons.index') }}"><i class='bx bx-radio-circle'></i>All Coupons</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Add New Coupon</a> {{-- route('admin.coupons.create') --}}
-                </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Expired Coupons</a> {{-- route('admin.coupons.expired') --}}
+                <li> <a href="{{ route('admin.coupons.create') }}"><i class='bx bx-radio-circle'></i>Add New Coupon</a>
                 </li>
             </ul>
         </li>

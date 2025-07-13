@@ -12,6 +12,7 @@ use App\Http\Controllers\Dashboard\IngredientsController;
 use App\Http\Controllers\Dashboard\AdminProfileController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
+use App\Http\Controllers\Dashboard\CouponsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->group(function () {
@@ -47,6 +48,11 @@ Route::prefix('admin')->group(function () {
         Route::resource("dishes", DishesController::class)->except(["show"]);
 
         Route::resource("chefs", ChefsController::class)->except(["show"]);
+
+        Route::resource("coupons", CouponsController::class)->except(["show"]);
+
+        Route::post("coupons/{coupon}/toggle-status", [CouponsController::class, 'toggleStatus'])
+            ->name('coupons.toggle-status');
 
     });
 
