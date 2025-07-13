@@ -49,6 +49,6 @@ class ConversationsTableSeeder extends Seeder
                 ->count(15)
                 ->create();
         }
-
     }
+}
 

@@ -123,30 +123,30 @@
                             @if($order->address)
                                 <div class="mb-2">
                                     <i class="bx bx-map me-2 text-primary"></i>
-                                    <span>{{ $order->address->address_text }}</span>
+                                    <span>{{ $order->address->address }}</span>
                                 </div>
-                                @if($order->address->street)
+                                @if($order->address->name)
                                     <div class="mb-2">
                                         <i class="bx bx-street-view me-2 text-secondary"></i>
-                                        <span>{{ $order->address->street }}</span>
+                                        <span>{{ $order->address->name }}</span>
                                     </div>
                                 @endif
-                                @if($order->address->appartment)
+                                @if($order->address->type)
                                     <div class="mb-2">
                                         <i class="bx bx-building me-2 text-info"></i>
-                                        <span>Apartment: {{ $order->address->appartment }}</span>
+                                        <span>Type: {{ $order->address->type }}</span>
                                     </div>
                                 @endif
-                                @if($order->address->post_code)
+                                @if($order->address->display_name)
                                     <div class="mb-2">
                                         <i class="bx bx-mail-send me-2 text-warning"></i>
-                                        <span>{{ $order->address->post_code }}</span>
+                                        <span>{{ $order->address->display_name }}</span>
                                     </div>
                                 @endif
-                                @if($order->address->lable)
+                                @if($order->address->class)
                                     <div class="mb-2">
                                         <i class="bx bx-label me-2 text-success"></i>
-                                        <span>{{ $order->address->lable }}</span>
+                                        <span>Class: {{ $order->address->class }}</span>
                                     </div>
                                 @endif
                             @else

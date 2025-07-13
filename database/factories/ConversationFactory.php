@@ -44,5 +44,6 @@ class ConversationFactory extends Factory
             'last_message_at' => $this->faker->dateTimeBetween('-1 day', 'now'),
         ]);
     }
+}
 
 
