@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             // ReviewSeeder::class,
             MessagesTableSeeder::class,
             ConversationsTableSeeder::class,
+            PaymentSeeder::class,
         ]);
     }
 }
