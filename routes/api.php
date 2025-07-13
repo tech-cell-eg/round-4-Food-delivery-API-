@@ -26,6 +26,7 @@ use App\Http\Controllers\API\OtpLoginController;
 
 use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
+
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\Chef\IngredientsController;
 use App\Http\Controllers\API\Chef\OrderController;
@@ -43,6 +44,7 @@ use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Chat ====================
 
+use App\Http\Controllers\API\Chef;
 
 use App\Http\Controllers\API\Chef\StatisticsController;
 
@@ -79,12 +81,14 @@ Route::post('/cart/clear', [CartController::class, 'clearCart']);
 Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
+
 // الطلبات
 Route::get('/orders', [AliasOrderController::class, 'index']);
 Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
 Route::post('/orders', [AliasOrderController::class, 'store']);
 Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
 Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
+
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
@@ -193,14 +197,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
-    // Chat
-    Route::controller(ChatController::class)->group(function () {
-        Route::get('/conversations', 'getConversations');
-        Route::post('/messages/send', 'sendMessage');
-        Route::get('/conversations/{conversationId}', 'show');
-        Route::delete("messages/{messageId}/destroy", 'destroyMessage');
-    });
-
     // Get all notifications for the logged-in chef
     Route::get('/notifications', [NotificationController::class, 'index']);
 
@@ -218,4 +214,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
     Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
+
+
+// الطلبات
+    Route::get('/orders', [AliasOrderController::class, 'index']);
+    Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+    Route::post('/orders', [AliasOrderController::class, 'store']);
+    Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+    Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
+
 });

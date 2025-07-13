@@ -162,4 +162,15 @@ class PaymentFactory extends Factory
             'card_token' => null,
         ]);
     }
+
+    /**
+     * Set a specific order for this payment.
+     */
+    public function forOrder($orderId): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'order_id' => $orderId,
+        ]);
+    }
 } 
+

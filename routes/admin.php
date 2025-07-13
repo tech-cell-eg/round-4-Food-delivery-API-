@@ -10,6 +10,7 @@ use App\Http\Controllers\Dashboard\DishesController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\IngredientsController;
 use App\Http\Controllers\Dashboard\AdminProfileController;
+use App\Http\Controllers\Dashboard\OrdersController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\CouponsController;
@@ -54,6 +55,12 @@ Route::prefix('admin')->group(function () {
         Route::post("coupons/{coupon}/toggle-status", [CouponsController::class, 'toggleStatus'])
             ->name('coupons.toggle-status');
 
-    });
+        Route::controller(OrdersController::class)->prefix("orders")->name("orders.")->group(function () {
+            Route::get("", "index")->name("index");
+            Route::get("/{order}", "show")->name("show");
+            Route::put("/{order}/status", "updateStatus")->name("updateStatus");
+            Route::delete("/{order}", "destroy")->name("destroy");
+        });
 
+    });
 });

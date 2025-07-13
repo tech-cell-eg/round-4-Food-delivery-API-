@@ -2,6 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Chef;
+use App\Models\Customer;
+use App\Models\Address;
+use App\Models\Coupon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,14 +27,15 @@ class OrderFactory extends Factory
         $total = $subtotal + $deliveryFee + $tax - $discount;
 
         return [
-            'customer_id' => \App\Models\Customer::factory(),
-            'address_id' => \App\Models\Address::factory(),
+            'chef_id' => Chef::factory(),
+            'customer_id' => Customer::factory(),
+            'address_id' => Address::factory(),
             'subtotal' => $subtotal,
             'delivery_fee' => $deliveryFee,
             'tax' => $tax,
             'discount' => $discount,
             'total' => $total,
-            'coupon_id' => $this->faker->optional(0.3)->randomElement(\App\Models\Coupon::pluck('id')->toArray()),
+            'coupon_id' => $this->faker->optional(0.3)->randomElement(Coupon::pluck('id')->toArray()),
             'status' => $this->faker->randomElement(['pending', 'processing', 'on_the_way', 'delivered', 'cancelled']),
             'notes' => $this->faker->optional()->sentence(),
         ];

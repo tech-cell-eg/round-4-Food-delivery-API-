@@ -17,35 +17,7 @@ class PaymentSeeder extends Seeder
         $orders = Order::all();
 
         if ($orders->isEmpty()) {
-            
-            // إنشاء مدفوعات باستخدام Factory
-            Payment::factory()
-                ->count(50)
-                ->create();
-
-            // إنشاء مدفوعات مكتملة
-            Payment::factory()
-                ->count(30)
-                ->completed()
-                ->create();
-
-            // إنشاء مدفوعات معلقة
-            Payment::factory()
-                ->count(15)
-                ->pending()
-                ->create();
-
-            // إنشاء مدفوعات فاشلة
-            Payment::factory()
-                ->count(10)
-                ->failed()
-                ->create();
-
-            // إنشاء مدفوعات مُسترَدة
-            Payment::factory()
-                ->count(5)
-                ->refunded()
-                ->create();
+            return;
         } else {
             // إنشاء مدفوعات للطلبات الموجودة
             $orders->each(function ($order) {
@@ -55,12 +27,15 @@ class PaymentSeeder extends Seeder
                 }
             });
 
-            // إنشاء مدفوعات إضافية عشوائية
-            Payment::factory()
-                ->count(20)
-                ->create();
+            // إنشاء مدفوعات إضافية لطلبات عشوائية
+            $randomOrders = $orders->random(min(20, $orders->count()));
+            $randomOrders->each(function ($order) {
+                // إنشاء دفعة إضافية فقط إذا لم تكن موجودة بالفعل
+                if (!$order->payment) {
+                    $this->createPaymentForOrder($order);
+                }
+            });
         }
-
     }
 
     /**
@@ -89,12 +64,13 @@ class PaymentSeeder extends Seeder
         $status = $this->getRandomWeightedElement($statusWeights);
 
         // إنشاء الدفعة
-        $payment = Payment::factory()->create([
-            'order_id' => $order->id,
-            'payment_method' => $paymentMethod,
-            'status' => $status,
-            'amount' => $order->total_amount ?? fake()->randomFloat(2, 50, 300),
-        ]);
+        $payment = Payment::factory()
+            ->forOrder($order->id)
+            ->create([
+                'payment_method' => $paymentMethod,
+                'status' => $status,
+                'amount' => $order->total ?? fake()->randomFloat(2, 50, 300),
+            ]);
 
         // تطبيق states محددة بناءً على الحالة
         switch ($status) {
