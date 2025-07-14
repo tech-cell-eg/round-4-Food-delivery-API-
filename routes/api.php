@@ -3,7 +3,7 @@
 
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Controllers\API\Chef\StatisticsController;
+// use App\Http\Controllers\API\Chef\StatisticsController;
 // ==================== Auth ====================
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -216,11 +216,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
 
 
-// الطلبات
+    // الطلبات
     Route::get('/orders', [AliasOrderController::class, 'index']);
     Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
     Route::post('/orders', [AliasOrderController::class, 'store']);
     Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
-
 });
