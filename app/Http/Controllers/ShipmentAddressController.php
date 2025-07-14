@@ -40,6 +40,13 @@ class ShipmentAddressController extends Controller
                 'message' => $validator->errors()->first(),
             ], 400);
         }
+        if ($request->is_default) {
+            $defaultAddress = Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first();
+            if ($defaultAddress) {
+                $defaultAddress->is_default = false;
+                $defaultAddress->save();
+            }
+        }
 
         $address = Address::create([
             'customer_id' =>    Auth::id(),
@@ -51,7 +58,7 @@ class ShipmentAddressController extends Controller
             'name' =>           $request->name,
             'importance' =>     $request->importance,
             'display_name' =>   $request->display_name,
-            'address' =>        json_encode($request->address),
+            'address' =>        $request->address ? json_encode($request->address) : null,
             'is_default' =>     $request->is_default ?? false,
         ]);
 
