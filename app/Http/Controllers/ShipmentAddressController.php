@@ -30,8 +30,8 @@ class ShipmentAddressController extends Controller
             'name' => 'required',
             'importance' => 'nullable',
             'display_name' => 'required',
-            'address' => 'required',
-            'is_default' => 'required',
+            'address' => 'nullable',
+            'is_default' => 'nullable',
         ]);
 
         if ($validator->fails()) {
