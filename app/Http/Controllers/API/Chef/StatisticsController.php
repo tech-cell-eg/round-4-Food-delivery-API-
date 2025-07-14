@@ -34,13 +34,15 @@ class StatisticsController extends Controller
         $pendingOrders = (clone $ordersQuery)->where('status', 'pending')->count();
         $completedOrders = (clone $ordersQuery)->where('status', 'delivered')->count();
         $cancelledOrders = (clone $ordersQuery)->where('status', 'cancelled')->count();
-        
+
         $paymentsQuery = Payment::whereHas('order.orderItems.dish', function ($q) use ($chef) {
             $q->where('chef_id', $chef->id);
         })->where('status', 'completed');
 
         $paymentsQuery = $this->applyDateFilter($paymentsQuery, $period);
         $revenue = (clone $paymentsQuery)->sum('amount');
+
+
 
         $revenueDetails = $this->getRevenueDetails($paymentsQuery, $period);
 
@@ -126,4 +128,5 @@ class StatisticsController extends Controller
                 return $query;
         }
     }
- }
+}
+

@@ -322,7 +322,6 @@
 
         <script>
 
-
         function updatePagination(data) {
             // Update pagination info
             if (data.total > 0) {
@@ -415,7 +414,6 @@
                 alert.alert('close');
             }, 3000);
         }
-
 
 
     </script>

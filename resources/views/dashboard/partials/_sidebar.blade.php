@@ -157,10 +157,9 @@
                 <div class="menu-title">Payments</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Payments</a> {{-- route('admin.payments.index') --}}
+                <li> <a href="{{ route('admin.payments.index') }}"><i class='bx bx-radio-circle'></i>All Payments</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Refunds</a> {{-- route('admin.payments.refunds') --}}
-                </li>
+
             </ul>
         </li>
 

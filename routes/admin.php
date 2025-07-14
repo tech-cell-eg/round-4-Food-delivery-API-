@@ -11,6 +11,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\IngredientsController;
 use App\Http\Controllers\Dashboard\AdminProfileController;
 use App\Http\Controllers\Dashboard\OrdersController;
+use App\Http\Controllers\Dashboard\PaymentsController;
 use App\Http\Controllers\Dashboard\PermissionController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\CouponsController;
@@ -60,6 +61,11 @@ Route::prefix('admin')->group(function () {
             Route::get("/{order}", "show")->name("show");
             Route::put("/{order}/status", "updateStatus")->name("updateStatus");
             Route::delete("/{order}", "destroy")->name("destroy");
+        });
+
+        Route::controller(PaymentsController::class)->prefix("payments")->name("payments.")->group(function () {
+            Route::get("", "index")->name("index");
+
         });
 
     });
