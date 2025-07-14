@@ -67,14 +67,7 @@ Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'ge
 Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
 Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
 
-// مسارات تتطلب مصادقة
-// سلة التسوق
-Route::post('/cart/items', [CartController::class, 'addItem']);
-Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
-Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
-Route::post('/cart/clear', [CartController::class, 'clearCart']);
-Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
-Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
+
 
 // المدفوعات
 Route::post('/payments', [PaymentController::class, 'processPayment']);
@@ -160,6 +153,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/{orderId}/cancel', 'cancelOrder');
     });
 
+    // مسارات تتطلب مصادقة
+    // سلة التسوق
+    Route::post('/cart/items', [CartController::class, 'addItem']);
+    Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
+    Route::delete('/cart/items/{id}', [CartController::class, 'removeItem']);
+    Route::post('/cart/clear', [CartController::class, 'clearCart']);
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+    Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
+
     // Statistics
     Route::prefix('chef/statistics')->group(function () {
         Route::get('/', [StatisticsController::class, 'statistics']);
@@ -175,8 +177,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Orders Lists and filtering
     Route::get('/chef/completed-orders', [AliasOrderController::class, 'chefCompletedOrders'])->name('chef-completed-orders');
-    Route::get('/chef/running-orders', [AliasOrderController::class, 'chefRunningOrders'])->name('chef-running-orders');
+    Route::get('/chef/running-orders', [AliasOrderController::class, 'chefOngoingOrders'])->name('chef-running-orders');
     Route::get('/customer/orders', [AliasOrderController::class, 'customerOrders'])->name('customer-orders');
+    Route::get('/chef/orders', [AliasOrderController::class, 'chefOrders'])->name('chef-orders');
 
     // Cart
     Route::get('/cart', [CartController::class, 'index']);
