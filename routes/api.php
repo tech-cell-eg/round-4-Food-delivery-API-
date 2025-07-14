@@ -233,6 +233,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [AliasOrderController::class, 'index']);
     Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
     Route::post('/orders', [AliasOrderController::class, 'store']);
+    Route::get('/get/customer/orders', [AliasOrderController::class, 'getCustomerOrders']);
+    Route::get('/get/chef/orders', [AliasOrderController::class, 'getChefOrders']);
     Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
 });

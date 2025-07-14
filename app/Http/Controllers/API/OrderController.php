@@ -17,6 +17,7 @@ use App\Notifications\CustomerActionNotification;
 use App\Models\User;
 use App\Helpers\ApiResponse;
 use App\Models\OrderStatusHistory;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -193,6 +194,62 @@ class OrderController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * عرض قائمة طلبات العمسيل صاحب الجلسة حسب المطلوب
+     */
+    public function getCustomerOrders(Request $request)
+    {
+        if (Auth::user()->type !== 'customer') {
+            return ApiResponse::error([
+                'message' => 'غير مصرح لك بالوصول إلى هذه البيانات'
+            ], 403);
+        }
+        // يتم ارجاع الطلبات حسب الحالة المرسلة أو كل الطلبات اذا كانت لا توجد حالة
+        $query = $request->query();
+        if (in_array($query['status'], ['pending', 'completed', 'cancelled'])) {
+            $orders = Order::where('customer_id', Auth::id())
+                ->where('status', $query['status'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('customer_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+    /**
+     * عرض قائمة طلبات الواردة الى المطعم صاحب الجلسة حسب المطلوب
+     */
+    public function getChefOrders(Request $request)
+    {
+        if (Auth::user()->type !== 'chef') {
+            return ApiResponse::error([
+                'message' => 'غير مصرح لك بالوصول إلى هذه البيانات'
+            ], 403);
+        }
+        // يتم ارجاع الطلبات حسب الحالة المرسلة أو كل الطلبات اذا كانت لا توجد حالة
+        $query = $request->query();
+        if (in_array($query['status'], ['pending', 'completed', 'cancelled'])) {
+            $orders = Order::where('chef_id', Auth::id())
+                ->where('status', $query['status'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('chef_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المستخدم بنجاح', 200);
     }
 
     /**
