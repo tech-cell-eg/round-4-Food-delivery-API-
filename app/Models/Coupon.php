@@ -40,4 +40,12 @@ class Coupon extends Model
     {
         return Carbon::now()->greaterThan($this->expires_at);
     }
+
+    /**
+     * Get the orders that use this coupon.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

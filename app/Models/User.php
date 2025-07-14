@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, Notifiable, HasApiTokens;
+    use  HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +28,9 @@ class User extends Authenticatable
         'profile_image',
         'bio',
         'type',
+        'address',
+        'latitude',
+        'longitude',
     ];
 
     /**
@@ -47,7 +51,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 
@@ -56,7 +59,7 @@ class User extends Authenticatable
      */
     public function customer()
     {
-        return $this->hasOne(Customer::class, 'id');
+        return $this->hasOne(Customer::class, 'id', 'id');
     }
 
     /**
@@ -64,25 +67,27 @@ class User extends Authenticatable
      */
     public function chef()
     {
-        return $this->hasOne(Chef::class, 'id');
+        return $this->hasOne(Chef::class, 'id', 'id');
     }
 
 
-
     public function cart()
-{
-    return $this->hasOne(Cart::class, 'customer_id');
-}
+    {
+        return $this->hasOne(Cart::class, 'customer_id');
+    }
 
-public function favorites()
-{
-    return $this->hasMany(Favorite::class, 'customer_id');
-}
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'customer_id');
+    }
 
-public function addresses()
-{
-    return $this->hasMany(Address::class, 'customer_id'); 
-}
+    public function addresses()
+    {
+        return $this->hasMany(Address::class, 'customer_id');
+    }
 
-
+    public function admin()
+    {
+        return $this->hasOne(Admin::class, "id", "id");
+    }
 }

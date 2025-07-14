@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -14,9 +15,25 @@ use Illuminate\Support\Facades\DB;
 
 use App\Notifications\CustomerActionNotification;
 use App\Models\User;
+use App\Helpers\ApiResponse;
+use App\Models\OrderStatusHistory;
 
 class OrderController extends Controller
 {
+    /**
+     * سجل تتبع حالة الطلب
+     */
+    protected function logOrderStatus($order, $status, $note = null)
+    {
+        OrderStatusHistory::create([
+            'order_id'   => $order->id,
+            'status'     => $status,
+            'note'       => $note,
+            'changed_by' => Auth::id(),
+            'created_at' => now(),
+        ]);
+    }
+
     /**
      * عرض قائمة طلبات المستخدم الحالي
      */
@@ -39,16 +56,25 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $customerId = Auth::user()->customer->id;
-        $order = Order::with(['orderItems.dish', 'payments', 'address', 'coupon'])
-            ->where('customer_id', $customerId)
-            ->where('id', $id)
-            ->firstOrFail();
+        $customerId = Auth::id();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $order
-        ]);
+        $order = Order::find($id);
+
+        if (!$order) {
+            return ApiResponse::success([
+                'message' => 'لم يتم العثور على الطلب'
+            ], 200);
+        }
+
+        if ($customerId != $order->customer_id) {
+            return ApiResponse::error([
+                'message' => 'هذا الطلب يخص شخص آخر، لا يمكننا عرض البيانات'
+            ], 403);
+        }
+
+        return ApiResponse::success([
+            'order' => $order->load('payments'),
+        ], 'تم جلب بيانات الطلب بنجاح', 200);
     }
 
     /**
@@ -62,10 +88,9 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $customerId = Auth::user()->customer->id;
-        $cart = Cart::with(['items.dish'])
-            ->where('customer_id', $customerId)
-            ->first();
+        $customerId = Auth::id();
+
+        $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
@@ -73,8 +98,6 @@ class OrderController extends Controller
                 'message' => 'سلة التسوق فارغة'
             ], 400);
         }
-
-        $restaurantId = $cart->items->first()->dish->chef->id;
 
         DB::beginTransaction();
         try {
@@ -88,7 +111,7 @@ class OrderController extends Controller
             $couponId = null;
 
             if ($request->has('coupon_code') && !empty($request->coupon_code)) {
-                $coupon = \App\Models\Coupon::where('code', $request->coupon_code)
+                $coupon = Coupon::where('code', $request->coupon_code)
                     ->where('is_active', true)
                     ->where('expires_at', '>=', now())
                     ->first();
@@ -111,7 +134,8 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'restaurant_id' => $restaurantId,
+                'payment_method' => $request->payment_method,
+                'chef_id' => $cart->items->first()->dish->chef_id,
                 'customer_id' => $customerId,
                 'address_id' => $request->address_id,
                 'subtotal' => $subtotal,
@@ -124,11 +148,14 @@ class OrderController extends Controller
                 'order_number' => Order::genNumber(),
                 'notes' => $request->notes,
             ]);
+            // سجل أول حالة للطلب
+            $this->logOrderStatus($order, 'pending', 'تم إنشاء الطلب');
 
             // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
+                    'chef_id' => $order->chef_id,
                     'dish_id' => $item->dish_id,
                     'size' => $item->size_name,
                     'quantity' => $item->quantity,
@@ -137,8 +164,15 @@ class OrderController extends Controller
                 ]);
             }
 
+            Payment::create([
+                'order_id' => $order->id,
+                'status' => 'pending',
+                'payment_method' => $request->payment_method,
+                'amount' => $total,
+            ]);
+
             // تفريغ سلة التسوق
-            CartItem::where('cart_id', $cart->id)->delete();
+            $cart->dropItems();
 
             DB::commit();
 
@@ -146,7 +180,9 @@ class OrderController extends Controller
                 'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
                 'data' => [
-                    'order' => $order->load('orderItems')
+                    'cart' => $cart,
+                    'order' => $order->load('orderItems'),
+                    'payment' => Payment::where('order_id', $order->id)->first()
                 ]
             ]);
         } catch (\Exception $e) {
@@ -171,20 +207,20 @@ class OrderController extends Controller
             ->first();
 
         if (!$order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'لا يمكن إلغاء هذا الطلب'
+            return ApiResponse::error([
+                'message' => 'لم يتم العثور على الطلب'
             ], 400);
         }
 
         $order->status = 'cancelled';
-        $order->save();
+        $order->update();
+        $this->logOrderStatus($order, 'cancelled', 'تم إلغاء الطلب بواسطة العميل');
 
         // تحديث حالة الدفع إذا كان الدفع مسبقًا
         $payment = Payment::where('order_id', $order->id)->first();
         if ($payment && $payment->status === 'completed') {
             $payment->status = 'refunded';
-            $payment->save();
+            $payment->update();
         }
         // Notify related chefs
         $chefIds = $order->orderItems->pluck('dish.chef_id')->unique()->filter();
@@ -200,10 +236,101 @@ class OrderController extends Controller
             }
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم إلغاء الطلب بنجاح',
-            'data' => $order
+        return ApiResponse::success([
+            'order' => $order->load('orderItems')
+        ], 'تم إلغاء الطلب بنجاح', 200);
+    }
+
+    // public function trackOrder($id)
+    // {
+    //     $customerId = Auth::user()->customer->id;
+    //     $order = Order::where('customer_id', $customerId)
+    //         ->where('id', $id)
+    //         ->first();
+
+    //     if (!$order) {
+    //         return ApiResponse::error([
+    //             'message' => 'لم يتم العثور على الطلب'
+    //         ], 400);
+    //     }
+
+    //     return ApiResponse::success([
+    //         'order' => $order->load(['orderItems', 'statusHistories'])
+    //     ], 'تم جلب بيانات الطلب بنجاح', 200);
+    // }
+
+    /* change order status */
+    public function changeOrderStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string',
         ]);
+
+        $order = Order::find($id);
+
+        if (!$order) {
+            return ApiResponse::error([
+                'message' => 'لم يتم العثور على الطلب'
+            ], 400);
+        }
+
+        $order->status = $validated['status'];
+        $order->update();
+        $this->logOrderStatus($order, $validated['status'], 'تم تغيير حالة الطلب');
+
+        return ApiResponse::success([
+            'order' => $order->load('orderItems')
+        ], 'تم تغيير حالة الطلب بنجاح', 200);
+    }
+
+    public function chefOrders()
+    {
+        $chefId = Auth::id();
+        if (Auth::user()->type !== 'chef') {
+            return ApiResponse::error([
+                'chef_id' => $chefId,
+                'user_type' => Auth::user()->type,
+                'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات',
+                'data' => null
+            ], 403);
+        }
+        $orders = Order::with(['orderItems', 'payments'])
+            ->where('chef_id', $chefId)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المطابخ بنجاح', 200);
+    }
+
+    public function chefOngoingOrders(Request $request)
+    {
+        $chef = Auth::user();
+        if ($chef->type !== 'chef') {
+            return ApiResponse::unauthorized('You are not authorized to access this resource.');
+        }
+
+        $orders = Order::where(['chef_id' => $chef->id, 'status' => 'pending'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المطابخ بنجاح', 200);
+    }
+
+    /* Chef Completed Orders */
+    public function chefCompletedOrders(Request $request)
+    {
+        $chef = Auth::user();
+        if ($chef->type !== 'chef') {
+            return ApiResponse::unauthorized('You are not authorized to access this resource.');
+        }
+
+        $orders = Order::where(['status' => 'completed', 'chef_id' => $chef->id])
+            ->with(['orderItems.dish'])
+            ->paginate(5);
+        return ApiResponse::withPagination($orders);
     }
 }

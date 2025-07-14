@@ -10,7 +10,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'restaurant_id',
+        'chef_id',
         'customer_id',
         'address_id',
         'subtotal',
@@ -23,6 +23,7 @@ class Order extends Model
         'status',
         'notes',
     ];
+
 
     /**
      * العلاقة مع العميل
@@ -75,5 +76,23 @@ class Order extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function completedOrders()
+    {
+        return $this->where('status', 'completed')->get();
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+    /**
+     * العلاقة مع سجل تغييرات حالة الطلب
+     */
+    public function statusHistories()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
     }
 }

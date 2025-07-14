@@ -29,9 +29,9 @@ class Dish extends Model
      * Get the chef that owns the dish.
      */
     public function chef()
-    {
-        return $this->belongsTo(Chef::class);
-    }
+{
+    return $this->belongsTo(Chef::class, 'chef_id', "id");
+}
 
     /**
      * Get the category that owns the dish.
@@ -79,5 +79,13 @@ class Dish extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Get the order items for the dish.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

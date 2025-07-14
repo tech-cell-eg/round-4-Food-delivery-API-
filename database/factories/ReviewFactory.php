@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Dish;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,13 +14,14 @@ class ReviewFactory extends Factory
     public function definition()
     {
         $customer = User::where('type', 'customer')->inRandomOrder()->first();
-        $chef = User::where('type', 'chef')->inRandomOrder()->first();
+        
 
 
 
         return [
-            'customer_id' => $customer->id,
-            'chef_id' => $chef->id,
+            'customer_id' => User::factory()->create()->id,
+            'chef_id' => User::factory()->create()->id,
+            'dish_id' => Dish::factory()->create()->id,
             'rating' => fake()->numberBetween(1, 5),
             'comment' => fake()->paragraph,
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),

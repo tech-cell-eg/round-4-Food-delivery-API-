@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Chef extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $primaryKey = 'id';
     public $incrementing = false;
@@ -32,7 +33,7 @@ class Chef extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'id', 'id');
     }
 
     /**
@@ -40,7 +41,7 @@ class Chef extends Model
      */
     public function dishes()
     {
-        return $this->hasMany(Dish::class);
+        return $this->hasMany(Dish::class, "chef_id", "id");
     }
 
     /**
@@ -79,5 +80,4 @@ class Chef extends Model
     {
         return $this->hasMany(Conversation::class);
     }
-
 }

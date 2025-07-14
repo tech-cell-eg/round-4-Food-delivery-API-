@@ -15,6 +15,7 @@ class Customer extends Model
     protected $fillable = [
         'id',
         'preferred_payment_method',
+        "status"
     ];
 
     /**
@@ -22,7 +23,7 @@ class Customer extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'id', 'id');
     }
 
     /**
@@ -57,9 +58,9 @@ class Customer extends Model
         return $this->hasMany(Review::class);
     }
 
-
     public function conversations()
     {
         return $this->hasMany(Conversation::class);
     }
+
 }
