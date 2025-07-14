@@ -68,7 +68,7 @@ Route::prefix('password')->group(function () {
 Route::post('/email/verify', [OtpLoginController::class, 'verifyEmail']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
 Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
 Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
 
