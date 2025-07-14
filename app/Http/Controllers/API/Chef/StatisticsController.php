@@ -23,9 +23,7 @@ class StatisticsController extends Controller
 
         $period = $request->input('period', 'all');
 
-        $ordersQuery = Order::whereHas('orderItems.dish', function ($q) use ($chef) {
-            $q->where('chef_id', $chef->id);
-        });
+        $ordersQuery = Order::where('chef_id', $chef->id);
 
         $ordersQuery = $this->applyDateFilter($ordersQuery, $period);
 
@@ -35,14 +33,12 @@ class StatisticsController extends Controller
         $completedOrders = (clone $ordersQuery)->where('status', 'delivered')->count();
         $cancelledOrders = (clone $ordersQuery)->where('status', 'cancelled')->count();
 
-        $paymentsQuery = Payment::whereHas('order.orderItems.dish', function ($q) use ($chef) {
+        $paymentsQuery = Payment::whereHas('order', function ($q) use ($chef) {
             $q->where('chef_id', $chef->id);
         })->where('status', 'completed');
 
         $paymentsQuery = $this->applyDateFilter($paymentsQuery, $period);
         $revenue = (clone $paymentsQuery)->sum('amount');
-
-
 
         $revenueDetails = $this->getRevenueDetails($paymentsQuery, $period);
 
@@ -77,28 +73,27 @@ class StatisticsController extends Controller
                     });
 
             case 'last_month':
-                $lastMonth = $now->copy()->subMonth();
                 return (clone $paymentsQuery)
-                    ->selectRaw('DAY(created_at) as day, SUM(amount) as revenue')
-                    ->groupBy('day')
-                    ->orderBy('day')
+                    ->selectRaw('DATE(created_at) as date, SUM(amount) as revenue')
+                    ->groupBy('date')
+                    ->orderBy('date')
                     ->get()
-                    ->map(function ($item) use ($lastMonth) {
+                    ->map(function ($item) {
                         return [
-                            'day' => $lastMonth->year . '-' . $lastMonth->month . '-' . $item->day,
+                            'date' => $item->date,
                             'revenue' => $item->revenue
                         ];
                     });
 
             case 'last_year':
                 return (clone $paymentsQuery)
-                    ->selectRaw('MONTH(created_at) as month, SUM(amount) as revenue')
+                    ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as revenue')
                     ->groupBy('month')
                     ->orderBy('month')
                     ->get()
-                    ->map(function ($item) use ($now) {
+                    ->map(function ($item) {
                         return [
-                            'month' => ($now->year - 1) . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT),
+                            'month' => $item->month,
                             'revenue' => $item->revenue
                         ];
                     });
@@ -117,12 +112,16 @@ class StatisticsController extends Controller
                 return $query->whereDate('created_at', $now->toDateString());
 
             case 'last_month':
-                $lastMonth = $now->copy()->subMonth();
-                return $query->whereMonth('created_at', $lastMonth->month)
-                           ->whereYear('created_at', $lastMonth->year);
+                return $query->whereBetween('created_at', [
+                    $now->copy()->subDays(30)->startOfDay(),
+                    $now->copy()->endOfDay()
+                ]);
 
             case 'last_year':
-                return $query->whereYear('created_at', $now->year - 1);
+                return $query->whereBetween('created_at', [
+                    $now->copy()->subYear()->startOfDay(),
+                    $now->copy()->endOfDay()
+                ]);
 
             default:
                 return $query;
