@@ -129,3 +129,4 @@ class StatisticsController extends Controller
         }
     }
 }
+
