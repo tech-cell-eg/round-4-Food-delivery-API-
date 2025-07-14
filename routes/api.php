@@ -89,10 +89,7 @@ Route::get('/payment-methods/{id}', [PaymentController::class, 'getPaymentMethod
 // المراجعات
 
 Route::get('/reviews', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}/show', [ReviewController::class, 'show']);
-Route::post('/reviews', [ReviewController::class, 'store']);
-Route::put('/reviews/{id}', [ReviewController::class, 'update']);
-Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+
 
 // Reviews
 Route::get('/dishes/{dishId}/reviews', [ReviewController::class, 'dishReviews']);
@@ -217,6 +214,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Auth::user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'done']);
     });
+
+    // المراجعات
+    Route::get('/reviews/{id}/show', [ReviewController::class, 'show']);
+    Route::post('/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
     // Address
     Route::post('/address', [ShipmentAddressController::class, 'store']);
