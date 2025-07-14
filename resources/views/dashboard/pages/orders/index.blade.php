@@ -321,72 +321,6 @@
     <!--end page wrapper -->
 
         <script>
-        let searchTimeout;
-
-        $(document).ready(function() {
-            // Search functionality
-            $('#searchInput').on('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(function() {
-                    performSearch();
-                }, 500);
-            });
-
-            // Date filter functionality
-            $('#dateFrom, #dateTo').on('change', function() {
-                performSearch();
-            });
-
-            // Status filter functionality
-            $('.status-filter').on('click', function() {
-                $('.status-filter').removeClass('active');
-                $(this).addClass('active');
-                performSearch();
-            });
-        });
-
-        function performSearch() {
-            const query = $('#searchInput').val();
-            const status = $('.status-filter.active').data('status');
-            const dateFrom = $('#dateFrom').val();
-            const dateTo = $('#dateTo').val();
-
-            // Show loading state
-            $('#ordersTableBody').html(`
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2 text-muted">Searching orders...</p>
-                    </td>
-                </tr>
-            `);
-
-            // Make AJAX request
-            $.ajax({
-                url: '{{ route("admin.orders.search") }}',
-                method: 'GET',
-                data: {
-                    query: query,
-                    status: status,
-                    date_from: dateFrom,
-                    date_to: dateTo
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#ordersTableBody').html(response.html);
-                        updatePagination(response.data);
-                    } else {
-                        showError('Error loading orders');
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Search error:', xhr);
-                    showError('Error performing search');
-                }
-            });
-        }
 
         function updatePagination(data) {
             // Update pagination info
@@ -481,38 +415,7 @@
             }, 3000);
         }
 
-        // Clear search functionality
-        function clearSearch() {
-            $('#searchInput').val('');
-            $('#dateFrom').val('');
-            $('#dateTo').val('');
-            $('.status-filter').removeClass('active');
-            $('.status-filter[data-status=""]').addClass('active');
-            performSearch();
-        }
 
-        // Export functionality (placeholder)
-        function exportOrders() {
-            const query = $('#searchInput').val();
-            const status = $('.status-filter.active').data('status');
-            const dateFrom = $('#dateFrom').val();
-            const dateTo = $('#dateTo').val();
-
-            // Build export URL with current filters
-            let exportUrl = '/admin/orders/export?';
-            if (query) exportUrl += `query=${encodeURIComponent(query)}&`;
-            if (status) exportUrl += `status=${status}&`;
-            if (dateFrom) exportUrl += `date_from=${dateFrom}&`;
-            if (dateTo) exportUrl += `date_to=${dateTo}&`;
-
-            // For now, just show a message
-            showSuccess('Export functionality will be implemented soon');
-        }
-
-        // Print functionality
-        function printOrders() {
-            window.print();
-        }
     </script>
 
 @endsection
