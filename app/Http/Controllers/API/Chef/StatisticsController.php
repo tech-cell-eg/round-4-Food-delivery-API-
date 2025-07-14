@@ -126,3 +126,4 @@ class StatisticsController extends Controller
                 return $query;
         }
     }
+ }
