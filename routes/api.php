@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Auth;
 
+// use App\Http\Controllers\API\Chef\StatisticsController;
 // ==================== Auth ====================
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\API\ChatController;
 
 // ==================== Profile ====================
 use App\Http\Controllers\ChefOrderController;
+
+use App\Http\Controllers\API\Chef\OrderController as ResturantOrderContrller; // Mohamed
 
 // ==================== Categories & Dishes ====================
 use App\Http\Controllers\API\ReviewController;
@@ -23,6 +26,7 @@ use App\Http\Controllers\API\OtpLoginController;
 
 use App\Http\Controllers\Api\Chef\ChefController;
 // ==================== Orders, Cart, Payment ====================
+
 use App\Http\Controllers\Api\Chef\DishController;
 use App\Http\Controllers\API\Chef\IngredientsController;
 use App\Http\Controllers\API\Chef\OrderController;
@@ -40,6 +44,7 @@ use App\Http\Controllers\Customer\FavoriteController;
 
 // ==================== Chat ====================
 
+use App\Http\Controllers\API\Chef;
 
 use App\Http\Controllers\API\Chef\StatisticsController;
 
@@ -66,7 +71,6 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
 Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
 Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
-
 
 
 // المدفوعات
@@ -147,7 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Chef Orders
-    Route::controller(ChefOrderController::class)->prefix('chef/orders')->group(function () {
+    Route::controller(ResturantOrderContrller::class)->prefix('chef/orders')->group(function () {
         Route::get('/running', 'runningOrders');
         Route::patch('/{orderId}/done', 'markAsDone');
         Route::patch('/{orderId}/cancel', 'cancelOrder');
@@ -166,6 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('chef/statistics')->group(function () {
         Route::get('/', [StatisticsController::class, 'statistics']);
     });
+
 
     // Orders - محمية بالمصادقة
     Route::get('/orders', [AliasOrderController::class, 'index']);
@@ -190,19 +195,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
     Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon']);
 
-    // Reviews 
+    // Payments
+    Route::post('/payments', [PaymentController::class, 'processPayment']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
+
+    // Reviews
+
     Route::get('/user/get/reviews', [ReviewController::class, 'userReviews']);
     Route::post('/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
-
-    // Chat
-    Route::controller(ChatController::class)->group(function () {
-        Route::get('/conversations', 'getConversations');
-        Route::post('/messages/send', 'sendMessage');
-        Route::get('/conversations/{conversationId}', 'show');
-        Route::delete("messages/{messageId}/destroy", 'destroyMessage');
-    });
 
     // Get all notifications for the logged-in chef
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -221,4 +223,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
     Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
+
+
+    // الطلبات
+    Route::get('/orders', [AliasOrderController::class, 'index']);
+    Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
+    Route::post('/orders', [AliasOrderController::class, 'store']);
+    Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
+    Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
 });

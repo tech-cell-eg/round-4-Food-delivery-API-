@@ -113,14 +113,14 @@ class ReviewController extends Controller
 
         // Notify chef if review is for them
         $chef = Chef::findOrFail($chefId);
-        // if ($chef) {
-        //     $chef->notify(new CustomerActionNotification([
-        //         'title' => 'New Review',
-        //         'message' => "{$request->user()->name} left a new review on your profile.",
-        //         'image' => $chef->profile_photo_url ?? null . urlencode($request->user()->name),
-        //         'time' => now()->diffForHumans(),
-        //     ]));
-        // }
+        if ($chef) {
+            $chef->notify(new CustomerActionNotification([
+                'title' => 'New Review',
+                'message' => "{$request->user()->name} left a new review on your profile.",
+                'image' => $chef->profile_photo_url ?? null . urlencode($request->user()->name),
+                'time' => now()->diffForHumans(),
+            ]));
+        }
 
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Address;
+use App\Models\Customer;
 
 class AddressesTableSeeder extends Seeder
 {
@@ -13,37 +14,58 @@ class AddressesTableSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get the first few customers from the database
+        $customers = Customer::take(3)->get();
+        
+        if ($customers->count() < 2) {
+            $this->command->error('Not enough customers found. Please run CustomerSeeder first.');
+            return;
+        }
+
         // إنشاء عناوين للعملاء
         Address::create([
-            'customer_id' => 1,
-            'post_code' => 12345,
-            'address_text' => 'شارع الملك فهد، حي الرياض',
-            'street' => 'الملك فهد',
-            'appartment' => 5,
-            'lable' => 'المنزل',
+            'customer_id' => $customers[0]->id,
+            'lat' => 24.7136,
+            'lon' => 46.6753,
+            'class' => 'residential',
+            'type' => 'house',
+            'place_rank' => '30',
+            'name' => 'الملك فهد',
+            'importance' => '0.6',
+            'display_name' => 'شارع الملك فهد، حي الرياض، الرياض، المملكة العربية السعودية',
+            'address' => 'شارع الملك فهد، حي الرياض',
             'is_default' => true,
         ]);
 
         Address::create([
-            'customer_id' => 1,
-            'post_code' => 54321,
-            'address_text' => 'شارع العليا، حي السليمانية',
-            'street' => 'العليا',
-            'appartment' => 10,
-            'lable' => 'العمل',
+            'customer_id' => $customers[0]->id,
+            'lat' => 24.7243,
+            'lon' => 46.6814,
+            'class' => 'commercial',
+            'type' => 'office',
+            'place_rank' => '30',
+            'name' => 'العليا',
+            'importance' => '0.7',
+            'display_name' => 'شارع العليا، حي السليمانية، الرياض، المملكة العربية السعودية',
+            'address' => 'شارع العليا، حي السليمانية',
             'is_default' => false,
         ]);
 
         Address::create([
-            'customer_id' => 2,
-            'post_code' => 67890,
-            'address_text' => 'شارع التحلية، حي السلامة',
-            'street' => 'التحلية',
-            'appartment' => 3,
-            'lable' => 'المنزل',
+            'customer_id' => $customers[1]->id,
+            'lat' => 21.4858,
+            'lon' => 39.1925,
+            'class' => 'residential',
+            'type' => 'apartment',
+            'place_rank' => '30',
+            'name' => 'التحلية',
+            'importance' => '0.6',
+            'display_name' => 'شارع التحلية، حي السلامة، جدة، المملكة العربية السعودية',
+            'address' => 'شارع التحلية، حي السلامة',
             'is_default' => true,
         ]);
     }
+
     /**
      * الحصول على اسم شارع عشوائي
      */

@@ -40,7 +40,7 @@ class Chef extends Model
      */
     public function dishes()
     {
-        return $this->hasMany(Dish::class);
+        return $this->hasMany(Dish::class, "chef_id", "id");
     }
 
     /**

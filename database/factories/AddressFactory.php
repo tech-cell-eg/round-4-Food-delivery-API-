@@ -13,11 +13,15 @@ class AddressFactory extends Factory
     {
         return [
             'customer_id' => \App\Models\Customer::factory(),
-            'post_code' => $this->faker->numberBetween(10000, 99999),
-            'address_text' => $this->faker->address(),
-            'street' => $this->faker->streetName(),
-            'appartment' => $this->faker->optional()->numberBetween(1, 300),
-            'lable' => $this->faker->optional()->randomElement(['Home', 'Work', 'Other']),
+            'lat' => $this->faker->latitude(20, 35), // Saudi Arabia latitude range
+            'lon' => $this->faker->longitude(34, 56), // Saudi Arabia longitude range
+            'class' => $this->faker->randomElement(['residential', 'commercial', 'industrial']),
+            'type' => $this->faker->randomElement(['house', 'apartment', 'office', 'building']),
+            'place_rank' => $this->faker->numberBetween(1, 100),
+            'name' => $this->faker->streetName(),
+            'importance' => $this->faker->randomFloat(2, 0, 1),
+            'display_name' => $this->faker->address(),
+            'address' => $this->faker->streetAddress(),
             'is_default' => $this->faker->boolean(30),
         ];
     }

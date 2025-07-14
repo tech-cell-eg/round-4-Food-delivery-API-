@@ -30,7 +30,7 @@ class Dish extends Model
      */
     public function chef()
 {
-    return $this->belongsTo(Chef::class, 'chef_id');
+    return $this->belongsTo(Chef::class, 'chef_id', "id");
 }
 
     /**
@@ -79,5 +79,13 @@ class Dish extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Get the order items for the dish.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }
