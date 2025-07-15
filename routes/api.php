@@ -51,6 +51,9 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
 
+
+
+
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -117,6 +120,7 @@ Route::get("ingredients", [IngredientsController::class, 'index']);
 
 
 Route::controller(ChefController::class)->group(function () {
+    Route::get("resturants/search", "searchChefs");
     Route::get("open-resturants", "getOpenChefs");
     Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
 });
