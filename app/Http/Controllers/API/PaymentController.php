@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\ApiResponse;
 
 class PaymentController extends Controller
 {
@@ -35,8 +36,7 @@ class PaymentController extends Controller
             ->first();
 
         if (!$order) {
-            return response()->json([
-                'success' => false,
+            return ApiResponse::error([
                 'message' => 'الطلب غير موجود أو لا ينتمي لك'
             ], 404);
         }
@@ -57,8 +57,7 @@ class PaymentController extends Controller
             // تحديث حالة الطلب إلى معلق
             $order->update(['status' => 'pending']);
 
-            return response()->json([
-                'success' => true,
+            return ApiResponse::success([
                 'message' => 'تم تسجيل طلبك بنجاح وسيتم الدفع عند الاستلام',
                 'payment_id' => $payment->id,
                 'order_id' => $order->id
@@ -121,10 +120,9 @@ class PaymentController extends Controller
     {
         $order = Order::find($id);
         $payment = Payment::where('order_id', $id)->first();
-        return response()->json([
-            'success' => true,
+        return ApiResponse::success([
             'order' => $order,
             'payment' => $payment
-        ]);
+        ], 'تم جلب حالة الدفع بنجاح', 200);
     }
 }

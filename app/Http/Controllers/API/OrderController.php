@@ -94,8 +94,7 @@ class OrderController extends Controller
         $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
+            return ApiResponse::error([
                 'message' => 'سلة التسوق فارغة'
             ], 400);
         }
