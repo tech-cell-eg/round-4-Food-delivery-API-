@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -114,4 +115,18 @@ class User extends Authenticatable
     {
         return $this->hasOne(Admin::class, "id", "id");
     }
+
+    public function hasAdminPermission(string $permissionName): bool
+    {
+        $admin = $this->admin;
+
+        if (! $admin) {
+            return false;
+        }
+
+        // Spatie's built-in method to check permissions
+        return $admin->hasPermissionTo($permissionName, 'admin');
+    }
+
+
 }

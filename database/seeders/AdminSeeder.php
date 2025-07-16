@@ -19,7 +19,7 @@ class AdminSeeder extends Seeder
     {
         $this->createPermissions();
 
-        $managerRole = $this->createManagerRole();
+        $managerRole = $this->createSuperAdminRole();
 
         $user = User::create([
             'name' => 'Tiba Grill',
@@ -43,169 +43,48 @@ class AdminSeeder extends Seeder
 
     private function createPermissions(): void
     {
-
         $permissions = [
-            // User Management
-            'view-users',
-            'create-users',
-            'edit-users',
-            'delete-users',
-            'ban-users',
-            'unban-users',
-
-            // Chef Management
-            'view-chefs',
-            'create-chefs',
-            'edit-chefs',
-            'delete-chefs',
-            'approve-chefs',
-            'reject-chefs',
-            'suspend-chefs',
-
-            // Dish Management
-            'view-dishes',
-            'create-dishes',
-            'edit-dishes',
-            'delete-dishes',
-            'approve-dishes',
-            'reject-dishes',
-            'feature-dishes',
-
-            // Category Management
-            'view-categories',
-            'create-categories',
-            'edit-categories',
-            'delete-categories',
-            'reorder-categories',
-
-            // Order Management
-            'view-orders',
-            'create-orders',
-            'edit-orders',
-            'delete-orders',
-            'cancel-orders',
-            'refund-orders',
-            'assign-delivery',
-            'track-orders',
-
-            // Payment Management
-            'view-payments',
-            'process-payments',
-            'refund-payments',
-            'view-payment-methods',
-            'manage-payment-methods',
-
-            // Review Management
-            'view-reviews',
-            'edit-reviews',
-            'delete-reviews',
-            'approve-reviews',
-            'reject-reviews',
-
-            // Coupon Management
-            'view-coupons',
-            'create-coupons',
-            'edit-coupons',
-            'delete-coupons',
-            'activate-coupons',
-            'deactivate-coupons',
-
-            // Area/Location Management
-            'view-areas',
-            'create-areas',
-            'edit-areas',
-            'delete-areas',
-            'manage-delivery-zones',
-
-            // Notification Management
-            'view-notifications',
-            'send-notifications',
-            'edit-notifications',
-            'delete-notifications',
-            'send-bulk-notifications',
-
-            // Role & Permission Management
-            'view-roles',
-            'create-roles',
-            'edit-roles',
-            'delete-roles',
-            'view-permissions',
-            'create-permissions',
-            'edit-permissions',
-            'delete-permissions',
-            'assign-roles',
-
             // Admin Management
-            'view-admins',
-            'create-admins',
-            'edit-admins',
-            'delete-admins',
-            'manage-admin-roles',
-
-            // Report Management
-            'view-reports',
-            'generate-reports',
-            'export-reports',
-            'view-analytics',
-            'view-sales-reports',
-            'view-chef-reports',
-            'view-user-reports',
-
-            // Settings Management
-            'view-settings',
-            'edit-settings',
-            'manage-app-settings',
-            'manage-payment-settings',
-            'manage-notification-settings',
-            'manage-delivery-settings',
-
+            'manage_admins',
+            
+            // Role and Permission Management
+            'manage_roles',
+            'manage_permissions',
+            
+            // User Management
+            'manage_customers',
+            'manage_chefs',
+            
             // Content Management
-            'view-content',
-            'create-content',
-            'edit-content',
-            'delete-content',
-            'publish-content',
-
-            // Support Management
-            'view-support-tickets',
-            'create-support-tickets',
-            'edit-support-tickets',
-            'close-support-tickets',
-            'assign-support-tickets',
-
-            // System Management
-            'view-logs',
-            'clear-logs',
-            'backup-database',
-            'restore-database',
-            'manage-cache',
-            'manage-queue',
-
-            // Dashboard Access
-            'access-dashboard',
-            'view-dashboard-stats',
-            'view-dashboard-charts',
+            'manage_categories',
+            'manage_ingredients',
+            'manage_dishes',
+            'manage_coupons',
+            
+            // Order Management
+            'manage_orders',
+            
+            // Financial
+            'view_payments',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission,
-                'guard_name' => "admin",
-
+                'guard_name' => 'admin',
             ]);
         }
     }
 
 
-    private function createManagerRole(): Role
+    private function createSuperAdminRole(): Role
     {
         $managerRole = Role::firstOrCreate([
-            'name' => 'Manager',
-            'guard_name' => "admin",
-
+            'name' => 'manager',
+            'guard_name' => 'admin',
         ]);
 
-        $allPermissions = Permission::all();
+        $allPermissions = Permission::where('guard_name', 'admin')->get();
 
         $managerRole->syncPermissions($allPermissions);
 
