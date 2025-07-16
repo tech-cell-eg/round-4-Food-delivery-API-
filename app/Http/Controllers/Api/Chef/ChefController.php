@@ -86,5 +86,4 @@ class ChefController extends Controller
 
         return ApiResponse::withPagination($chefs, "chefs");
     }
-
 }

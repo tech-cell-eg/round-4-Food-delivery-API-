@@ -19,8 +19,11 @@
             </a>
         </li>
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_admins') || auth('admin')->user()->hasAdminPermission('manage_customers') || auth('admin')->user()->hasAdminPermission('manage_chefs'))
         <li class="menu-label">Management</li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_admins'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-user-check'></i>
@@ -34,7 +37,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_customers'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-user'></i>
@@ -48,7 +53,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_chefs'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-restaurant'></i>
@@ -62,9 +69,13 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_roles') || auth('admin')->user()->hasAdminPermission('manage_permissions'))
         <li class="menu-label">Access Control</li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_roles'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-shield'></i>
@@ -78,7 +89,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_permissions'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-key'></i>
@@ -92,9 +105,13 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_categories') || auth('admin')->user()->hasAdminPermission('manage_dishes') || auth('admin')->user()->hasAdminPermission('manage_ingredients'))
         <li class="menu-label">Food Management</li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_categories'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-category'></i>
@@ -108,7 +125,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_dishes'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-dish'></i>
@@ -122,7 +141,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_ingredients'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-food-menu'></i></div>
@@ -133,11 +154,15 @@
                 <li> <a href="{{ route('admin.ingredients.create') }}"><i class='bx bx-radio-circle'></i>Add New Ingredient</a></li>
             </ul>
         </li>
+        @endif
 
 
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_orders') || auth('admin')->user()->hasAdminPermission('view_payments'))
         <li class="menu-label">Orders & Sales</li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_orders'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-cart'></i>
@@ -149,7 +174,9 @@
                 </li>
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('view_payments'))
         <li>
             <a href="javascript:;" class="has-arrow">
                 <div class="parent-icon"><i class='bx bx-credit-card'></i>
@@ -162,7 +189,9 @@
 
             </ul>
         </li>
+        @endif
 
+        @if(auth('admin')->user()->hasAdminPermission('manage_coupons'))
         <li class="menu-label">Promotions</li>
 
         <li>
@@ -178,9 +207,11 @@
                 </li>
             </ul>
         </li>
+        @endif
 
 
 
+        {{-- Communication section is hidden until notification routes are implemented
         <li class="menu-label">Communication</li>
 
         <li>
@@ -190,12 +221,13 @@
                 <div class="menu-title">Notifications</div>
             </a>
             <ul>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Notifications</a> {{-- route('admin.notifications.index') --}}
+                <li> <a href="#"><i class='bx bx-radio-circle'></i>All Notifications</a>
                 </li>
-                <li> <a href="#"><i class='bx bx-radio-circle'></i>Send Notification</a> {{-- route('admin.notifications.send') --}}
+                <li> <a href="#"><i class='bx bx-radio-circle'></i>Send Notification</a>
                 </li>
             </ul>
         </li>
+        --}}
 
     </ul>
     <!--end navigation-->
