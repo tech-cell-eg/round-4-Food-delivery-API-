@@ -20,6 +20,7 @@ class Favorite extends Model
         'created_at' => 'datetime',
     ];
 
+
     /**
      * Get the customer that owns the favorite.
      */

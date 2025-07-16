@@ -109,8 +109,6 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 // البحث عن طبق أو مطعم معين
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
-// إضافة طبق للمفضلة
-Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
@@ -121,6 +119,12 @@ Route::controller(ChefController::class)->group(function () {
 });
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
+
+    // إضافة طبق للمفضلة
+    Route::get('/client/add_favorite/{dish_id}', [FavoriteController::class, 'add_favourite']);
+    Route::get('/client/remove_favorite/{dish_id}', [FavoriteController::class, 'removeFavorite']);
+    Route::put('/client/toggle_favorite/{dish_id}', [FavoriteController::class, 'toggleFavorite']);
+
 
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);

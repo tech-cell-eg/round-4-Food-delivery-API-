@@ -63,4 +63,8 @@ class Customer extends Model
         return $this->hasMany(Conversation::class);
     }
 
+    public function toggleFavorite($dish_id)
+    {
+        $this->favorites()->toggle($dish_id);
+    }
 }
