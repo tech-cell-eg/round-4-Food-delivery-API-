@@ -230,6 +230,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
     Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
+    Route::put('/address/{id}/set-as-default', [ShipmentAddressController::class, 'setAsDefaultAddress']);
+    Route::delete('/address/{id}/destroy', [ShipmentAddressController::class, 'destroy']);
+    Route::put('/address/{id}/update', [ShipmentAddressController::class, 'update']);
 
 
     // الطلبات
@@ -237,6 +240,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
     Route::post('/orders', [AliasOrderController::class, 'store']);
     Route::get('/get/customer/orders', [AliasOrderController::class, 'getCustomerOrders']);
+    Route::get('/get/customer/orders/where', [AliasOrderController::class, 'getCustomerOrdersByStatus']);
+    Route::get('/get/chef/orders/where', [AliasOrderController::class, 'getChefOrdersByStatus']);
     Route::get('/get/chef/orders', [AliasOrderController::class, 'getChefOrders']);
     Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);

@@ -46,10 +46,78 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $orders
-        ]);
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+
+    /**
+     * عرض طلبات المستخدم حسب الطلب
+     */
+    public function getCustomerOrdersByStatus(Request $request)
+    {
+        $customer = User::find(Auth::id());
+        if ($customer->type !== 'customer') {
+            return ApiResponse::error([
+                'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات'
+            ], 403);
+        }
+        $statusArray = $request->query('status') ? explode(',', $request->query('status')) : [];
+        //return all orders if status is not provided
+        $orders = [];
+        if (!$request->query('status')) {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } elseif (in_array('all', $statusArray)) {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->whereIn('status', $statusArray)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+    /**
+     * عرض طلبات المستخدم حسب الطلب
+     */
+    public function getChefOrdersByStatus(Request $request)
+    {
+        $chef = User::find(Auth::id());
+        if ($chef->type !== 'chef') {
+            return ApiResponse::error([
+                'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات'
+            ], 403);
+        }
+        $statusArray = $request->query('status') ? explode(',', $request->query('status')) : [];
+        //return all orders if status is not provided
+        $orders = [];
+        if (!$request->query('status')) {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } elseif (in_array('all', $statusArray)) {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->whereIn('status', $statusArray)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
     }
 
     /**
@@ -149,7 +217,7 @@ class OrderController extends Controller
                 'notes' => $request->notes,
             ]);
             // سجل أول حالة للطلب
-            $this->logOrderStatus($order, 'pending', 'تم إنشاء الطلب');
+            $order->logOrderStatus('created', 'تم إنشاء طلب بالرقم' . $order->order_number);
 
             // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
@@ -316,6 +384,8 @@ class OrderController extends Controller
     // }
 
     /* change order status */
+
+
     public function changeOrderStatus(Request $request, $id)
     {
         $validated = $request->validate([
@@ -367,7 +437,7 @@ class OrderController extends Controller
             return ApiResponse::unauthorized('You are not authorized to access this resource.');
         }
 
-        $orders = Order::where(['chef_id' => $chef->id, 'status' => 'pending'])
+        $orders = Order::where(['chef_id' => $chef->id, 'status' => 'pending', 'payment_status' => 'paid'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ApiResponse;
+use Carbon\Carbon;
 
 class PaymentController extends Controller
 {
@@ -81,36 +82,36 @@ class PaymentController extends Controller
     public function updatePaymentStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:completed,failed,cancelled',
+            'status' => 'required|in:succeeded,failed,cancelled',
             'transaction_id' => 'nullable|string',
-            'amount' => 'nullable|numeric'
+            'amount' => 'nullable|numeric',
+            'payment_method' => 'nullable|string'
         ]);
 
         $order = Order::find($id);
         $payment = $order->payment;
-        $payment->status = $request->status;
-        $payment->transaction_id = $request->transaction_id;
-        $payment->amount = $request->amount;
-
-        $payment->update();
+        $payment->update([
+            'status'            => $request->status,
+            'transaction_id'    => $request->transaction_id,
+            'amount'            => $request->amount,
+            'payment_method'    => $request->payment_method
+        ]);
 
         // تحديث حالة الطلب إذا نجح الدفع
-        if ($request->status === 'completed') {
+        if ($request->status === 'succeeded') {
             $order = Order::find($payment->order_id);
-            if ($order) {
-                $order->update(['status' => 'completed']);
-            }
+
+            $order->update(['payment_status' => 'paid', 'paid_at' => now()]);
+            $order->logOrderStatus('paid', ' تم الدفع للطلب  رقم ' . $order->order_number);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تحديث حالة الدفع بنجاح',
-            'payment' => [
+        return ApiResponse::success([
+            'data' => [
                 'id' => $payment->id,
                 'status' => $payment->status,
-                'order_id' => $payment->order_id
+                'order' => $payment->order
             ]
-        ]);
+        ], 'تم تحديث حالة الدفع للطلب بنجاح', 200);
     }
 
     /**

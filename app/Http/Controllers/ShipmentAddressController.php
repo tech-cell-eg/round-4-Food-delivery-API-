@@ -22,16 +22,10 @@ class ShipmentAddressController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'lat' => 'required',
-            'lon' => 'required',
-            'class' => 'nullable',
-            'type' => 'nullable',
-            'place_rank' => 'nullable',
-            'name' => 'required',
-            'importance' => 'nullable',
-            'display_name' => 'required',
-            'address' => 'nullable',
-            'is_default' => 'nullable',
+            'lat'           => 'required|string',
+            'lon'           => 'required|string',
+            'name'          => 'required|string',
+            'display_name'  => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -52,13 +46,8 @@ class ShipmentAddressController extends Controller
             'customer_id' =>    Auth::id(),
             'lat' =>            $request->lat,
             'lon' =>            $request->lon,
-            'class' =>          $request->class,
-            'type' =>           $request->type,
-            'place_rank' =>     $request->place_rank,
             'name' =>           $request->name,
-            'importance' =>     $request->importance,
             'display_name' =>   $request->display_name,
-            'address' =>        $request->address ? json_encode($request->address) : null,
             'is_default' =>     $request->is_default ?? false,
         ]);
 
@@ -68,6 +57,85 @@ class ShipmentAddressController extends Controller
             'address' => $address,
         ], 200);
     }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'lat'           => 'required|string',
+            'lon'           => 'required|string',
+            'name'          => 'required|string',
+            'display_name'  => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error([
+                'status' => 'error',
+                'message' => $validator->errors()->first(),
+            ], 400);
+        }
+        if ($request->is_default) {
+            $defaultAddress = Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first();
+            if ($defaultAddress) {
+                $defaultAddress->is_default = false;
+                $defaultAddress->save();
+            }
+        }
+
+        $address = Address::find($id);
+        $address->update([
+            'customer_id' =>    Auth::id(),
+            'lat' =>            $request->lat,
+            'lon' =>            $request->lon,
+            'name' =>           $request->name,
+            'display_name' =>   $request->display_name,
+            'is_default' =>     $request->is_default ?? false,
+        ]);
+
+        return ApiResponse::success([
+            'status' => 'success',
+            'message' => 'Address updated successfully',
+            'address' => $address,
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $address = Address::find($id);
+        $address->delete();
+
+        return ApiResponse::success([
+            'status' => 'success',
+            'message' => 'Address deleted successfully',
+        ], 200);
+    }
+
+    public function show($id)
+    {
+        $address = Address::find($id);
+        return ApiResponse::success([
+            'address' => $address,
+        ], 'تم جلب العنوان بنجاح', 200);
+    }
+
+    public function setAsDefaultAddress($id)
+    {
+        $address = Address::find($id);
+        $defaultAddress = Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first();
+        if ($defaultAddress) {
+            $defaultAddress->is_default = false;
+            $defaultAddress->save();
+        }
+
+        $address->update([
+            'is_default' => true,
+        ]);
+
+        return ApiResponse::success([
+            'status' => 'success',
+            'message' => 'Address set as default successfully',
+        ], 200);
+    }
+
 
     /* default address */
 
