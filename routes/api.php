@@ -113,8 +113,6 @@ Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
 // البحث عن طبق أو مطعم معين
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
-// إضافة طبق للمفضلة
-Route::get('/client/add_favorite/{dish_id}/{customer_id}', [FavoriteController::class, 'add_favourite']);
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
@@ -127,6 +125,12 @@ Route::controller(ChefController::class)->group(function () {
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
 
+    // إضافة طبق للمفضلة
+    Route::get('/client/add_favorite/{dish_id}', [FavoriteController::class, 'add_favourite']);
+    Route::get('/client/remove_favorite/{dish_id}', [FavoriteController::class, 'removeFavorite']);
+    Route::put('/client/toggle_favorite/{dish_id}', [FavoriteController::class, 'toggleFavorite']);
+
+
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
@@ -134,7 +138,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
-
+    // Edit profile and user information
+    Route::put('/update/profile', [CustomerProfileController::class, 'profileInfoUpdate']);
+    Route::put('/update/user', [CustomerProfileController::class, 'userInfoUpdate']);
 
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {
@@ -231,6 +237,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
     Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
+    Route::put('/address/{id}/set-as-default', [ShipmentAddressController::class, 'setAsDefaultAddress']);
+    Route::delete('/address/{id}/destroy', [ShipmentAddressController::class, 'destroy']);
+    Route::put('/address/{id}/update', [ShipmentAddressController::class, 'update']);
 
 
     // الطلبات
@@ -238,6 +247,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
     Route::post('/orders', [AliasOrderController::class, 'store']);
     Route::get('/get/customer/orders', [AliasOrderController::class, 'getCustomerOrders']);
+    Route::get('/get/customer/orders/where', [AliasOrderController::class, 'getCustomerOrdersByStatus']);
+    Route::get('/get/chef/orders/where', [AliasOrderController::class, 'getChefOrdersByStatus']);
     Route::get('/get/chef/orders', [AliasOrderController::class, 'getChefOrders']);
     Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
