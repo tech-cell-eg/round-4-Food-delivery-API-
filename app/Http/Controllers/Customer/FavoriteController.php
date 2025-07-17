@@ -83,4 +83,18 @@ class FavoriteController extends Controller
             'favorites' => $user->customer->favorites
         ], 'تم تحديث المفضلة بنجاح', 200);
     }
+
+
+
+     public function show_fav(){
+
+    $user = Auth::user();
+    $favorites = $user->favorites()->get();
+
+    return response()->json($favorites);
+     
+    }
+
+ 
+
 }

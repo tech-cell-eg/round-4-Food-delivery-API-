@@ -129,6 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client/add_favorite/{dish_id}', [FavoriteController::class, 'add_favourite']);
     Route::get('/client/remove_favorite/{dish_id}', [FavoriteController::class, 'removeFavorite']);
     Route::put('/client/toggle_favorite/{dish_id}', [FavoriteController::class, 'toggleFavorite']);
+    Route::get('/client/show_fav', [FavoriteController::class, 'show_fav']);
+
+    
 
 
     // Auth
