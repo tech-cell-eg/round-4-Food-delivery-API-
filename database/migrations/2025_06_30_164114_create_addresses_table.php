@@ -15,15 +15,9 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
-            $table->decimal('lat', 10, 7);
-            $table->decimal('lon', 10, 7);
-            $table->string('class')->nullable();
-            $table->string('type')->nullable();
-            $table->string('place_rank')->nullable();
+            $table->string('lat', 11);
+            $table->string('lon', 11);
             $table->string('name')->nullable();
-            $table->string('importance')->nullable();
-            $table->string('display_name')->nullable();
-            $table->string('address');
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });

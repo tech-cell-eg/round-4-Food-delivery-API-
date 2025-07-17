@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Order extends Model
 {
@@ -24,6 +25,16 @@ class Order extends Model
         'notes',
     ];
 
+    public function logOrderStatus($status, $note = null)
+    {
+        OrderStatusHistory::create([
+            'order_id'   => $this->id,
+            'status'     => $status,
+            'note'       => $note,
+            'changed_by' => Auth::id(),
+            'created_at' => now(),
+        ]);
+    }
 
     /**
      * العلاقة مع العميل
@@ -94,5 +105,10 @@ class Order extends Model
     public function statusHistories()
     {
         return $this->hasMany(OrderStatusHistory::class);
+    }
+
+    public function chef()
+    {
+        return $this->belongsTo(Chef::class);
     }
 }

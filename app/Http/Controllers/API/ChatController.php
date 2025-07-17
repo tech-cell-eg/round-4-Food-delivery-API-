@@ -155,43 +155,50 @@ class ChatController extends Controller
         ]);
     }
 
+
     public function sendMessage(StoreNewMessageRequest $request)
     {
-        $validatedData = $request->validated();
+        try {
+            $validatedData = $request->validated();
 
-        $sender = Auth::user();
-        $receiver = User::find($validatedData['receiver_id']);
-        [$customerId, $chefId] = $this->resolveParticipants($sender, $receiver);
-        if (is_null($customerId) || is_null($chefId)) {
-            return ApiResponse::error("Invalid sender/receiver combination", 422);
+            $sender = Auth::user();
+            $receiver = User::find($validatedData['receiver_id']);
+            [$customerId, $chefId] = $this->resolveParticipants($sender, $receiver);
+
+            if (is_null($customerId) || is_null($chefId)) {
+                return ApiResponse::error("Invalid sender/receiver combination", 422);
+            }
+
+            $conversation = $this->getOrCreateConversation($chefId, $customerId);
+
+            $content = $validatedData['content'] ?? null;
+
+            if ($validatedData['type'] === 'voice' && $request->hasFile('audio')) {
+                $file = $request->file('audio');
+                $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $audioPath = $file->storeAs('audio', $uniqueName, 'public');
+                $content = $audioPath;
+            } elseif ($validatedData['type'] === 'text' && !$content) {
+                return ApiResponse::validationError(['content' => ['Message content required for text messages']], 'Error in data sent');
+            }
+
+            $message = $this->storeMessage($conversation, $sender, $content, $validatedData['type']);
+
+            if (! $message) {
+                return ApiResponse::error("Something went wrong", 422);
+            }
+
+            $conversation->updateLastMessageAt();
+
+            $messageResource = new MessageResource($message);
+            Broadcast(new NewConversationMessageEvent($messageResource));
+
+            return ApiResponse::success($messageResource, 'Message sent successfully');
+
+        } catch (\Throwable $e) {
+            return ApiResponse::error('An unexpected error occurred: ' . $e->getMessage(), 500);
         }
-
-        $conversation = $this->getOrCreateConversation($chefId, $customerId);
-
-        $content = $validatedData['content'] ?? null;
-        if ($validatedData['type'] === 'voice' && $request->hasFile('audio')) {
-            $file = $request->file('audio');
-            $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $audioPath = $file->storeAs('audio', $uniqueName, 'public');
-            $content = $audioPath;
-        } elseif ($validatedData['type'] === 'text' && !$content) {
-            return ApiResponse::validationError(['content' => ['محتوى الرسالة مطلوب للرسائل النصية']], 'خطأ في البيانات المرسلة');
-        }
-
-        $message = $this->storeMessage($conversation, $sender, $content, $validatedData['type']);
-
-        if (! $message) {
-            return ApiResponse::error("Something went wrong", 422);
-        }
-
-        $conversation->updateLastMessageAt();
-
-        $messageResource = new MessageResource($message);
-        Broadcast(new NewConversationMessageEvent($messageResource));
-
-        return ApiResponse::success($messageResource, 'Message sent successfully');
     }
-
 
     public function destroyMessage($messageId)
     {
