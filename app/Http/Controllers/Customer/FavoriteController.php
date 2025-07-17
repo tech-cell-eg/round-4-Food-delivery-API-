@@ -72,11 +72,15 @@ class FavoriteController extends Controller
         $favorite = Favorite::where('customer_id', $user->id)
             ->where('dish_id', $dish_id)
             ->first();
-        if ($favorite) {
-            $favorite->delete();
-            return ApiResponse::success([
-                'data' => $user->customer->favorites
-            ], 'تم تحديث المفضلة بنجاح', 200);
+
+        if (!$favorite) {
+            return ApiResponse::error([
+                'message' => 'You didn\'t add this dish to favorites'
+            ], 404);
         }
+        $favorite->delete();
+        return ApiResponse::success([
+            'favorites' => $user->customer->favorites
+        ], 'تم تحديث المفضلة بنجاح', 200);
     }
 }
