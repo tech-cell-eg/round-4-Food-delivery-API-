@@ -133,7 +133,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/profile', [CustomerProfileController::class, 'index']);
     Route::post('/profile', [CustomerProfileController::class, 'update']);
-
+    // Edit profile and user information
+    Route::put('/update/profile', [CustomerProfileController::class, 'profileInfoUpdate']);
+    Route::put('/update/user', [CustomerProfileController::class, 'userInfoUpdate']);
 
     // Chef Meals
     Route::controller(DishController::class)->prefix("meals")->name("meals.")->group(function () {

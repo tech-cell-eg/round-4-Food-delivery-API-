@@ -6,6 +6,9 @@ use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Customer;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerProfileController extends Controller
 {
@@ -71,9 +74,9 @@ class CustomerProfileController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|string|max:20',
             'bio' => 'nullable|string',
             'profile_image' => 'nullable|image|max:2048',
         ]);
@@ -103,5 +106,57 @@ class CustomerProfileController extends Controller
             'profile_image',
             'type'
         ]), 'Profile updated successfully');
+    }
+
+    public function profileInfoUpdate(Request $request)
+    {
+        $user = User::find(Auth::id());
+
+        if (!$user || $user->type !== 'customer') {
+            return ApiResponse::unauthorized('User not authenticated');
+        }
+
+        $validated = $request->validate([
+            'first_name'    => 'nullable|string|max:255',
+            'last_name'     => 'nullable|string|max:255',
+            'address'       => 'nullable|string|max:255',
+            'phone'         => 'nullable|string|max:20',
+            'bio'           => 'nullable|string',
+        ]);
+
+        //Upsate Profile image if included in request
+        if ($request->hasFile('profile_image')) {
+            $image = $request->file('profile_image');
+            $filename = $user->type . '-' . time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('profile_images'), $filename);
+            $validated['profile_image'] = 'profile_images/' . $filename;
+        }
+
+        $validated['id'] = $user->id;
+
+        $customer = Customer::firstOrCreate(['id' => $user->id]);
+        $customer->update($validated);
+
+        return ApiResponse::success($user->load('customer'), 'Profile information updated successfully');
+    }
+
+    public function userInfoUpdate(Request $request)
+    {
+        $user = User::find(Auth::id());
+
+        if (!$user) {
+            return ApiResponse::unauthorized('User not authenticated');
+        }
+
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'bio' => 'nullable|string',
+        ]);
+
+        $user->update($validated);
+
+        return ApiResponse::success($user->load('customer'), 'Profile updated successfully');
     }
 }

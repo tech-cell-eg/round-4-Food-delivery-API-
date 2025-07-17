@@ -9,7 +9,8 @@ class Favorite extends Model
 {
     use HasFactory;
 
-    public $timestamps = false;
+    public $timestamps = true;
+    protected $table = 'favorites';
 
     protected $fillable = [
         'customer_id',
@@ -18,6 +19,7 @@ class Favorite extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
 
