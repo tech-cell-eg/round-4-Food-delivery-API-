@@ -45,8 +45,6 @@ class PaymentSeeder extends Seeder
                 $failCount++;
             }
         });
-
-
     }
 
     /**
@@ -69,8 +67,14 @@ class PaymentSeeder extends Seeder
 
         $paymentMethod = $this->getRandomWeightedElement($paymentMethods);
 
-        // تحديد حالة الدفع بناءً على حالة الطلب
-        $statusWeights = $this->getStatusWeightsBasedOnOrder($order);
+        // تحديد حالة الدفع
+        $statusWeights = [
+            'succeeded' => 70,  // 70% احتمال
+            'pending' => 15,    // 15% احتمال
+            'failed' => 10,     // 10% احتمال
+            'cancelled' => 5,   // 5% احتمال
+        ];
+
         $status = $this->getRandomWeightedElement($statusWeights);
 
         // إنشاء الدفعة مع البيانات الصحيحة
@@ -149,7 +153,7 @@ class PaymentSeeder extends Seeder
     private function applyPaymentStateDetails($payment, $status)
     {
         switch ($status) {
-            case 'completed':
+            case 'succeeded':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
                 ]);
@@ -172,15 +176,9 @@ class PaymentSeeder extends Seeder
                 ]);
                 break;
 
-            case 'refunded':
+            case 'cancelled':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
-                    'payment_details' => json_encode([
-                        'refund_reason' => fake()->randomElement(['customer_request', 'order_cancelled', 'chef_unavailable', 'quality_issue']),
-                        'refund_amount' => $payment->amount,
-                        'refund_date' => fake()->dateTimeBetween('-1 month', 'now'),
-                        'refund_transaction_id' => 'ref_' . fake()->uuid,
-                    ]),
                 ]);
                 break;
         }
