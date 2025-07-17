@@ -16,7 +16,7 @@ class AddressesTableSeeder extends Seeder
     {
         // Get the first few customers from the database
         $customers = Customer::take(3)->get();
-        
+
         if ($customers->count() < 2) {
             $this->command->error('Not enough customers found. Please run CustomerSeeder first.');
             return;
@@ -27,13 +27,7 @@ class AddressesTableSeeder extends Seeder
             'customer_id' => $customers[0]->id,
             'lat' => 24.7136,
             'lon' => 46.6753,
-            'class' => 'residential',
-            'type' => 'house',
-            'place_rank' => '30',
             'name' => 'الملك فهد',
-            'importance' => '0.6',
-            'display_name' => 'شارع الملك فهد، حي الرياض، الرياض، المملكة العربية السعودية',
-            'address' => 'شارع الملك فهد، حي الرياض',
             'is_default' => true,
         ]);
 
@@ -41,13 +35,7 @@ class AddressesTableSeeder extends Seeder
             'customer_id' => $customers[0]->id,
             'lat' => 24.7243,
             'lon' => 46.6814,
-            'class' => 'commercial',
-            'type' => 'office',
-            'place_rank' => '30',
             'name' => 'العليا',
-            'importance' => '0.7',
-            'display_name' => 'شارع العليا، حي السليمانية، الرياض، المملكة العربية السعودية',
-            'address' => 'شارع العليا، حي السليمانية',
             'is_default' => false,
         ]);
 
@@ -55,13 +43,8 @@ class AddressesTableSeeder extends Seeder
             'customer_id' => $customers[1]->id,
             'lat' => 21.4858,
             'lon' => 39.1925,
-            'class' => 'residential',
-            'type' => 'apartment',
-            'place_rank' => '30',
             'name' => 'التحلية',
-            'importance' => '0.6',
-            'display_name' => 'شارع التحلية، حي السلامة، جدة، المملكة العربية السعودية',
-            'address' => 'شارع التحلية، حي السلامة',
+
             'is_default' => true,
         ]);
     }
