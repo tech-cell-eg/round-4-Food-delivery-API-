@@ -15,7 +15,13 @@ class Customer extends Model
     protected $fillable = [
         'id',
         'preferred_payment_method',
-        "status"
+        "status",
+        "first_name",
+        "last_name",
+        "phone",
+        "address",
+        "profile_image",
+        "bio"
     ];
 
     /**
@@ -63,4 +69,8 @@ class Customer extends Model
         return $this->hasMany(Conversation::class);
     }
 
+    public function toggleFavorite($dish_id)
+    {
+        $this->favorites()->toggle($dish_id);
+    }
 }

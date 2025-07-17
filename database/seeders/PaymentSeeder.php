@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Payment;
 use App\Models\Order;
 
+
 class PaymentSeeder extends Seeder
 {
     /**
@@ -14,28 +15,38 @@ class PaymentSeeder extends Seeder
      */
     public function run(): void
     {
+        // التحقق من وجود orders في قاعدة البيانات
         $orders = Order::all();
 
         if ($orders->isEmpty()) {
             return;
-        } else {
-            // إنشاء مدفوعات للطلبات الموجودة
-            $orders->each(function ($order) {
-                // التأكد من أن الطلب لا يملك دفعة بالفعل
-                if (!$order->payment) {
-                    $this->createPaymentForOrder($order);
-                }
-            });
-
-            // إنشاء مدفوعات إضافية لطلبات عشوائية
-            $randomOrders = $orders->random(min(20, $orders->count()));
-            $randomOrders->each(function ($order) {
-                // إنشاء دفعة إضافية فقط إذا لم تكن موجودة بالفعل
-                if (!$order->payment) {
-                    $this->createPaymentForOrder($order);
-                }
-            });
         }
+
+
+        // إنشاء مدفوعات للطلبات التي لا تملك مدفوعات
+        $ordersWithoutPayments = $orders->filter(function ($order) {
+            return !$order->payment()->exists();
+        });
+
+        if ($ordersWithoutPayments->isEmpty()) {
+            return;
+        }
+
+
+        $successCount = 0;
+        $failCount = 0;
+
+        // إنشاء مدفوعات للطلبات بدون مدفوعات
+        $ordersWithoutPayments->each(function ($order) use (&$successCount, &$failCount) {
+            try {
+                $this->createPaymentForOrder($order);
+                $successCount++;
+            } catch (\Exception $e) {
+                $failCount++;
+            }
+        });
+
+
     }
 
     /**
@@ -43,6 +54,11 @@ class PaymentSeeder extends Seeder
      */
     private function createPaymentForOrder($order)
     {
+        // التحقق من صحة بيانات الطلب
+        if (!$order->total || $order->total <= 0) {
+            throw new \Exception("الطلب {$order->id} لا يحتوي على إجمالي صحيح");
+        }
+
         // تحديد طريقة الدفع بناءً على نوع الطلب
         $paymentMethods = [
             'credit_card' => 40,      // 40% احتمال
@@ -53,26 +69,85 @@ class PaymentSeeder extends Seeder
 
         $paymentMethod = $this->getRandomWeightedElement($paymentMethods);
 
-        // تحديد حالة الدفع
-        $statusWeights = [
-            'completed' => 70,  // 70% احتمال
-            'pending' => 15,    // 15% احتمال
-            'failed' => 10,     // 10% احتمال
-            'refunded' => 5,    // 5% احتمال
-        ];
-
+        // تحديد حالة الدفع بناءً على حالة الطلب
+        $statusWeights = $this->getStatusWeightsBasedOnOrder($order);
         $status = $this->getRandomWeightedElement($statusWeights);
 
-        // إنشاء الدفعة
+        // إنشاء الدفعة مع البيانات الصحيحة
         $payment = Payment::factory()
             ->forOrder($order->id)
             ->create([
                 'payment_method' => $paymentMethod,
                 'status' => $status,
-                'amount' => $order->total ?? fake()->randomFloat(2, 50, 300),
+                'amount' => $order->total,
             ]);
 
         // تطبيق states محددة بناءً على الحالة
+        $this->applyPaymentStateDetails($payment, $status);
+
+        return $payment;
+    }
+
+    /**
+     * Get status weights based on order status
+     */
+    private function getStatusWeightsBasedOnOrder($order): array
+    {
+        // إذا كان الطلب مُسلم، فالمدفوعة يجب أن تكون مكتملة أيضاً
+        if ($order->status === 'delivered') {
+            return [
+                'completed' => 95,  // 95% احتمال
+                'refunded' => 5,    // 5% احتمال للمرتجعات
+            ];
+        }
+
+        // إذا كان الطلب ملغي، فالمدفوعة يجب أن تكون فاشلة أو مرتجعة
+        if ($order->status === 'cancelled') {
+            return [
+                'failed' => 60,     // 60% احتمال
+                'refunded' => 40,   // 40% احتمال
+            ];
+        }
+
+        // إذا كان الطلب في طور التوصيل، فالمدفوعة غالباً مكتملة
+        if ($order->status === 'out_for_delivery') {
+            return [
+                'completed' => 90,  // 90% احتمال
+                'pending' => 10,    // 10% احتمال
+            ];
+        }
+
+        // إذا كان الطلب قيد المعالجة، فالمدفوعة مكتملة أو قيد الانتظار
+        if ($order->status === 'processing') {
+            return [
+                'completed' => 85,  // 85% احتمال
+                'pending' => 15,    // 15% احتمال
+            ];
+        }
+
+        // للطلبات المعلقة (pending)
+        if ($order->status === 'pending') {
+            return [
+                'pending' => 50,    // 50% احتمال
+                'completed' => 30,  // 30% احتمال
+                'failed' => 20,     // 20% احتمال
+            ];
+        }
+
+        // الحالة الافتراضية لأي حالة أخرى
+        return [
+            'completed' => 60,  // 60% احتمال
+            'pending' => 25,    // 25% احتمال
+            'failed' => 10,     // 10% احتمال
+            'refunded' => 5,    // 5% احتمال
+        ];
+    }
+
+    /**
+     * Apply specific details based on payment status
+     */
+    private function applyPaymentStateDetails($payment, $status)
+    {
         switch ($status) {
             case 'completed':
                 $payment->update([
@@ -92,6 +167,7 @@ class PaymentSeeder extends Seeder
                     'payment_details' => json_encode([
                         'error_code' => fake()->randomElement(['insufficient_funds', 'card_declined', 'expired_card', 'network_error']),
                         'error_message' => fake()->sentence,
+                        'failure_time' => now()->subMinutes(rand(5, 120)),
                     ]),
                 ]);
                 break;
@@ -100,15 +176,14 @@ class PaymentSeeder extends Seeder
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
                     'payment_details' => json_encode([
-                        'refund_reason' => fake()->randomElement(['customer_request', 'order_cancelled', 'chef_unavailable']),
+                        'refund_reason' => fake()->randomElement(['customer_request', 'order_cancelled', 'chef_unavailable', 'quality_issue']),
                         'refund_amount' => $payment->amount,
                         'refund_date' => fake()->dateTimeBetween('-1 month', 'now'),
+                        'refund_transaction_id' => 'ref_' . fake()->uuid,
                     ]),
                 ]);
                 break;
         }
-
-        return $payment;
     }
 
     /**

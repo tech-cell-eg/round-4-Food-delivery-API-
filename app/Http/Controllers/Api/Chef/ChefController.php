@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\Chef;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Chef;
 use App\Http\Resources\ChefResource;
 use App\Http\Resources\ChefDetailsResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ChefController extends Controller
@@ -66,5 +68,22 @@ class ChefController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function searchChefs(Request $request)
+    {
+        $query = $request->get('query');
+
+        if (!$query) {
+            return ApiResponse::error("Search query is required", 422);
+        }
+
+        $chefs = User::search($query)->paginate(10);
+
+        if ($chefs->isEmpty()) {
+            return ApiResponse::success([], "No chefs found");
+        }
+
+        return ApiResponse::withPagination($chefs, "chefs");
     }
 }

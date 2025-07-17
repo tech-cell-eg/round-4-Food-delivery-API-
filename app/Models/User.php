@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use  HasFactory, Notifiable, HasApiTokens;
+    use  HasFactory, Notifiable, HasApiTokens, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,29 @@ class User extends Authenticatable
         'latitude',
         'longitude',
     ];
+
+    public function searchableAs(): string
+    {
+        return 'chefs';
+    }
+
+    public function shouldBeSearchable()
+    {
+        return $this->type === 'chef';
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'bio' => $this->bio,
+            'location' => $this->chef ? $this->chef->location : null,
+
+        ];
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -90,4 +115,18 @@ class User extends Authenticatable
     {
         return $this->hasOne(Admin::class, "id", "id");
     }
+
+    public function hasAdminPermission(string $permissionName): bool
+    {
+        $admin = $this->admin;
+
+        if (! $admin) {
+            return false;
+        }
+
+        // Spatie's built-in method to check permissions
+        return $admin->hasPermissionTo($permissionName, 'admin');
+    }
+
+
 }

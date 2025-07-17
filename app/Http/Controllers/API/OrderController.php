@@ -17,6 +17,7 @@ use App\Notifications\CustomerActionNotification;
 use App\Models\User;
 use App\Helpers\ApiResponse;
 use App\Models\OrderStatusHistory;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -45,10 +46,78 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $orders
-        ]);
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+
+    /**
+     * عرض طلبات المستخدم حسب الطلب
+     */
+    public function getCustomerOrdersByStatus(Request $request)
+    {
+        $customer = User::find(Auth::id());
+        if ($customer->type !== 'customer') {
+            return ApiResponse::error([
+                'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات'
+            ], 403);
+        }
+        $statusArray = $request->query('status') ? explode(',', $request->query('status')) : [];
+        //return all orders if status is not provided
+        $orders = [];
+        if (!$request->query('status')) {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } elseif (in_array('all', $statusArray)) {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('customer_id', $customer->id)
+                ->with(['orderItems', 'payments'])
+                ->whereIn('status', $statusArray)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+    /**
+     * عرض طلبات المستخدم حسب الطلب
+     */
+    public function getChefOrdersByStatus(Request $request)
+    {
+        $chef = User::find(Auth::id());
+        if ($chef->type !== 'chef') {
+            return ApiResponse::error([
+                'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات'
+            ], 403);
+        }
+        $statusArray = $request->query('status') ? explode(',', $request->query('status')) : [];
+        //return all orders if status is not provided
+        $orders = [];
+        if (!$request->query('status')) {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } elseif (in_array('all', $statusArray)) {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('chef_id', $chef->id)
+                ->with(['orderItems', 'payments'])
+                ->whereIn('status', $statusArray)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
     }
 
     /**
@@ -93,8 +162,7 @@ class OrderController extends Controller
         $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
+            return ApiResponse::error([
                 'message' => 'سلة التسوق فارغة'
             ], 400);
         }
@@ -149,7 +217,7 @@ class OrderController extends Controller
                 'notes' => $request->notes,
             ]);
             // سجل أول حالة للطلب
-            $this->logOrderStatus($order, 'pending', 'تم إنشاء الطلب');
+            $order->logOrderStatus('created', 'تم إنشاء طلب بالرقم' . $order->order_number);
 
             // إضافة عناصر الطلب
             foreach ($cart->items as $item) {
@@ -193,6 +261,62 @@ class OrderController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * عرض قائمة طلبات العمسيل صاحب الجلسة حسب المطلوب
+     */
+    public function getCustomerOrders(Request $request)
+    {
+        if (Auth::user()->type !== 'customer') {
+            return ApiResponse::error([
+                'message' => 'غير مصرح لك بالوصول إلى هذه البيانات'
+            ], 403);
+        }
+        // يتم ارجاع الطلبات حسب الحالة المرسلة أو كل الطلبات اذا كانت لا توجد حالة
+        $query = $request->query();
+        if (in_array($query['status'], ['pending', 'completed', 'cancelled'])) {
+            $orders = Order::where('customer_id', Auth::id())
+                ->where('status', $query['status'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('customer_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المستخدم بنجاح', 200);
+    }
+
+    /**
+     * عرض قائمة طلبات الواردة الى المطعم صاحب الجلسة حسب المطلوب
+     */
+    public function getChefOrders(Request $request)
+    {
+        if (Auth::user()->type !== 'chef') {
+            return ApiResponse::error([
+                'message' => 'غير مصرح لك بالوصول إلى هذه البيانات'
+            ], 403);
+        }
+        // يتم ارجاع الطلبات حسب الحالة المرسلة أو كل الطلبات اذا كانت لا توجد حالة
+        $query = $request->query();
+        if (in_array($query['status'], ['pending', 'completed', 'cancelled'])) {
+            $orders = Order::where('chef_id', Auth::id())
+                ->where('status', $query['status'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } else {
+            $orders = Order::where('chef_id', Auth::id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        }
+
+        return ApiResponse::success([
+            'orders' => $orders
+        ], 'تم جلب طلبات المستخدم بنجاح', 200);
     }
 
     /**
@@ -260,6 +384,8 @@ class OrderController extends Controller
     // }
 
     /* change order status */
+
+
     public function changeOrderStatus(Request $request, $id)
     {
         $validated = $request->validate([
@@ -311,7 +437,7 @@ class OrderController extends Controller
             return ApiResponse::unauthorized('You are not authorized to access this resource.');
         }
 
-        $orders = Order::where(['chef_id' => $chef->id, 'status' => 'pending'])
+        $orders = Order::where(['chef_id' => $chef->id, 'status' => 'pending', 'payment_status' => 'paid'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
