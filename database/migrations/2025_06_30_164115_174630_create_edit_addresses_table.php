@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('lat', 11);
             $table->string('lon', 11);
             $table->string('name')->nullable();
+            $table->string('display_name')->nullable();
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });

@@ -55,10 +55,10 @@ class PaymentSeeder extends Seeder
 
         // تحديد حالة الدفع
         $statusWeights = [
-            'completed' => 70,  // 70% احتمال
+            'succeeded' => 70,  // 70% احتمال
             'pending' => 15,    // 15% احتمال
             'failed' => 10,     // 10% احتمال
-            'refunded' => 5,    // 5% احتمال
+            'cancelled' => 5,   // 5% احتمال
         ];
 
         $status = $this->getRandomWeightedElement($statusWeights);
@@ -74,7 +74,7 @@ class PaymentSeeder extends Seeder
 
         // تطبيق states محددة بناءً على الحالة
         switch ($status) {
-            case 'completed':
+            case 'succeeded':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
                 ]);
@@ -96,14 +96,9 @@ class PaymentSeeder extends Seeder
                 ]);
                 break;
 
-            case 'refunded':
+            case 'cancelled':
                 $payment->update([
                     'transaction_id' => 'txn_' . fake()->uuid,
-                    'payment_details' => json_encode([
-                        'refund_reason' => fake()->randomElement(['customer_request', 'order_cancelled', 'chef_unavailable']),
-                        'refund_amount' => $payment->amount,
-                        'refund_date' => fake()->dateTimeBetween('-1 month', 'now'),
-                    ]),
                 ]);
                 break;
         }
