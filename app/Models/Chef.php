@@ -10,6 +10,9 @@ class Chef extends Model
 {
     use HasFactory, Notifiable;
 
+
+    // we need to search in => [name, email, phone, bio, location, description]
+
     protected $primaryKey = 'id';
     public $incrementing = false;
 

@@ -18,10 +18,20 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         $paymentMethod = $this->faker->randomElement(['credit_card', 'debit_card', 'cash_on_delivery', 'wallet']);
+        
+        // إذا لم يتم تحديد order_id محدد، استخدم order عشوائي موجود أو null
+        $orderId = null;
         $amount = $this->faker->randomFloat(2, 10, 500);
         
+        // محاولة الحصول على order موجود
+        $existingOrder = Order::inRandomOrder()->first();
+        if ($existingOrder) {
+            $orderId = $existingOrder->id;
+            $amount = $existingOrder->total ?? $amount;
+        }
+        
         return [
-            'order_id' => Order::factory(),
+            'order_id' => $orderId,
             'payment_method' => $paymentMethod,
             'status' => $this->faker->randomElement(['pending', 'completed', 'failed', 'refunded']),
             'transaction_id' => $this->faker->boolean(80) ? $this->faker->uuid : null,
@@ -168,9 +178,34 @@ class PaymentFactory extends Factory
      */
     public function forOrder($orderId): static
     {
-        return $this->state(fn (array $attributes) => [
-            'order_id' => $orderId,
-        ]);
+        return $this->state(function (array $attributes) use ($orderId) {
+            $order = Order::find($orderId);
+            $amount = $order ? $order->total : $attributes['amount'];
+            
+            return [
+                'order_id' => $orderId,
+                'amount' => $amount,
+            ];
+        });
+    }
+
+    /**
+     * Create payment for existing orders only (no new orders)
+     */
+    public function forExistingOrdersOnly(): static
+    {
+        return $this->state(function (array $attributes) {
+            $existingOrder = Order::inRandomOrder()->first();
+            
+            if (!$existingOrder) {
+                throw new \Exception('No existing orders found. Please create orders first before generating payments.');
+            }
+            
+            return [
+                'order_id' => $existingOrder->id,
+                'amount' => $existingOrder->total,
+            ];
+        });
     }
 } 
 

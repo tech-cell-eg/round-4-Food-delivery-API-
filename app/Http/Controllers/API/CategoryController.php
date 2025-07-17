@@ -15,11 +15,24 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories =  Category::all();
+        $categories = Category::all();
         return
             ApiResponse::success(
                 CategoryResource::collection($categories)
             );
+    }
+
+
+    public function show($category)
+    {
+        $category = Category::find($category);
+
+        if (!$category) {
+            return ApiResponse::error("'category not found'");
+        }
+        return ApiResponse::success([
+            'category' => new CategoryResource($category),
+        ]);
     }
     public function mealTypes()
     {
@@ -52,4 +65,5 @@ class CategoryController extends Controller
             ->get();
         return ApiResponse::success(DishResource::collection($dishes));
     }
+
 }

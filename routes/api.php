@@ -3,7 +3,6 @@
 
 use Illuminate\Support\Facades\Auth;
 
-// use App\Http\Controllers\API\Chef\StatisticsController;
 // ==================== Auth ====================
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -52,6 +51,9 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
 
+
+
+
 // ==================== Auth Routes ====================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -68,9 +70,11 @@ Route::prefix('password')->group(function () {
 Route::post('/email/verify', [OtpLoginController::class, 'verifyEmail']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('categories/{categoryId}/meal_types', [CategoryController::class, 'getDishesByMealType']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
+
+Route::get('dishes/meal-type/{mealType}', [CategoryController::class, 'getDishesByMealType']);
 Route::get('categories/{categoryId}/dishes', [CategoryController::class, 'getDishesByCategory']);
-Route::get('dishes/meal-type/breakfast', [CategoryController::class, 'getDishesByMealType']);
+Route::get('dishes/meal-types', [CategoryController::class, 'mealTypes']);
 
 
 // المدفوعات
@@ -114,6 +118,7 @@ Route::get("ingredients", [IngredientsController::class, 'index']);
 
 
 Route::controller(ChefController::class)->group(function () {
+    Route::get("resturants/search", "searchChefs");
     Route::get("open-resturants", "getOpenChefs");
     Route::get("resturants/{id}", "showChefWithCategoriesAndMeals");
 });
@@ -124,6 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client/add_favorite/{dish_id}', [FavoriteController::class, 'add_favourite']);
     Route::get('/client/remove_favorite/{dish_id}', [FavoriteController::class, 'removeFavorite']);
     Route::put('/client/toggle_favorite/{dish_id}', [FavoriteController::class, 'toggleFavorite']);
+    Route::get('/client/show_fav', [FavoriteController::class, 'show_fav']);
+
+    
 
 
     // Auth
@@ -248,3 +256,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/orders/{id}/cancel', [AliasOrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [AliasOrderController::class, 'trackOrder']);
 });
+
+
