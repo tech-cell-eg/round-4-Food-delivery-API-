@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
             ->count(10)
             ->chef()
             ->create();
+
         User::factory()
             ->count(10)
             ->customer()

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminIsGuest;
 use App\Http\Middleware\AuthenticatedAdmin;
+use App\Http\Middleware\PermissionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'guest' => AdminIsGuest::class,
             'admin_auth' => AuthenticatedAdmin::class,
+            'permission' => PermissionMiddleware::class,
 
         ]);
     })

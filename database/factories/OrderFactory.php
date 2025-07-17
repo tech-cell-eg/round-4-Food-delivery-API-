@@ -36,7 +36,7 @@ class OrderFactory extends Factory
             'discount' => $discount,
             'total' => $total,
             'coupon_id' => $this->faker->optional(0.3)->randomElement(Coupon::pluck('id')->toArray()),
-            'status' => $this->faker->randomElement(['pending', 'processing', 'on_the_way', 'delivered', 'cancelled']),
+            'status' => $this->faker->randomElement(['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled']),
             'notes' => $this->faker->optional()->sentence(),
         ];
     }
@@ -62,12 +62,12 @@ class OrderFactory extends Factory
     }
 
     /**
-     * Indicate that the order is on the way.
+     * Indicate that the order is out for delivery.
      */
-    public function onTheWay(): static
+    public function outForDelivery(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'on_the_way',
+            'status' => 'out_for_delivery',
         ]);
     }
 
