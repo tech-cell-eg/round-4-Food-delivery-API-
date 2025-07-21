@@ -124,8 +124,6 @@ Route::controller(ChefController::class)->group(function () {
 });
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
-
-
     Route::controller(FavoriteController::class)->prefix('favorites')->group(function () {
         Route::get('/', 'index');           
         Route::post('add', 'store');        
