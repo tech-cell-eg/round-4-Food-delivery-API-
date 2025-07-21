@@ -125,13 +125,12 @@ Route::controller(ChefController::class)->group(function () {
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
 
-    // إضافة طبق للمفضلة
-    Route::get('/client/add_favorite/{dish_id}', [FavoriteController::class, 'add_favourite']);
-    Route::get('/client/remove_favorite/{dish_id}', [FavoriteController::class, 'removeFavorite']);
-    Route::put('/client/toggle_favorite/{dish_id}', [FavoriteController::class, 'toggleFavorite']);
-    Route::get('/client/show_fav', [FavoriteController::class, 'show_fav']);
 
-    
+    Route::controller(FavoriteController::class)->prefix('favorites')->group(function () {
+        Route::get('/', 'index');           
+        Route::post('add', 'store');        
+        Route::delete('remove/{dishId}', 'destroy'); 
+    });
 
 
     // Auth
