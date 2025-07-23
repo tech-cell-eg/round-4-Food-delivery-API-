@@ -106,12 +106,13 @@ Route::get('/client/meals', [DishesController::class, 'index']);
 
 // عرض تفاصيل طبق
 Route::get('/client/meals/{id}', [DishesController::class, 'show']);
-
-// عرض أطباق بعد الفلترة
-Route::get('/client/meals_filter/', [DishesController::class, 'filter']);
-
 // البحث عن طبق أو مطعم معين
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
+
+Route::get("/suggestedResturants", [DishesController::class, "suggestedResturants"]);
+Route::get("/recentKeyword", [DishesController::class, "recentKeyword"]);
+Route::get("/popualarMeals", [DishesController::class, "popualarMeals"]);
+
 
 
 Route::get("ingredients", [IngredientsController::class, 'index']);
