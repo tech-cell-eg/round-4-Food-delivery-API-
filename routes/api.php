@@ -114,7 +114,6 @@ Route::get("/recentKeyword", [DishesController::class, "recentKeyword"]);
 Route::get("/popualarMeals", [DishesController::class, "popualarMeals"]);
 
 
-
 Route::get("ingredients", [IngredientsController::class, 'index']);
 
 
@@ -237,8 +236,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/address', [ShipmentAddressController::class, 'store']);
     Route::get('/my/addresses', [ShipmentAddressController::class, 'index']);
     Route::get('/default/address', [ShipmentAddressController::class, 'defaultAddress']);
+
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
+
     Route::put('/address/{id}/set-as-default', [ShipmentAddressController::class, 'setAsDefaultAddress']);
+    
     Route::delete('/address/{id}/destroy', [ShipmentAddressController::class, 'destroy']);
     Route::put('/address/{id}/update', [ShipmentAddressController::class, 'update']);
 
@@ -247,7 +249,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [AliasOrderController::class, 'index']);
     Route::get('/orders/{id}', [AliasOrderController::class, 'show']);
     Route::post('/orders', [AliasOrderController::class, 'store']);
+
     Route::get('/get/customer/orders', [AliasOrderController::class, 'getCustomerOrders']);
+
     Route::get('/get/customer/orders/where', [AliasOrderController::class, 'getCustomerOrdersByStatus']);
     Route::get('/get/chef/orders/where', [AliasOrderController::class, 'getChefOrdersByStatus']);
     Route::get('/get/chef/orders', [AliasOrderController::class, 'getChefOrders']);

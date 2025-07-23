@@ -100,49 +100,90 @@ class ShipmentAddressController extends Controller
 
     public function destroy($id)
     {
-        $address = Address::find($id);
+        $userId = Auth::id();
+
+        $address = Address::where('id', $id)
+            ->where('customer_id', $userId)
+            ->first();
+
+        if (!$address) {
+            return ApiResponse::error('العنوان غير موجود أو لا يخص هذا المستخدم', 404);
+        }
+
         $address->delete();
 
         return ApiResponse::success([
             'status' => 'success',
-            'message' => 'Address deleted successfully',
+            'message' => 'تم حذف العنوان بنجاح',
         ], 200);
     }
 
+
     public function show($id)
     {
-        $address = Address::find($id);
+        $userId = Auth::id();
+
+        $address = Address::where('id', $id)
+            ->where('customer_id', $userId)
+            ->first();
+
+        if (!$address) {
+            return ApiResponse::error('العنوان غير موجود أو لا يخص هذا المستخدم', 404);
+        }
+
         return ApiResponse::success([
             'address' => $address,
         ], 'تم جلب العنوان بنجاح', 200);
     }
 
+
     public function setAsDefaultAddress($id)
     {
-        $address = Address::find($id);
-        $defaultAddress = Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first();
-        if ($defaultAddress) {
-            $defaultAddress->is_default = false;
-            $defaultAddress->save();
+        $userId = Auth::id();
+
+        $address = Address::where('id', $id)
+            ->where('customer_id', $userId)
+            ->first();
+
+        if (!$address) {
+            return ApiResponse::error('العنوان غير موجود أو لا يخص هذا المستخدم', 404);
         }
 
-        $address->update([
-            'is_default' => true,
-        ]);
+        // لو هو بالفعل الافتراضي، لا حاجة للتغيير
+        if ($address->is_default) {
+            return ApiResponse::success([
+                'status' => 'success',
+                'message' => 'هذا العنوان هو العنوان الافتراضي بالفعل',
+            ]);
+        }
+
+        // إزالة العنوان الافتراضي الحالي إن وجد
+        Address::where('customer_id', $userId)
+            ->where('is_default', true)
+            ->update(['is_default' => false]);
+
+        // تعيين العنوان الجديد كافتراضي
+        $address->update(['is_default' => true]);
 
         return ApiResponse::success([
             'status' => 'success',
-            'message' => 'Address set as default successfully',
-        ], 200);
+            'message' => 'تم تعيين العنوان كافتراضي بنجاح',
+        ]);
     }
 
 
-    /* default address */
-
     public function defaultAddress()
     {
+        $address = Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first();
+
+        if ($address) {
+            return ApiResponse::success([
+                'address' => $address,
+            ], 'تم جلب العنوان الافتراضي بنجاح', 200);
+        }
+
         return ApiResponse::success([
-            'address' => Address::where('customer_id', Auth::user()->id)->where('is_default', true)->first()
-        ], 'تم جلب العنوان الافتراضي بنجاح', 200);
+            [],
+        ], 'لايوجد لديك عنوان افتراضي', 200);
     }
 }

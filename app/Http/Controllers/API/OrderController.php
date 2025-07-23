@@ -61,15 +61,16 @@ class OrderController extends Controller
                 'message' => 'ليس لديك صلاحية الاطلاع على هذه البيانات'
             ], 403);
         }
-        $statusArray = $request->query('status') ? explode(',', $request->query('status')) : [];
-        //return all orders if status is not provided
-        $orders = [];
-        if (!$request->query('status')) {
-            $orders = Order::where('customer_id', $customer->id)
-                ->with(['orderItems', 'payments'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-        } elseif (in_array('all', $statusArray)) {
+        // دعم استقبال status كمصفوفة أو نص مفصول بفواصل
+        $statusParam = $request->query('status');
+        $statusArray = [];
+        if (is_array($statusParam)) {
+            $statusArray = $statusParam;
+        } elseif (is_string($statusParam)) {
+            $statusArray = array_map('trim', explode(',', $statusParam));
+        }
+        // إرجاع كل الطلبات إذا لم يتم تمرير status
+        if (!$statusParam || in_array('all', $statusArray)) {
             $orders = Order::where('customer_id', $customer->id)
                 ->with(['orderItems', 'payments'])
                 ->orderBy('created_at', 'desc')
@@ -81,7 +82,6 @@ class OrderController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
         }
-
         return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
     }
 
