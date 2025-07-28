@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('cart_id')->constrained('carts')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('dishes')->onDelete('cascade');
+            $table->foreignId('dish_id')->constrained('dishes')->onDelete('cascade');
             $table->foreignId('size_id')->constrained('dish_sizes')->onDelete('cascade');
 
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
             $table->timestamps();
-        }); 
+        });
     }
 
     /**

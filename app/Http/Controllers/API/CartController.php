@@ -55,7 +55,7 @@ class CartController extends Controller
 
     public function addItem(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'dish_id' => 'required|exists:dishes,id',
             'size_name' => 'required|in:small,medium,large',
         ]);
@@ -68,18 +68,18 @@ class CartController extends Controller
             'status' => 'empty'
         ]);
 
-        $dish = Dish::find($request->dish_id);
+        $dish = Dish::find($data["dish_id"]);
         if (!$dish) {
             return ApiResponse::error(['message' => 'هذا الطبق غير متوفر حالياً'], 400);
         }
 
-        $dishSize = DishSize::where(['dish_id' => $request->dish_id, 'size' => $request->size_name])->first();
+        $dishSize = DishSize::where(['dish_id' => $data["dish_id"], 'size' => $data["size_name"]])->first();
         if (!$dishSize) {
             return ApiResponse::error(['message' => 'حجم الطبق غير متوفر'], 400);
         }
 
         $existCartItem = CartItem::where('cart_id', $cart->id)
-            ->where('dish_id', $request->dish_id)
+            ->where('dish_id', $data["dish_id"])
             ->first();
 
         if ($existCartItem) {
@@ -91,7 +91,7 @@ class CartController extends Controller
                 'customer_id' => $customerId,
                 'size_id' => $dishSize->id,
                 'cart_id' => $cart->id,
-                'dish_id' => $request->dish_id,
+                'dish_id' => $data["dish_id"],
                 'quantity' => 1,
                 'price' => $dishSize->price,
             ]);
@@ -110,12 +110,13 @@ class CartController extends Controller
         ]);
 
         $customerId = $this->getCustomer()->id;
+
         $cart = Cart::where('customer_id', $customerId)->first();
         if (!$cart) {
             return ApiResponse::error('سلة التسوق غير موجودة', 404);
         }
 
-        $cartItem = CartItem::where('cart_id', $cart->id)->where('id', $id)->first();
+        $cartItem = CartItem::where('cart_id', $cart->id)->where('dish_id', $id)->first();
         if (!$cartItem) {
             return ApiResponse::error('العنصر غير موجود في سلة التسوق', 404);
         }
@@ -140,12 +141,24 @@ class CartController extends Controller
             return ApiResponse::error('سلة التسوق غير موجودة', 404);
         }
 
-        $cartItem = CartItem::where('cart_id', $cart->id)->where('id', $id)->first();
+        $cartItem = CartItem::where('cart_id', $cart->id)->where('dish_id', $id)->first();
         if (!$cartItem) {
             return ApiResponse::error(['message' => 'العنصر غير موجود في سلة التسوق'], 404);
         }
 
-        $cartItem->delete();
+        $dishSize = DishSize::find($cartItem->size_id);
+        if (!$dishSize) {
+            return ApiResponse::error(['message' => 'حجم الطبق غير متوفر'], 400);
+        }
+
+        if($cartItem->quantity > 1) {
+            $cartItem->quantity = $cartItem->quantity - 1;
+            $cartItem->price = $cartItem->quantity * $dishSize->price;
+            $cartItem->save();
+        } else {
+            $cartItem->delete();
+        }
+
 
         return ApiResponse::success([
             'cart' => $cart->load('items.dish', 'items.size'),
@@ -159,12 +172,12 @@ class CartController extends Controller
         $cart = Cart::where('customer_id', $customerId)->first();
 
         if ($cart && $cart->items->isEmpty()) {
-            return ApiResponse::success(['cart' => $cart, 'items' => []], 'لم نجد لديك أطباق فى السلة', 200);
+            return ApiResponse::success($cart, 'Cart Is empty', 200);
         }
 
         if ($cart) {
             $cart->dropItems();
-            return ApiResponse::success(['cart' => $cart, 'items' => []], 'تم تفريغ سلة التسوق', 200);
+            return ApiResponse::success([], "Cart is empty wrigte now");
         }
     }
 

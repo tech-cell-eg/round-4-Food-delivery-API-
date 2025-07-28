@@ -1,10 +1,9 @@
 <?php
 
 
-use Illuminate\Support\Facades\Auth;
-
 // ==================== Auth ====================
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\ChatController;
@@ -50,8 +49,6 @@ use App\Http\Controllers\API\Chef\StatisticsController;
 //use App\Http\Controllers\ChefOrderController;
 use App\Http\Controllers\API\CustomerProfileController;
 use App\Http\Controllers\Customer\NotificationController;
-
-
 
 
 // ==================== Auth Routes ====================
@@ -105,7 +102,7 @@ Route::get('chef_reviews/{chefId}', [ChefReviewsController::class, 'index']);
 Route::get('/client/meals', [DishesController::class, 'index']);
 
 // عرض تفاصيل طبق
-Route::get('/client/meals/{id}', [DishesController::class, 'show']);
+Route::get('/client/meals/{id}', [DishesController::class, 'show'])->middleware('auth:sanctum');
 // البحث عن طبق أو مطعم معين
 Route::get('/client/meals_search/', [DishesController::class, 'search']);
 
@@ -125,9 +122,9 @@ Route::controller(ChefController::class)->group(function () {
 // ==================== Protected Routes (Sanctum) ====================
 Route::middleware('auth:sanctum')->group(function () {
     Route::controller(FavoriteController::class)->prefix('favorites')->group(function () {
-        Route::get('/', 'index');           
-        Route::post('add', 'store');        
-        Route::delete('remove/{dishId}', 'destroy'); 
+        Route::get('/', 'index');
+        Route::post('add', 'store');
+        Route::delete('remove/{dishId}', 'destroy');
     });
 
 
@@ -240,7 +237,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/address/{id}', [ShipmentAddressController::class, 'show']);
 
     Route::put('/address/{id}/set-as-default', [ShipmentAddressController::class, 'setAsDefaultAddress']);
-    
+
     Route::delete('/address/{id}/destroy', [ShipmentAddressController::class, 'destroy']);
     Route::put('/address/{id}/update', [ShipmentAddressController::class, 'update']);
 

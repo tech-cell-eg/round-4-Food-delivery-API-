@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 // use App\Http\Resources\DishResource;
 use App\Helpers\ApiResponse;
 use App\Models\Chef;
+use App\Models\Favorite;
+use Illuminate\Support\Facades\Auth;
 
 class DishesController extends Controller
 {
@@ -29,7 +31,7 @@ class DishesController extends Controller
     }
 
 
-    public function show(int $id)
+    public function show(Request $request, int $id)
     {
         $dish = Dish::findOr($id, function () {
             return ApiResponse::notFound();
@@ -37,12 +39,21 @@ class DishesController extends Controller
 
         $dish->load(["chef.user", "category", "sizes", "ingredients"]);
 
+        $user = Auth::user();
+
+        $userId = $user?->id;
+
+        $isFavorit = $userId ? Favorite::where("dish_id", $dish->id)
+            ->where("customer_id", $userId)
+            ->exists() : false;
+
         $data = [
             "dish_id" => $dish->id,
             "dish_name" => $dish->name,
             "dish_image" => $dish->image,
             "dish_description" => $dish->description,
             "dish_avg_rate" => $dish->avg_rate,
+            "is_favorite" => $isFavorit,
             "sizes" => $dish->sizes,
             "ingredients" => $dish->ingredients,
             "category" => [
