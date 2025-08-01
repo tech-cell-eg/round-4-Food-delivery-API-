@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateNewChefRequest;
 use App\Http\Requests\UpdateChefRequest;
@@ -39,13 +40,13 @@ class ChefsController extends Controller
         foreach ($chefs as $chef) {
             // Calculate average rating
             $chef->average_rating = $chef->reviews()->avg('rating') ?? 0;
-            
+
             // Calculate total orders through dishes
             $chef->total_orders = $chef->dishes()
                 ->withCount('orderItems')
                 ->get()
                 ->sum('order_items_count');
-                
+
             // Calculate total earnings (estimated)
             $chef->total_earnings = $chef->dishes()
                 ->join('order_items', 'dishes.id', '=', 'order_items.dish_id')
@@ -82,6 +83,7 @@ class ChefsController extends Controller
             }
 
             $user = $this->storeNewUserChef($request, $profileImagePath);
+
             if($request->boolean("email_verified")) {
                 $user->markEmailAsVerified();
             }
@@ -123,9 +125,6 @@ class ChefsController extends Controller
             'bio' => $request->bio,
             'profile_image' => $profileImagePath,
             'type' => 'chef',
-            'address' => $request->address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
         ]);
     }
 
@@ -147,42 +146,45 @@ class ChefsController extends Controller
         try {
             DB::beginTransaction();
 
-            $chef = Chef::with('user')->findOrFail($id);
+            $chef = Chef::with('user')->findOr($id, function () {
+                return ApiResponse::notFound();
+            });
             $user = $chef->user;
-
-            $profileImagePath = $user->profile_image;
-            if ($request->hasFile('profile_image')) {
-                if ($profileImagePath) {
-                    $this->deleteImage($profileImagePath);
-                }
-
-                $profileImagePath = $this->storeImage($request->file('profile_image'), 'users_images');
-            }
 
             $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'bio' => $request->bio,
-                'profile_image' => $profileImagePath,
-                'address' => $request->address,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
             ];
 
+            // Handle profile image
+            if ($request->hasFile('profile_image')) {
+                $newImagePath = $this->storeImage($request->file('profile_image'), 'users_images');
+
+                if ($user->profile_image) {
+                    $this->deleteImage($user->profile_image);
+                }
+
+                $userData['profile_image'] = $newImagePath;
+            }
+
+            // Handle password if provided
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
 
-            $user->update($userData);
-
+            // Handle email verification
             if ($request->boolean('email_verified')) {
-                $user->markEmailAsVerified();
+                $userData['email_verified_at'] = now();
             } else {
-                $user->email_verified_at = null;
-                $user->save();
+                $userData['email_verified_at'] = null;
             }
 
+            // Update user
+            $user->update($userData);
+
+            // Update chef
             $chef->update([
                 'national_id' => $request->national_id,
                 'description' => $request->description,

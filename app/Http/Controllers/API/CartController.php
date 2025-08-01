@@ -151,19 +151,9 @@ class CartController extends Controller
             return ApiResponse::error(['message' => 'حجم الطبق غير متوفر'], 400);
         }
 
-        if($cartItem->quantity > 1) {
-            $cartItem->quantity = $cartItem->quantity - 1;
-            $cartItem->price = $cartItem->quantity * $dishSize->price;
-            $cartItem->save();
-        } else {
-            $cartItem->delete();
-        }
+        $cartItem->delete();
 
-
-        return ApiResponse::success([
-            'cart' => $cart->load('items.dish', 'items.size'),
-            'total' => $cart->items->sum('price')
-        ], 'تم حذف العنصر من سلة التسوق', 200);
+        return ApiResponse::success([], 'تم حذف العنصر من سلة التسوق', 200);
     }
 
     public function clearCart()

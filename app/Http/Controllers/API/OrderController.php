@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CustomerOrderResource;
+use App\Models\Address;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Coupon;
@@ -72,17 +74,22 @@ class OrderController extends Controller
         // إرجاع كل الطلبات إذا لم يتم تمرير status
         if (!$statusParam || in_array('all', $statusArray)) {
             $orders = Order::where('customer_id', $customer->id)
-                ->with(['orderItems', 'payments'])
+                ->with(['orderItems.dish', 'payments'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
         } else {
             $orders = Order::where('customer_id', $customer->id)
-                ->with(['orderItems', 'payments'])
+                ->with(['orderItems.dish', 'payments'])
                 ->whereIn('status', $statusArray)
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
         }
-        return ApiResponse::withPagination($orders, 'تم جلب طلبات المستخدم بنجاح', 200);
+
+        return ApiResponse::withPagination(
+            CustomerOrderResource::collection($orders),
+            'تم جلب طلبات المستخدم بنجاح',
+            200
+        );
     }
 
     /**
@@ -151,15 +158,17 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'address_id' => 'required|exists:addresses,id',
-            'coupon_code' => 'nullable|string',
-            'notes' => 'nullable|string',
-        ]);
-
         $customerId = Auth::id();
 
         $cart = Cart::with(['items.dish.chef'])->where('customer_id', $customerId)->first();
+
+        $defultAddress = Address::where("customer_id", $customerId)->where("is_default", 1)->first();
+        if(! $defultAddress) {
+            $defultAddress = Address::where("customer_id", $customerId)->first();
+        }
+        if(! $defultAddress) {
+            return ApiResponse::error("المستخدم ليس لديه عنوان");
+        }
 
         if (!$cart || $cart->items->isEmpty()) {
             return ApiResponse::error([
@@ -202,10 +211,10 @@ class OrderController extends Controller
 
             // إنشاء الطلب
             $order = Order::create([
-                'payment_method' => $request->payment_method,
+                'payment_method' => "stripe",
                 'chef_id' => $cart->items->first()->dish->chef_id,
                 'customer_id' => $customerId,
-                'address_id' => $request->address_id,
+                'address_id' => $defultAddress->id,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
                 'tax' => $tax,
@@ -235,7 +244,7 @@ class OrderController extends Controller
             Payment::create([
                 'order_id' => $order->id,
                 'status' => 'pending',
-                'payment_method' => $request->payment_method,
+                'payment_method' => "credit_card",
                 'amount' => $total,
             ]);
 
@@ -247,12 +256,8 @@ class OrderController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'تم إنشاء الطلب بنجاح',
-                'data' => [
-                    'cart' => $cart,
-                    'order' => $order->load('orderItems'),
-                    'payment' => Payment::where('order_id', $order->id)->first()
-                ]
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -389,7 +394,7 @@ class OrderController extends Controller
     public function changeOrderStatus(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => 'required|string',
+            'status' => 'required|string|in:pending,completed,cancelled',
         ]);
 
         $order = Order::find($id);
@@ -401,7 +406,7 @@ class OrderController extends Controller
         }
 
         $order->status = $validated['status'];
-        $order->update();
+        $order->save();
         $this->logOrderStatus($order, $validated['status'], 'تم تغيير حالة الطلب');
 
         return ApiResponse::success([
