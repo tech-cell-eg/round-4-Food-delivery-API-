@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class MessageResource extends JsonResource
 {
@@ -14,6 +15,12 @@ class MessageResource extends JsonResource
      */
     public function toArray($request)
     {
+        $content = $this->content;
+        
+        if (in_array($this->type, ['voice', 'image']) && $this->content) {
+            $content = Storage::disk('public')->url($this->content);
+        }
+
         return [
             'id' => $this->id,
             'conversation_id' => $this->conversation_id,
@@ -25,7 +32,7 @@ class MessageResource extends JsonResource
                 'type' => $this->sender?->type,
             ],
             'type' => $this->type,
-            'content' => $this->content,
+            'content' => $content,
             'seen_at' => $this->seen_at ? $this->seen_at->diffForHumans() : null,
             'created_at' => $this->created_at ? $this->created_at->diffForHumans() : null,
         ];

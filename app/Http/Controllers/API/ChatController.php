@@ -178,6 +178,11 @@ class ChatController extends Controller
                 $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
                 $audioPath = $file->storeAs('audio', $uniqueName, 'public');
                 $content = $audioPath;
+            } elseif ($validatedData['type'] === 'image' && $request->hasFile('image')) {
+                $file = $request->file('image');
+                $uniqueName = 'image_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $imagePath = $file->storeAs('images', $uniqueName, 'public');
+                $content = $imagePath;
             } elseif ($validatedData['type'] === 'text' && !$content) {
                 return ApiResponse::validationError(['content' => ['Message content required for text messages']], 'Error in data sent');
             }
@@ -215,6 +220,8 @@ class ChatController extends Controller
 
         if($message->type == "voice"){
             $this->deleteAudioFile($message);
+        } elseif($message->type == "image"){
+            $this->deleteImageFile($message);
         }
 
         $message->delete();
@@ -225,6 +232,13 @@ class ChatController extends Controller
     protected function deleteAudioFile($message)
     {
         if ($message->content && $message->type === 'voice' && Storage::disk('public')->exists($message->content)) {
+            Storage::disk('public')->delete($message->content);
+        }
+    }
+
+    protected function deleteImageFile($message)
+    {
+        if ($message->content && $message->type === 'image' && Storage::disk('public')->exists($message->content)) {
             Storage::disk('public')->delete($message->content);
         }
     }
@@ -246,6 +260,11 @@ class ChatController extends Controller
         return $type === 'voice' && $request->hasFile('audio');
     }
 
+    protected function isImageFile($type, $request)
+    {
+        return $type === 'image' && $request->hasFile('image');
+    }
+
 
     protected function handleAudioFiles($senderId, $request)
     {
@@ -254,6 +273,15 @@ class ChatController extends Controller
         $audioPath = $file->storeAs('audio', $uniqueName, 'public');
 
         return $content = $audioPath;
+    }
+
+    protected function handleImageFiles($senderId, $request)
+    {
+        $file = $request->file('image');
+        $uniqueName = 'image_' . ($senderId ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $imagePath = $file->storeAs('images', $uniqueName, 'public');
+
+        return $content = $imagePath;
     }
 
 
