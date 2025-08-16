@@ -171,23 +171,65 @@ class ChatController extends Controller
 
             $conversation = $this->getOrCreateConversation($chefId, $customerId);
 
-            $content = $validatedData['content'] ?? null;
+            $content = null;
+            $messageType = $validatedData['type'];
 
-            if ($validatedData['type'] === 'voice' && $request->hasFile('audio')) {
-                $file = $request->file('audio');
-                $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $audioPath = $file->storeAs('audio', $uniqueName, 'public');
-                $content = $audioPath;
-            } elseif ($validatedData['type'] === 'image' && $request->hasFile('image')) {
-                $file = $request->file('image');
-                $uniqueName = 'image_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $imagePath = $file->storeAs('images', $uniqueName, 'public');
-                $content = $imagePath;
-            } elseif ($validatedData['type'] === 'text' && !$content) {
-                return ApiResponse::validationError(['content' => ['Message content required for text messages']], 'Error in data sent');
+            // تحديد المحتوى حسب نوع الرسالة
+            switch ($messageType) {
+                case 'text':
+                    // للرسائل النصية، content هو النص نفسه
+                    $content = $validatedData['content'];
+                    break;
+
+                case 'voice':
+                    // للرسائل الصوتية، content هو ملف الصوت
+                    if (!$request->hasFile('content')) {
+                        return ApiResponse::validationError(['content' => ['ملف الصوت مطلوب للرسائل الصوتية']], 'Error in data sent');
+                    }
+                    $file = $request->file('content');
+                    
+                    // التحقق من نوع الملف
+                    $allowedAudioTypes = ['mp3', 'wav', 'ogg', 'webm'];
+                    if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedAudioTypes)) {
+                        return ApiResponse::validationError(['content' => ['نوع الملف يجب أن يكون صوت (mp3, wav, ogg, webm)']], 'Error in data sent');
+                    }
+                    
+                    // التحقق من حجم الملف (10 ميجابايت)
+                    if ($file->getSize() > 10 * 1024 * 1024) {
+                        return ApiResponse::validationError(['content' => ['حجم ملف الصوت يجب أن لا يتجاوز 10 ميجابايت']], 'Error in data sent');
+                    }
+                    
+                    $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                    $content = $file->storeAs('audio', $uniqueName, 'public');
+                    break;
+
+                case 'image':
+                    // للرسائل المصورة، content هو ملف الصورة
+                    if (!$request->hasFile('content')) {
+                        return ApiResponse::validationError(['content' => ['ملف الصورة مطلوب للرسائل المصورة']], 'Error in data sent');
+                    }
+                    $file = $request->file('content');
+                    
+                    // التحقق من نوع الملف
+                    $allowedImageTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
+                    if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedImageTypes)) {
+                        return ApiResponse::validationError(['content' => ['نوع الملف يجب أن يكون صورة (jpeg, jpg, png, gif, webp)']], 'Error in data sent');
+                    }
+                    
+                    // التحقق من حجم الملف (5 ميجابايت)
+                    if ($file->getSize() > 5 * 1024 * 1024) {
+                        return ApiResponse::validationError(['content' => ['حجم ملف الصورة يجب أن لا يتجاوز 5 ميجابايت']], 'Error in data sent');
+                    }
+                    
+                    $uniqueName = 'image_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                    $content = $file->storeAs('images', $uniqueName, 'public');
+                    break;
+
+                default:
+                    return ApiResponse::error("نوع رسالة غير معروف", 422);
             }
 
-            $message = $this->storeMessage($conversation, $sender, $content, $validatedData['type']);
+            $message = $this->storeMessage($conversation, $sender, $content, $messageType);
 
             if (! $message) {
                 return ApiResponse::error("Something went wrong", 422);
