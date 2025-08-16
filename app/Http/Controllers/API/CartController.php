@@ -35,7 +35,7 @@ class CartController extends Controller
     {
         $customerId = $this->getCustomer()->id;
 
-        $cart = Cart::with(['items.dish', 'items.size'])
+        $cart = Cart::with(['items.dish'])
             ->where('customer_id', $customerId)
             ->firstOrCreate([
                 'customer_id' => $customerId,
@@ -43,7 +43,9 @@ class CartController extends Controller
                 'status' => 'empty'
             ]);
 
-        $total = $this->calculateCartTotal($cart);
+        $total = $cart->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
 
         return ApiResponse::success([
             'cart' => $cart->load('items.dish', 'items.size'),
