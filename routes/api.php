@@ -148,6 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Chat
     Route::controller(ChatController::class)->group(function () {
+        Route::post("/conversation/make", "makeConversation")->name("makeConversation");
         Route::get('/conversations', 'getConversations');
         Route::post('/messages/send', 'sendMessage');
         Route::get('/conversations/{conversationId}', 'show');

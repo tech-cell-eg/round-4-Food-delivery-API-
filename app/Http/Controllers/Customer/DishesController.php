@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 use App\Models\Dish;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,8 @@ class DishesController extends Controller
             ->where("customer_id", $userId)
             ->exists() : false;
 
+        $conversation = Conversation::where("customer_id", $userId)->where("chef_id", $dish->chef_id)->first();
+
         $data = [
             "dish_id" => $dish->id,
             "dish_name" => $dish->name,
@@ -67,6 +70,7 @@ class DishesController extends Controller
                 "phone" => $dish->chef->user->phone,
                 "email" => $dish->chef->user->email,
                 "profile_image" => $dish->chef->user->profile_image,
+                "conversation_id" => $conversation ? $conversation->id : null,
             ],
 
         ];

@@ -6,6 +6,7 @@ use App\Events\MessagesSeenEvent;
 use App\Events\UserTypingEvent;
 use App\Helpers\ApiResponse;
 use App\Http\Requests\StoreNewMessageRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Events\NewConversationMessageEvent;
@@ -155,7 +156,6 @@ class ChatController extends Controller
         ]);
     }
 
-
     public function sendMessage(StoreNewMessageRequest $request)
     {
         try {
@@ -187,18 +187,18 @@ class ChatController extends Controller
                         return ApiResponse::validationError(['content' => ['ملف الصوت مطلوب للرسائل الصوتية']], 'Error in data sent');
                     }
                     $file = $request->file('content');
-                    
+
                     // التحقق من نوع الملف
                     $allowedAudioTypes = ['mp3', 'wav', 'ogg', 'webm'];
                     if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedAudioTypes)) {
                         return ApiResponse::validationError(['content' => ['نوع الملف يجب أن يكون صوت (mp3, wav, ogg, webm)']], 'Error in data sent');
                     }
-                    
+
                     // التحقق من حجم الملف (10 ميجابايت)
                     if ($file->getSize() > 10 * 1024 * 1024) {
                         return ApiResponse::validationError(['content' => ['حجم ملف الصوت يجب أن لا يتجاوز 10 ميجابايت']], 'Error in data sent');
                     }
-                    
+
                     $uniqueName = 'audio_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
                     $content = $file->storeAs('audio', $uniqueName, 'public');
                     break;
@@ -209,18 +209,18 @@ class ChatController extends Controller
                         return ApiResponse::validationError(['content' => ['ملف الصورة مطلوب للرسائل المصورة']], 'Error in data sent');
                     }
                     $file = $request->file('content');
-                    
+
                     // التحقق من نوع الملف
                     $allowedImageTypes = ['jpeg', 'jpg', 'png', 'gif', 'webp'];
                     if (!in_array(strtolower($file->getClientOriginalExtension()), $allowedImageTypes)) {
                         return ApiResponse::validationError(['content' => ['نوع الملف يجب أن يكون صورة (jpeg, jpg, png, gif, webp)']], 'Error in data sent');
                     }
-                    
+
                     // التحقق من حجم الملف (5 ميجابايت)
                     if ($file->getSize() > 5 * 1024 * 1024) {
                         return ApiResponse::validationError(['content' => ['حجم ملف الصورة يجب أن لا يتجاوز 5 ميجابايت']], 'Error in data sent');
                     }
-                    
+
                     $uniqueName = 'image_' . ($sender->id ?? 'user') . '_' . time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
                     $content = $file->storeAs('images', $uniqueName, 'public');
                     break;
@@ -244,6 +244,35 @@ class ChatController extends Controller
 
         } catch (\Throwable $e) {
             return ApiResponse::error('An unexpected error occurred: ' . $e->getMessage(), 500);
+        }
+    }
+
+
+
+    public function makeConversation(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                "receiver_id" => "required|integer|exists:users,id",
+            ]);
+
+            $sender = Auth::user();
+            $receiver = User::find($validatedData['receiver_id']);
+            [$customerId, $chefId] = $this->resolveParticipants($sender, $receiver);
+
+            if (is_null($customerId) || is_null($chefId)) {
+                return ApiResponse::error("Invalid sender/receiver combination", 422);
+            }
+
+            $conversation = $this->getOrCreateConversation($chefId, $customerId);
+
+            return ApiResponse::success($conversation, 'Message sent successfully');
+        } catch (ValidationException $e) {
+            return ApiResponse::validationError($e->errors());
+        } catch (ModelNotFoundException $e) {
+            return ApiResponse::error('Receiver not found', 404);
+        } catch (\Throwable $e) {
+            return ApiResponse::error('An unexpected error occurred. Please try again later.', 500);
         }
     }
 
